@@ -3,6 +3,7 @@ import sys
 
 # Насильно заставляем Windows искать плагины там, где нужно
 import site
+
 paths = site.getsitepackages()
 for p in paths:
     qt_path = os.path.join(p, 'PyQt5', 'Qt5', 'plugins', 'platforms')
@@ -14,7 +15,6 @@ for p in paths:
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
-# ... дальше остальной код ...
 
 
 # --- Класс нашего кругового меню ---
@@ -28,7 +28,7 @@ class RadialMenu(QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.resize(300, 300)
 
-        # Кнопка скина
+        # --- Кнопка скина ---
         self.skin_btn = QPushButton("Скин", self)
         self.skin_btn.setFixedSize(60, 60)
         self.skin_btn.setStyleSheet("""
@@ -38,14 +38,29 @@ class RadialMenu(QWidget):
             }
             QPushButton:hover { background-color: rgba(255, 182, 193, 200); color: black; }
         """)
-
-        # Действие при нажатии на кнопку
         self.skin_btn.clicked.connect(self.change_skin)
+
+        # --- Кнопка выхода (Новая) ---
+        self.close_btn = QPushButton("Выход", self)
+        self.close_btn.setFixedSize(60, 60)
+        self.close_btn.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(30, 30, 30, 200);
+                color: white; border-radius: 30px; border: 2px solid #ff6b6b; font-weight: bold;
+            }
+            QPushButton:hover { background-color: rgba(255, 107, 107, 200); color: white; }
+        """)
+        self.close_btn.clicked.connect(self.close_app)
 
     def show_around(self, x, y):
         self.move(x - self.width() // 2, y - self.height() // 2)
-        # Ставим кнопку чуть правее центра
-        self.skin_btn.move(self.width() // 2 + 40, self.height() // 2 - 30)
+
+        # Ставим кнопку скина чуть правее
+        self.skin_btn.move(self.width() // 2 + 30, self.height() // 2 - 30)
+
+        # Ставим кнопку выхода чуть левее (для симметрии)
+        self.close_btn.move(self.width() // 2 - 90, self.height() // 2 - 30)
+
         self.show()
 
     def change_skin(self):
@@ -57,8 +72,11 @@ class RadialMenu(QWidget):
             self.yuki.load_image('yuki.png')
             self.yuki.current_skin = 'default'
 
-        # Сразу прячем меню после выбора
         self.hide()
+
+    def close_app(self):
+        # Эта команда полностью завершает работу программы
+        QApplication.quit()
 
 
 # --- Основной класс Юки ---
