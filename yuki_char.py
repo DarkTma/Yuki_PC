@@ -6,6 +6,10 @@ import requests
 import json
 import warnings
 import winsound
+import os
+from dotenv import load_dotenv
+import google.generativeai as genai
+
 
 
 # Скрываем предупреждение от Google, чтобы оно не мусорило в консоли
@@ -33,8 +37,10 @@ from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, QThread, 
 from PyQt5.QtMultimedia import QSoundEffect
 
 # --- НАСТРОЙКА GEMINI ---
-# Вставь сюда свой ключ!
-genai.configure(api_key="AIzaSyDPCxSR4u4bNA4aB3Sc_JllH5yFrWuGPhI")
+load_dotenv()  # загружает переменные из .env файла
+
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
 
 # --- Класс мозга (работает в фоне) ---
 class YukiBrain(QThread):
