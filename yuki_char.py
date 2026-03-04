@@ -22,10 +22,11 @@ except ImportError:
     SR_AVAILABLE = False
 
 try:
-    from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
-    MEDIA_AVAILABLE = True
-except ImportError:
-    MEDIA_AVAILABLE = False
+    import pygame
+    pygame.mixer.init()
+    PYGAME_AVAILABLE = True
+except Exception:
+    PYGAME_AVAILABLE = False
 
 
 def strip_emoji(text: str) -> str:
@@ -77,8 +78,6 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton,
                              QSizePolicy, QFrame)
 from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, QThread, pyqtSignal, QUrl, QTimer
 from PyQt5.QtGui import QPixmap, QIcon, QColor, QFont, QTextCursor
-from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, QThread, pyqtSignal, QUrl
-from PyQt5.QtMultimedia import QSoundEffect
 
 # --- НАСТРОЙКА GEMINI ---
 load_dotenv()  # загружает переменные из .env файла
@@ -873,24 +872,36 @@ class YukiCommands:
 
 MUSIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music")
 
+# Ensure pygame mixer available (imported at top)
+if not PYGAME_AVAILABLE:
+    try:
+        import pygame
+        pygame.mixer.init()
+        PYGAME_AVAILABLE = True
+    except Exception:
+        pass
+
 class MusicPlayerWindow(QWidget):
-    """Окно проигрывателя MP3 из папки music/."""
+    """Окно проигрывателя MP3 из папки music/ (через pygame)."""
 
     def __init__(self, skin="default"):
         super().__init__()
-        self.skin = skin
+        self.skin          = skin
         self.current_index = -1
-        self._setup_player()
+        self.tracks        = []
+        self._is_playing   = False
+        self._is_paused    = False
+        self._drag_pos     = None
+        self._track_len_ms = 0
+        self._seeking      = False
+
+        # Таймер обновления позиции и авто-следующего трека
+        self._tick = QTimer(self)
+        self._tick.setInterval(500)
+        self._tick.timeout.connect(self._on_tick)
+
         self._setup_ui()
         self._apply_theme()
-        self._drag_pos = None
-
-    # ---------- медиа ----------
-    def _setup_player(self):
-        self.player = QMediaPlayer()
-        self.player.stateChanged.connect(self._on_state_changed)
-        self.player.positionChanged.connect(self._on_position_changed)
-        self.player.durationChanged.connect(self._on_duration_changed)
 
     # ---------- UI ----------
     def _setup_ui(self):
@@ -952,8 +963,9 @@ class MusicPlayerWindow(QWidget):
         from PyQt5.QtWidgets import QSlider
         self.seek_bar = QSlider(Qt.Horizontal)
         self.seek_bar.setObjectName("seekBar")
-        self.seek_bar.setRange(0, 0)
-        self.seek_bar.sliderMoved.connect(self.player.setPosition)
+        self.seek_bar.setRange(0, 1000)
+        self.seek_bar.sliderPressed.connect(self._seek_pressed)
+        self.seek_bar.sliderReleased.connect(self._seek_released)
         seek_wrap = QWidget()
         seek_lay = QHBoxLayout(seek_wrap)
         seek_lay.setContentsMargins(10, 2, 10, 2)
@@ -1040,7 +1052,6 @@ class MusicPlayerWindow(QWidget):
             self.track_list.setHtml('<br>'.join(lines))
 
     def _on_track_dblclick(self, event):
-        """Двойной клик — вычисляем номер строки и играем."""
         cursor = self.track_list.cursorForPosition(event.pos())
         line_num = cursor.blockNumber()
         if 0 <= line_num < len(self.tracks):
@@ -1049,16 +1060,35 @@ class MusicPlayerWindow(QWidget):
     def _play_index(self, index):
         if not self.tracks:
             return
+        if not PYGAME_AVAILABLE:
+            logger.log("ERROR", "Music", "pygame not installed. Run: pip install pygame")
+            self.now_label.setText("Error: pip install pygame")
+            return
         self.current_index = index % len(self.tracks)
         path = os.path.join(MUSIC_DIR, self.tracks[self.current_index])
-        url = QUrl.fromLocalFile(path)
-        self.player.setMedia(QMediaContent(url))
-        self.player.play()
-        name = os.path.splitext(self.tracks[self.current_index])[0]
-        self.now_label.setText(f"▶  {name}")
-        self.play_btn.setText("⏸")
-        self._highlight_track(self.current_index)
-        logger.log("INFO", "Music", f"Playing: {self.tracks[self.current_index]}")
+        try:
+            pygame.mixer.music.load(path)
+            pygame.mixer.music.play()
+            # Определяем длину трека через mutagen если есть
+            self._track_len_ms = 0
+            try:
+                from mutagen import File as MuFile
+                audio = MuFile(path)
+                if audio and hasattr(audio, "info"):
+                    self._track_len_ms = int(audio.info.length * 1000)
+            except Exception:
+                pass
+            self._is_playing = True
+            self._is_paused  = False
+            self._tick.start()
+            name = os.path.splitext(self.tracks[self.current_index])[0]
+            self.now_label.setText(f"▶  {name}")
+            self.play_btn.setText("⏸")
+            self._highlight_track(self.current_index)
+            logger.log("INFO", "Music", f"Playing: {self.tracks[self.current_index]}")
+        except Exception as e:
+            logger.log("ERROR", "Music", f"Player Error: {e}")
+            self.now_label.setText(f"Error: {e}")
 
     def _highlight_track(self, index):
         accent = "#00ffff" if self.skin == "default" else "#ff69b4"
@@ -1072,20 +1102,30 @@ class MusicPlayerWindow(QWidget):
         self.track_list.setHtml('<br>'.join(lines))
 
     def _toggle_play(self):
-        if self.player.state() == QMediaPlayer.PlayingState:
-            self.player.pause()
+        if not PYGAME_AVAILABLE:
+            return
+        if self._is_playing and not self._is_paused:
+            pygame.mixer.music.pause()
+            self._is_paused = True
             self.play_btn.setText("▶")
-        elif self.player.state() == QMediaPlayer.PausedState:
-            self.player.play()
+        elif self._is_paused:
+            pygame.mixer.music.unpause()
+            self._is_paused = False
             self.play_btn.setText("⏸")
         else:
             if self.tracks:
                 self._play_index(0)
 
     def _stop(self):
-        self.player.stop()
+        if PYGAME_AVAILABLE:
+            pygame.mixer.music.stop()
+        self._is_playing = False
+        self._is_paused  = False
+        self._tick.stop()
         self.play_btn.setText("▶")
         self.now_label.setText("Nothing playing")
+        self.seek_bar.setValue(0)
+        self.time_label.setText("0:00 / 0:00")
 
     def _prev(self):
         if self.tracks:
@@ -1095,25 +1135,38 @@ class MusicPlayerWindow(QWidget):
         if self.tracks:
             self._play_index(self.current_index + 1)
 
-    def _on_state_changed(self, state):
-        if state == QMediaPlayer.StoppedState and self.current_index >= 0:
-            # Авто-следующий трек
+    def _seek_pressed(self):
+        self._seeking = True
+
+    def _seek_released(self):
+        self._seeking = False
+        if PYGAME_AVAILABLE and self._track_len_ms > 0:
+            pos_sec = self.seek_bar.value() / 1000 * self._track_len_ms / 1000.0
+            pygame.mixer.music.set_pos(pos_sec)
+
+    def _on_tick(self):
+        """Каждые 500 мс: обновляем позицию и проверяем конец трека."""
+        if not PYGAME_AVAILABLE:
+            return
+        if not pygame.mixer.music.get_busy() and self._is_playing and not self._is_paused:
+            # Трек закончился — следующий
             if self.current_index < len(self.tracks) - 1:
                 self._play_index(self.current_index + 1)
             else:
-                self.play_btn.setText("▶")
-                self.now_label.setText("Nothing playing")
+                self._stop()
                 self.current_index = -1
-
-    def _on_position_changed(self, pos):
-        self.seek_bar.setValue(pos)
-        self.time_label.setText(f"{self._fmt(pos)} / {self._fmt(self.player.duration())}")
-
-    def _on_duration_changed(self, dur):
-        self.seek_bar.setRange(0, dur)
+                self._reload_list()
+            return
+        if self._track_len_ms > 0 and not self._seeking:
+            pos_ms = pygame.mixer.music.get_pos()
+            if pos_ms >= 0:
+                pct = min(pos_ms / self._track_len_ms, 1.0)
+                self.seek_bar.setValue(int(pct * 1000))
+                self.time_label.setText(f"{self._fmt(pos_ms)} / {self._fmt(self._track_len_ms)}")
 
     @staticmethod
     def _fmt(ms):
+        if ms < 0: ms = 0
         s = ms // 1000
         return f"{s//60}:{s%60:02d}"
 
@@ -1130,7 +1183,6 @@ class MusicPlayerWindow(QWidget):
         self._apply_theme()
         if self.tracks and self.current_index >= 0:
             self._highlight_track(self.current_index)
-
 
 # =============================================
 # --- ОКНО НАСТРОЕК ---

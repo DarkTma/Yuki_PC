@@ -36,7 +36,7 @@ echo  [OK] pip found.
 
 :: --- Marker file: if exists - libraries already installed ---
 set MARKER=.yuki_installed
-set MARKER_VER=3
+set MARKER_VER=4
 
 :: Check marker version (re-install if outdated)
 if exist %MARKER% (
@@ -96,8 +96,17 @@ if errorlevel 1 (
     pipwin install pyaudio >nul 2>&1
 )
 
+echo  Installing pygame (music player)...
+pip install pygame >nul 2>&1
+if errorlevel 1 (
+    echo  [WARNING] pygame failed. Try manually: pip install pygame
+)
+
+echo  Installing mutagen (track duration)...
+pip install mutagen >nul 2>&1
+
 :: --- Create marker with version ---
-echo v3 > %MARKER%
+echo v4 > %MARKER%
 
 echo.
 echo  [DONE] All libraries installed!
