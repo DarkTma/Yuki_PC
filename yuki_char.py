@@ -13,11 +13,42 @@ import time
 import traceback
 import datetime
 from threading import Thread
+import re
+import math
 try:
     import speech_recognition as sr
     SR_AVAILABLE = True
 except ImportError:
     SR_AVAILABLE = False
+
+try:
+    from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+    MEDIA_AVAILABLE = True
+except ImportError:
+    MEDIA_AVAILABLE = False
+
+
+def strip_emoji(text: str) -> str:
+    """Убирает emoji и спец-символы перед TTS озвучкой."""
+    # Диапазоны Unicode emoji
+    emoji_pattern = re.compile(
+        "[\U0001F600-\U0001F64F"   # emoticons
+        "\U0001F300-\U0001F5FF"   # symbols & pictographs
+        "\U0001F680-\U0001F6FF"   # transport & map
+        "\U0001F700-\U0001F77F"   # alchemical
+        "\U0001F780-\U0001F7FF"   # geometric
+        "\U0001F800-\U0001F8FF"   # supplemental arrows
+        "\U0001F900-\U0001F9FF"   # supplemental symbols
+        "\U0001FA00-\U0001FA6F"   # chess/other
+        "\U0001FA70-\U0001FAFF"   # symbols extended
+        "\U00002702-\U000027B0"   # dingbats
+        "\U000024C2-\U0001F251"   # enclosed
+        "]+", flags=re.UNICODE
+    )
+    text = emoji_pattern.sub('', text)
+    # Лишние пробелы после удаления
+    text = re.sub(r'  +', ' ', text).strip()
+    return text
 from dotenv import load_dotenv
 import google.generativeai as genai
 
@@ -837,6 +868,406 @@ class YukiCommands:
 
 
 # =============================================
+# --- ПЛЕЕР МУЗЫКИ ---
+# =============================================
+
+MUSIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music")
+
+class MusicPlayerWindow(QWidget):
+    """Окно проигрывателя MP3 из папки music/."""
+
+    def __init__(self, skin="default"):
+        super().__init__()
+        self.skin = skin
+        self.current_index = -1
+        self._setup_player()
+        self._setup_ui()
+        self._apply_theme()
+        self._drag_pos = None
+
+    # ---------- медиа ----------
+    def _setup_player(self):
+        self.player = QMediaPlayer()
+        self.player.stateChanged.connect(self._on_state_changed)
+        self.player.positionChanged.connect(self._on_position_changed)
+        self.player.durationChanged.connect(self._on_duration_changed)
+
+    # ---------- UI ----------
+    def _setup_ui(self):
+        self.setWindowTitle("Yuki — Music")
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.resize(480, 500)
+        screen = QApplication.primaryScreen().geometry()
+        self.move(screen.center().x() - 240, screen.center().y() - 250)
+
+        self.container = QWidget(self)
+        self.container.setObjectName("container")
+        self.container.resize(480, 500)
+
+        root = QVBoxLayout(self.container)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+
+        # Заголовок
+        header = QWidget()
+        header.setObjectName("header")
+        header.setFixedHeight(44)
+        h_lay = QHBoxLayout(header)
+        h_lay.setContentsMargins(14, 0, 10, 0)
+        title = QLabel("  ♫ Yuki — Music")
+        title.setObjectName("title")
+        h_lay.addWidget(title)
+        h_lay.addStretch()
+        refresh_btn = QPushButton("↺")
+        refresh_btn.setObjectName("headerBtn")
+        refresh_btn.setFixedSize(32, 28)
+        refresh_btn.clicked.connect(self._reload_list)
+        h_lay.addWidget(refresh_btn)
+        close_btn = QPushButton("✕")
+        close_btn.setObjectName("closeBtn")
+        close_btn.setFixedSize(32, 32)
+        close_btn.clicked.connect(self.hide)
+        h_lay.addWidget(close_btn)
+        root.addWidget(header)
+
+        div = QFrame(); div.setObjectName("divider")
+        div.setFrameShape(QFrame.HLine); div.setFixedHeight(1)
+        root.addWidget(div)
+
+        # Список треков
+        self.track_list = QTextEdit()
+        self.track_list.setObjectName("trackList")
+        self.track_list.setReadOnly(True)
+        root.addWidget(self.track_list)
+
+        # Текущий трек
+        self.now_label = QLabel("Nothing playing")
+        self.now_label.setObjectName("nowLabel")
+        self.now_label.setAlignment(Qt.AlignCenter)
+        self.now_label.setWordWrap(True)
+        root.addWidget(self.now_label)
+
+        # Прогресс-бар
+        from PyQt5.QtWidgets import QSlider
+        self.seek_bar = QSlider(Qt.Horizontal)
+        self.seek_bar.setObjectName("seekBar")
+        self.seek_bar.setRange(0, 0)
+        self.seek_bar.sliderMoved.connect(self.player.setPosition)
+        seek_wrap = QWidget()
+        seek_lay = QHBoxLayout(seek_wrap)
+        seek_lay.setContentsMargins(10, 2, 10, 2)
+        self.time_label = QLabel("0:00 / 0:00")
+        self.time_label.setObjectName("timeLabel")
+        seek_lay.addWidget(self.seek_bar)
+        seek_lay.addWidget(self.time_label)
+        root.addWidget(seek_wrap)
+
+        # Кнопки управления
+        ctrl = QWidget()
+        c_lay = QHBoxLayout(ctrl)
+        c_lay.setContentsMargins(10, 6, 10, 10)
+        self.prev_btn = QPushButton("⏮")
+        self.prev_btn.setObjectName("ctrlBtn")
+        self.prev_btn.setFixedHeight(38)
+        self.prev_btn.clicked.connect(self._prev)
+        self.play_btn = QPushButton("▶")
+        self.play_btn.setObjectName("ctrlBtn")
+        self.play_btn.setFixedHeight(38)
+        self.play_btn.clicked.connect(self._toggle_play)
+        self.next_btn = QPushButton("⏭")
+        self.next_btn.setObjectName("ctrlBtn")
+        self.next_btn.setFixedHeight(38)
+        self.next_btn.clicked.connect(self._next)
+        self.stop_btn = QPushButton("⏹")
+        self.stop_btn.setObjectName("ctrlBtn")
+        self.stop_btn.setFixedHeight(38)
+        self.stop_btn.clicked.connect(self._stop)
+        for b in [self.prev_btn, self.play_btn, self.next_btn, self.stop_btn]:
+            c_lay.addWidget(b)
+        root.addWidget(ctrl)
+
+        # Перетаскивание
+        header.mousePressEvent   = lambda e: self._drag_press(e)
+        header.mouseMoveEvent    = lambda e: self._drag_move(e)
+        header.mouseReleaseEvent = lambda e: setattr(self, '_drag_pos', None)
+
+        # Двойной клик по треку
+        self.track_list.mouseDoubleClickEvent = self._on_track_dblclick
+
+        self._reload_list()
+
+    def _apply_theme(self):
+        accent = "#00ffff" if self.skin == "default" else "#ff69b4"
+        bg     = "rgba(8,22,48,230)" if self.skin == "default" else "rgba(48,8,22,230)"
+        hdr    = "rgba(0,180,200,40)" if self.skin == "default" else "rgba(200,0,100,40)"
+        self.container.setStyleSheet(f"""
+            QWidget#container {{ background:{bg}; border:2px solid {accent}; border-radius:12px; }}
+            QWidget#header {{ background:{hdr}; border-top-left-radius:10px; border-top-right-radius:10px; }}
+            QLabel#title {{ color:{accent}; font-family:'Courier New'; font-size:15px; font-weight:bold; background:transparent; }}
+            QLabel#nowLabel {{ color:white; font-family:'Courier New'; font-size:13px; background:transparent; padding:4px 10px; }}
+            QLabel#timeLabel {{ color:{accent}; font-family:'Courier New'; font-size:11px; background:transparent; min-width:90px; }}
+            QPushButton#headerBtn {{ background:rgba(0,0,0,100); color:{accent}; border:1px solid {accent}; border-radius:4px; font-size:14px; }}
+            QPushButton#headerBtn:hover {{ background:{accent}; color:black; }}
+            QPushButton#closeBtn {{ background:transparent; color:#ff4d4d; border:1px solid #ff4d4d; border-radius:5px; font-size:14px; font-weight:bold; }}
+            QPushButton#closeBtn:hover {{ background:#ff4d4d; color:white; }}
+            QPushButton#ctrlBtn {{ background:rgba(0,0,0,120); color:{accent}; border:1px solid {accent}; border-radius:6px; font-size:18px; }}
+            QPushButton#ctrlBtn:hover {{ background:{accent}; color:black; }}
+            QFrame#divider {{ background:{accent}; }}
+            QTextEdit#trackList {{ background:transparent; color:#cccccc; font-family:'Courier New'; font-size:13px; border:none; padding:6px 10px; }}
+            QSlider#seekBar::groove:horizontal {{ background:rgba(255,255,255,30); height:4px; border-radius:2px; }}
+            QSlider#seekBar::handle:horizontal {{ background:{accent}; width:12px; height:12px; margin:-4px 0; border-radius:6px; }}
+            QSlider#seekBar::sub-page:horizontal {{ background:{accent}; height:4px; border-radius:2px; }}
+            QScrollBar:vertical {{ background:rgba(0,0,0,60); width:8px; border-radius:4px; }}
+            QScrollBar::handle:vertical {{ background:{accent}; border-radius:4px; }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height:0; }}
+        """)
+
+    def _reload_list(self):
+        os.makedirs(MUSIC_DIR, exist_ok=True)
+        self.tracks = sorted([
+            f for f in os.listdir(MUSIC_DIR)
+            if f.lower().endswith('.mp3') or f.lower().endswith('.wav')
+        ])
+        self.track_list.clear()
+        if not self.tracks:
+            self.track_list.setHtml('<span style="color:#888">No MP3/WAV files in music/ folder</span>')
+        else:
+            lines = []
+            for i, t in enumerate(self.tracks):
+                name = os.path.splitext(t)[0]
+                lines.append(f'<span style="color:#555">{i+1:02d}.</span> {name}')
+            self.track_list.setHtml('<br>'.join(lines))
+
+    def _on_track_dblclick(self, event):
+        """Двойной клик — вычисляем номер строки и играем."""
+        cursor = self.track_list.cursorForPosition(event.pos())
+        line_num = cursor.blockNumber()
+        if 0 <= line_num < len(self.tracks):
+            self._play_index(line_num)
+
+    def _play_index(self, index):
+        if not self.tracks:
+            return
+        self.current_index = index % len(self.tracks)
+        path = os.path.join(MUSIC_DIR, self.tracks[self.current_index])
+        url = QUrl.fromLocalFile(path)
+        self.player.setMedia(QMediaContent(url))
+        self.player.play()
+        name = os.path.splitext(self.tracks[self.current_index])[0]
+        self.now_label.setText(f"▶  {name}")
+        self.play_btn.setText("⏸")
+        self._highlight_track(self.current_index)
+        logger.log("INFO", "Music", f"Playing: {self.tracks[self.current_index]}")
+
+    def _highlight_track(self, index):
+        accent = "#00ffff" if self.skin == "default" else "#ff69b4"
+        lines = []
+        for i, t in enumerate(self.tracks):
+            name = os.path.splitext(t)[0]
+            if i == index:
+                lines.append(f'<span style="color:{accent};font-weight:bold">▶ {i+1:02d}. {name}</span>')
+            else:
+                lines.append(f'<span style="color:#555">{i+1:02d}.</span> {name}')
+        self.track_list.setHtml('<br>'.join(lines))
+
+    def _toggle_play(self):
+        if self.player.state() == QMediaPlayer.PlayingState:
+            self.player.pause()
+            self.play_btn.setText("▶")
+        elif self.player.state() == QMediaPlayer.PausedState:
+            self.player.play()
+            self.play_btn.setText("⏸")
+        else:
+            if self.tracks:
+                self._play_index(0)
+
+    def _stop(self):
+        self.player.stop()
+        self.play_btn.setText("▶")
+        self.now_label.setText("Nothing playing")
+
+    def _prev(self):
+        if self.tracks:
+            self._play_index(self.current_index - 1)
+
+    def _next(self):
+        if self.tracks:
+            self._play_index(self.current_index + 1)
+
+    def _on_state_changed(self, state):
+        if state == QMediaPlayer.StoppedState and self.current_index >= 0:
+            # Авто-следующий трек
+            if self.current_index < len(self.tracks) - 1:
+                self._play_index(self.current_index + 1)
+            else:
+                self.play_btn.setText("▶")
+                self.now_label.setText("Nothing playing")
+                self.current_index = -1
+
+    def _on_position_changed(self, pos):
+        self.seek_bar.setValue(pos)
+        self.time_label.setText(f"{self._fmt(pos)} / {self._fmt(self.player.duration())}")
+
+    def _on_duration_changed(self, dur):
+        self.seek_bar.setRange(0, dur)
+
+    @staticmethod
+    def _fmt(ms):
+        s = ms // 1000
+        return f"{s//60}:{s%60:02d}"
+
+    def _drag_press(self, e):
+        if e.button() == Qt.LeftButton:
+            self._drag_pos = e.globalPos() - self.frameGeometry().topLeft()
+
+    def _drag_move(self, e):
+        if e.buttons() == Qt.LeftButton and self._drag_pos:
+            self.move(e.globalPos() - self._drag_pos)
+
+    def update_skin(self, skin):
+        self.skin = skin
+        self._apply_theme()
+        if self.tracks and self.current_index >= 0:
+            self._highlight_track(self.current_index)
+
+
+# =============================================
+# --- ОКНО НАСТРОЕК ---
+# =============================================
+
+class SettingsWindow(QWidget):
+    """Окно настроек Юки."""
+
+    def __init__(self, yuki_assistant, skin="default"):
+        super().__init__()
+        self.yuki = yuki_assistant
+        self.skin = skin
+        self._drag_pos = None
+        self._setup_ui()
+        self._apply_theme()
+
+    def _setup_ui(self):
+        self.setWindowTitle("Yuki — Settings")
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.resize(420, 300)
+        screen = QApplication.primaryScreen().geometry()
+        self.move(screen.center().x() - 210, screen.center().y() - 150)
+
+        self.container = QWidget(self)
+        self.container.setObjectName("container")
+        self.container.resize(420, 300)
+
+        root = QVBoxLayout(self.container)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+
+        # Заголовок
+        header = QWidget()
+        header.setObjectName("header")
+        header.setFixedHeight(44)
+        h_lay = QHBoxLayout(header)
+        h_lay.setContentsMargins(14, 0, 10, 0)
+        title = QLabel("  ⚙ Yuki — Settings")
+        title.setObjectName("title")
+        h_lay.addWidget(title)
+        h_lay.addStretch()
+        close_btn = QPushButton("✕")
+        close_btn.setObjectName("closeBtn")
+        close_btn.setFixedSize(32, 32)
+        close_btn.clicked.connect(self.hide)
+        h_lay.addWidget(close_btn)
+        root.addWidget(header)
+
+        div = QFrame(); div.setObjectName("divider")
+        div.setFrameShape(QFrame.HLine); div.setFixedHeight(1)
+        root.addWidget(div)
+
+        # Контент
+        content = QWidget()
+        content.setObjectName("content")
+        c_lay = QVBoxLayout(content)
+        c_lay.setContentsMargins(20, 16, 20, 16)
+        c_lay.setSpacing(14)
+
+        # --- Always-on mic ---
+        from PyQt5.QtWidgets import QCheckBox
+        self.always_mic_cb = QCheckBox("Always-on microphone (listen constantly)")
+        self.always_mic_cb.setObjectName("settingCb")
+        self.always_mic_cb.setChecked(self.yuki.always_listen)
+        self.always_mic_cb.stateChanged.connect(self._on_always_mic_changed)
+        c_lay.addWidget(self.always_mic_cb)
+
+        # Описание пункта
+        mic_desc = QLabel("  Yuki will always listen and respond when she hears you.")
+        mic_desc.setObjectName("descLabel")
+        c_lay.addWidget(mic_desc)
+
+        # Разделитель
+        sep = QFrame(); sep.setObjectName("sepLine")
+        sep.setFrameShape(QFrame.HLine); sep.setFixedHeight(1)
+        c_lay.addWidget(sep)
+
+        # --- About ---
+        about_btn = QPushButton("  ℹ  About / My Website")
+        about_btn.setObjectName("aboutBtn")
+        about_btn.setFixedHeight(38)
+        about_btn.clicked.connect(self._open_website)
+        c_lay.addWidget(about_btn)
+
+        c_lay.addStretch()
+        root.addWidget(content)
+
+        # Перетаскивание
+        header.mousePressEvent   = lambda e: self._drag_press(e)
+        header.mouseMoveEvent    = lambda e: self._drag_move(e)
+        header.mouseReleaseEvent = lambda e: setattr(self, '_drag_pos', None)
+
+    def _apply_theme(self):
+        accent = "#00ffff" if self.skin == "default" else "#ff69b4"
+        bg     = "rgba(8,22,48,230)" if self.skin == "default" else "rgba(48,8,22,230)"
+        hdr    = "rgba(0,180,200,40)" if self.skin == "default" else "rgba(200,0,100,40)"
+        self.container.setStyleSheet(f"""
+            QWidget#container {{ background:{bg}; border:2px solid {accent}; border-radius:12px; }}
+            QWidget#header {{ background:{hdr}; border-top-left-radius:10px; border-top-right-radius:10px; }}
+            QWidget#content {{ background:transparent; }}
+            QLabel#title {{ color:{accent}; font-family:'Courier New'; font-size:15px; font-weight:bold; background:transparent; }}
+            QLabel#descLabel {{ color:#888; font-family:'Courier New'; font-size:11px; background:transparent; }}
+            QCheckBox#settingCb {{ color:white; font-family:'Courier New'; font-size:13px; background:transparent; spacing:10px; }}
+            QCheckBox#settingCb::indicator {{ width:18px; height:18px; border:2px solid {accent}; border-radius:4px; background:rgba(0,0,0,100); }}
+            QCheckBox#settingCb::indicator:checked {{ background:{accent}; }}
+            QFrame#divider {{ background:{accent}; }}
+            QFrame#sepLine {{ background:rgba(255,255,255,30); }}
+            QPushButton#closeBtn {{ background:transparent; color:#ff4d4d; border:1px solid #ff4d4d; border-radius:5px; font-size:14px; font-weight:bold; }}
+            QPushButton#closeBtn:hover {{ background:#ff4d4d; color:white; }}
+            QPushButton#aboutBtn {{ background:rgba(0,0,0,100); color:{accent}; border:1px solid {accent}; border-radius:6px; font-family:'Courier New'; font-size:13px; text-align:left; padding-left:8px; }}
+            QPushButton#aboutBtn:hover {{ background:{accent}; color:black; }}
+        """)
+
+    def _on_always_mic_changed(self, state):
+        from PyQt5.QtCore import Qt as _Qt
+        enabled = (state == _Qt.Checked)
+        self.yuki.set_always_listen(enabled)
+
+    def _open_website(self):
+        webbrowser.open("https://darktma.github.io")  # поменяй на свой сайт
+        logger.log("INFO", "Settings", "Opened about/website")
+
+    def _drag_press(self, e):
+        if e.button() == Qt.LeftButton:
+            self._drag_pos = e.globalPos() - self.frameGeometry().topLeft()
+
+    def _drag_move(self, e):
+        if e.buttons() == Qt.LeftButton and self._drag_pos:
+            self.move(e.globalPos() - self._drag_pos)
+
+    def update_skin(self, skin):
+        self.skin = skin
+        self._apply_theme()
+
+
+# =============================================
 # --- ПОТОК ГОЛОСОВОГО ВВОДА ---
 # =============================================
 
@@ -915,7 +1346,9 @@ class YukiBrain(QThread):
             response = self.model.generate_content(full_prompt)
             ai_text = response.text.strip()
             logger.log("AI", "Gemini", f"Response: {ai_text[:80]}")
-            audio_path = self.synthesize_audio(ai_text, self.language)
+            # Для TTS убираем emoji — они ломают синтез
+            tts_text = strip_emoji(ai_text)
+            audio_path = self.synthesize_audio(tts_text, self.language)
             if audio_path:
                 self.reply_ready.emit(ai_text, audio_path)
             else:
@@ -1189,12 +1622,14 @@ class RadialMenu(QWidget):
         self.resize(300, 300)
         self.animations = []
 
-        self.skin_btn  = self.create_button("Скин",  "#ffb6c1", self.change_skin)
-        self.close_btn = self.create_button("Выход", "#ff6b6b", self.close_app)
-        self.chibi_btn = self.create_button("Чиби",  "#87ceeb", self.toggle_chibi)
-        self.chat_btn  = self.create_button("Чат",   "#a8ff78", self.yuki.ask_yuki)
-        self.logs_btn  = self.create_button("Логи",  "#ffa07a", self.yuki.show_logs)
-        self.mic_btn   = self.create_button("🎤",    "#c9a0ff", self.start_voice)
+        self.skin_btn     = self.create_button("Скин",    "#ffb6c1", self.change_skin)
+        self.close_btn    = self.create_button("Выход",   "#ff6b6b", self.close_app)
+        self.chibi_btn    = self.create_button("Чиби",    "#87ceeb", self.toggle_chibi)
+        self.chat_btn     = self.create_button("Чат",     "#a8ff78", self.yuki.ask_yuki)
+        self.logs_btn     = self.create_button("Логи",    "#ffa07a", self.yuki.show_logs)
+        self.mic_btn      = self.create_button("🎤",      "#c9a0ff", self.start_voice)
+        self.music_btn    = self.create_button("Музыка",  "#ffd700", self.show_music)
+        self.settings_btn = self.create_button("⚙",      "#aaaaaa", self.show_settings)
 
     def create_button(self, text, color, connect_func):
         btn = QPushButton(text, self)
@@ -1210,14 +1645,17 @@ class RadialMenu(QWidget):
         self.move(x - self.width() // 2, y - self.height() // 2)
         center_pos = QPoint(self.width() // 2 - 30, self.height() // 2 - 30)
 
-        # 6 кнопок равномерно по кругу (угол 60° между каждой)
-        import math
+        # 8 кнопок равномерно по кругу (угол 45° между каждой)
         cx = self.width()  // 2 - 30
         cy = self.height() // 2 - 30
-        r  = 90  # радиус
-        angles = [270, 330, 30, 90, 150, 210]  # верх, право-верх, право-низ, низ, лево-низ, лево-верх
-        buttons = [self.chibi_btn, self.skin_btn, self.logs_btn,
-                   self.chat_btn,  self.mic_btn,  self.close_btn]
+        r  = 100  # радиус
+        angles = [270, 315, 0, 45, 90, 135, 180, 225]
+        buttons = [
+            self.chibi_btn, self.skin_btn,
+            self.settings_btn, self.logs_btn,
+            self.chat_btn, self.music_btn,
+            self.mic_btn, self.close_btn
+        ]
         for btn, angle in zip(buttons, angles):
             rad = math.radians(angle)
             px  = int(cx + r * math.cos(rad))
@@ -1238,7 +1676,10 @@ class RadialMenu(QWidget):
     def change_skin(self):
         self.yuki.current_skin = 'alt_skin' if self.yuki.current_skin == 'default' else 'default'
         self.yuki.update_image()
-        self.yuki.log_window.update_skin(self.yuki.current_skin)
+        skin = self.yuki.current_skin
+        self.yuki.log_window.update_skin(skin)
+        self.yuki.music_window.update_skin(skin)
+        self.yuki.settings_win.update_skin(skin)
         self.hide()
 
     def toggle_chibi(self):
@@ -1258,6 +1699,14 @@ class RadialMenu(QWidget):
         self.hide()
         self.yuki.start_voice_input()
 
+    def show_music(self):
+        self.hide()
+        self.yuki.show_music()
+
+    def show_settings(self):
+        self.hide()
+        self.yuki.show_settings()
+
 
 # --- Основной класс Юки ---
 class YukiAssistant(QWidget):
@@ -1265,13 +1714,23 @@ class YukiAssistant(QWidget):
         super().__init__()
         self.settings_file = 'yuki_settings.json'
         
+        self.always_listen     = False
+        self.always_listen_thread = None
+
         self.load_settings()
-        self.menu = RadialMenu(self)
-        self.holo_screen = HolographicScreen()
-        self.log_window = LogWindow(self.current_skin)
+        self.menu         = RadialMenu(self)
+        self.holo_screen  = HolographicScreen()
+        self.log_window   = LogWindow(self.current_skin)
+        self.music_window = MusicPlayerWindow(self.current_skin)
+        self.settings_win = SettingsWindow(self, self.current_skin)
 
         self.initUI()
         self.init_tray()
+        # Подключаем сигнал always-listen -> _process_input
+        self._always_listen_signal.connect(self._process_input)
+        # Если always-listen был включён — запускаем сразу
+        if self.always_listen:
+            QTimer.singleShot(2000, self._start_always_listen_loop)
         logger.log("INFO", "UI", "Yuki UI initialized")
 
     def ask_yuki(self):
@@ -1294,6 +1753,64 @@ class YukiAssistant(QWidget):
         self.log_window.show()
         self.log_window.raise_()
         self.log_window.activateWindow()
+
+    def show_music(self):
+        """Открывает плеер."""
+        self.music_window.update_skin(self.current_skin)
+        self.music_window._reload_list()
+        self.music_window.show()
+        self.music_window.raise_()
+        self.music_window.activateWindow()
+
+    def show_settings(self):
+        """Открывает настройки."""
+        self.settings_win.update_skin(self.current_skin)
+        self.settings_win.show()
+        self.settings_win.raise_()
+        self.settings_win.activateWindow()
+
+    def set_always_listen(self, enabled: bool):
+        """Включает/выключает режим постоянного прослушивания."""
+        self.always_listen = enabled
+        self.save_settings()
+        logger.log("INFO", "Voice", f"Always-listen: {enabled}")
+        if enabled:
+            self._start_always_listen_loop()
+        else:
+            # Поток остановится сам на следующей итерации
+            self.always_listen_thread = None
+
+    def _start_always_listen_loop(self):
+        """Запускает бесконечный цикл прослушивания в фоне."""
+        if not SR_AVAILABLE:
+            logger.log("WARNING", "Voice", "SR not available for always-listen")
+            return
+
+        def loop():
+            while self.always_listen:
+                try:
+                    recognizer = sr.Recognizer()
+                    recognizer.pause_threshold = 1.0
+                    recognizer.dynamic_energy_threshold = True
+                    with sr.Microphone() as source:
+                        recognizer.adjust_for_ambient_noise(source, duration=0.3)
+                        audio = recognizer.listen(source, timeout=5, phrase_time_limit=15)
+                    text = recognizer.recognize_google(audio, language="ru-RU")
+                    if text.strip():
+                        logger.log("COMMAND", "AlwaysListen", f"Heard: {text}")
+                        # Вызываем обработку в главном потоке через сигнал
+                        self._always_listen_signal.emit(text)
+                except sr.WaitTimeoutError:
+                    pass  # тишина — продолжаем
+                except sr.UnknownValueError:
+                    pass  # непонятная речь — продолжаем
+                except Exception as e:
+                    logger.log("ERROR", "AlwaysListen", str(e))
+                    time.sleep(1)
+
+        t = Thread(target=loop, daemon=True)
+        self.always_listen_thread = t
+        t.start()
 
     def start_voice_input(self):
         """Запускает голосовой ввод."""
@@ -1349,6 +1866,9 @@ class YukiAssistant(QWidget):
             error_msg, self.current_skin, screen_x, screen_y, auto_hide_ms=4000
         )
 
+    # Сигнал для always-listen (вызов из фонового потока → главный поток Qt)
+    _always_listen_signal = pyqtSignal(str)
+
     def _process_input(self, text: str):
         """Обрабатывает ввод: сначала проверяет команды, потом отправляет в ИИ."""
         screen_x = self.x() + self.width() + 10
@@ -1398,18 +1918,24 @@ class YukiAssistant(QWidget):
         try:
             with open(self.settings_file, 'r') as f:
                 data = json.load(f)
-                self.current_skin = data.get('skin', 'default')
-                self.is_chibi = data.get('chibi', False)
-                self.start_x = data.get('x', 100)
-                self.start_y = data.get('y', 100)
+                self.current_skin  = data.get('skin', 'default')
+                self.is_chibi      = data.get('chibi', False)
+                self.start_x       = data.get('x', 100)
+                self.start_y       = data.get('y', 100)
+                self.always_listen = data.get('always_listen', False)
         except (FileNotFoundError, json.JSONDecodeError):
-            self.current_skin = 'default'
-            self.is_chibi = False
-            self.start_x = 100
-            self.start_y = 100
+            self.current_skin  = 'default'
+            self.is_chibi      = False
+            self.start_x       = 100
+            self.start_y       = 100
+            self.always_listen = False
 
     def save_settings(self):
-        data = {'skin': self.current_skin, 'chibi': self.is_chibi, 'x': self.x(), 'y': self.y()}
+        data = {
+            'skin': self.current_skin, 'chibi': self.is_chibi,
+            'x': self.x(), 'y': self.y(),
+            'always_listen': self.always_listen
+        }
         with open(self.settings_file, 'w') as f:
             json.dump(data, f)
 
