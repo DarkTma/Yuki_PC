@@ -950,11 +950,13 @@ class ChatInputDialog(QDialog):
 
     def apply_style(self, skin):
         if skin == 'default':
-            main_color = "#00ffff" # Голубой
-            bg_color = "rgba(10, 30, 60, 150)" 
+            main_color = "#00ffff"
+            bg_color   = "rgba(0, 80, 120, 210)"   # насыщенный тёмно-голубой
+            field_bg   = "rgba(0, 50, 90, 180)"
         else:
-            main_color = "#ff69b4" # Розовый
-            bg_color = "rgba(60, 10, 30, 150)" 
+            main_color = "#ff69b4"
+            bg_color   = "rgba(120, 0, 60, 210)"   # насыщенный тёмно-розовый
+            field_bg   = "rgba(90, 0, 45, 180)"
 
         self.setStyleSheet(f"""
             QDialog {{
@@ -963,11 +965,12 @@ class ChatInputDialog(QDialog):
                 border-radius: 15px;
             }}
             QLineEdit {{
-                background-color: transparent;
+                background-color: {field_bg};
                 color: white;
                 font-family: 'Courier New', monospace;
                 font-size: 16px;
-                border: none;
+                border: 1px solid {main_color};
+                border-radius: 8px;
                 padding: 5px 10px;
             }}
             QPushButton {{
@@ -1028,17 +1031,17 @@ class HolographicScreen(QWidget):
     def show_loading(self, skin, x, y):
         self.type_timer.stop()
         self.auto_hide_timer.stop()
-        
+
         if skin == 'default':
             main_color = "#00ffff"
-            bg_color = "rgba(10, 30, 60, 150)"
+            bg_color   = "rgba(0, 80, 120, 220)"   # тёмно-голубой
         else:
             main_color = "#ff69b4"
-            bg_color = "rgba(60, 10, 30, 150)"
+            bg_color   = "rgba(120, 0, 60, 220)"   # тёмно-розовый
 
         self.setStyleSheet(f"""
             QWidget {{ background-color: {bg_color}; border: 2px solid {main_color}; border-radius: 10px; }}
-            QLabel {{ color: {main_color}; font-family: 'Courier New', monospace; font-size: 14px; font-weight: bold; border: none; background: transparent; }}
+            QLabel  {{ color: {main_color}; font-family: 'Courier New', monospace; font-size: 14px; font-weight: bold; border: none; background: transparent; }}
         """)
         self.glow_effect.setColor(QColor(main_color))
 
@@ -1070,20 +1073,20 @@ class HolographicScreen(QWidget):
 
         if skin == 'default':
             main_color = "#00ffff"
-            bg_color = "rgba(10, 30, 60, 150)"
+            bg_color   = "rgba(0, 80, 120, 220)"   # тёмно-голубой
         else:
             main_color = "#ff69b4"
-            bg_color = "rgba(60, 10, 30, 150)"
+            bg_color   = "rgba(120, 0, 60, 220)"   # тёмно-розовый
 
         self.setStyleSheet(f"""
             QWidget {{ background-color: {bg_color}; border: 2px solid {main_color}; border-radius: 10px; }}
-            QLabel {{ color: {main_color}; font-family: 'Courier New', monospace; font-size: 14px; font-weight: bold; border: none; background: transparent; }}
+            QLabel  {{ color: {main_color}; font-family: 'Courier New', monospace; font-size: 14px; font-weight: bold; border: none; background: transparent; }}
         """)
         self.glow_effect.setColor(QColor(main_color))
 
         self.setMinimumSize(0, 0)
-        self.setMaximumSize(16777215, 16777215) 
-        
+        self.setMaximumSize(16777215, 16777215)
+
         self.label.setText(text)
         self.adjustSize()
         
