@@ -669,8 +669,22 @@ class YukiCommands:
             return None
 
     @staticmethod
-    def open_app(name: str):
-        """Пытается открыть программу по имени."""
+    def open_app(name: str, custom_apps: dict = None):
+        """Пытается открыть программу по имени.
+        custom_apps — словарь {имя: путь} из настроек пользователя."""
+        # Сначала проверяем пользовательские пути
+        if custom_apps:
+            for app_name, app_path in custom_apps.items():
+                if app_name.strip().lower() == name.strip().lower():
+                    try:
+                        subprocess.Popen([app_path])
+                        return True
+                    except Exception:
+                        try:
+                            subprocess.Popen(app_path, shell=True)
+                            return True
+                        except Exception:
+                            pass
         apps = {
             "блокнот": "notepad.exe",
             "notepad": "notepad.exe",
@@ -711,7 +725,7 @@ class YukiCommands:
 
     # ---------- главный обработчик ----------
     @classmethod
-    def handle(cls, raw_text: str):
+    def handle(cls, raw_text: str, custom_apps: dict = None):
         """
         Главная точка входа.
         raw_text — полный текст пользователя.
@@ -791,7 +805,7 @@ class YukiCommands:
         ok, suffix = cls._starts_with_any(body, cls.APP_KEYS)
         if ok:
             if suffix:
-                result = cls.open_app(suffix)
+                result = cls.open_app(suffix, custom_apps=custom_apps)
                 if result:
                     return True, f"Запускаю {suffix}! 💻"
                 else:
@@ -1203,13 +1217,13 @@ class SettingsWindow(QWidget):
         self.setWindowTitle("Yuki — Settings")
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self.resize(420, 300)
+        self.resize(520, 560)
         screen = QApplication.primaryScreen().geometry()
-        self.move(screen.center().x() - 210, screen.center().y() - 150)
+        self.move(screen.center().x() - 260, screen.center().y() - 280)
 
         self.container = QWidget(self)
         self.container.setObjectName("container")
-        self.container.resize(420, 300)
+        self.container.resize(520, 560)
 
         root = QVBoxLayout(self.container)
         root.setContentsMargins(0, 0, 0, 0)
@@ -1236,7 +1250,14 @@ class SettingsWindow(QWidget):
         div.setFrameShape(QFrame.HLine); div.setFixedHeight(1)
         root.addWidget(div)
 
-        # Контент
+        # Прокручиваемое содержимое
+        from PyQt5.QtWidgets import QCheckBox, QScrollArea, QLineEdit as _QLineEdit
+        scroll = QScrollArea()
+        scroll.setObjectName("settingsScroll")
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
         content = QWidget()
         content.setObjectName("content")
         c_lay = QVBoxLayout(content)
@@ -1244,22 +1265,66 @@ class SettingsWindow(QWidget):
         c_lay.setSpacing(14)
 
         # --- Always-on mic ---
-        from PyQt5.QtWidgets import QCheckBox
         self.always_mic_cb = QCheckBox("Always-on microphone (listen constantly)")
         self.always_mic_cb.setObjectName("settingCb")
         self.always_mic_cb.setChecked(self.yuki.always_listen)
         self.always_mic_cb.stateChanged.connect(self._on_always_mic_changed)
         c_lay.addWidget(self.always_mic_cb)
 
-        # Описание пункта
         mic_desc = QLabel("  Yuki will always listen and respond when she hears you.")
         mic_desc.setObjectName("descLabel")
         c_lay.addWidget(mic_desc)
 
         # Разделитель
-        sep = QFrame(); sep.setObjectName("sepLine")
-        sep.setFrameShape(QFrame.HLine); sep.setFixedHeight(1)
-        c_lay.addWidget(sep)
+        sep1 = QFrame(); sep1.setObjectName("sepLine")
+        sep1.setFrameShape(QFrame.HLine); sep1.setFixedHeight(1)
+        c_lay.addWidget(sep1)
+
+        # --- Секция: Свои приложения ---
+        apps_title = QLabel("  📂  Custom App Paths")
+        apps_title.setObjectName("sectionTitle")
+        c_lay.addWidget(apps_title)
+
+        apps_desc = QLabel("  Name — what you say to Yuki (e.g. discord)\n  Path — full path to .exe (e.g. C:\\\\path\\\\Discord.exe)")
+        apps_desc.setObjectName("descLabel")
+        apps_desc.setWordWrap(True)
+        c_lay.addWidget(apps_desc)
+
+        # Таблица: список существующих записей
+        self.apps_list_widget = QWidget()
+        self.apps_list_widget.setObjectName("appsListWidget")
+        self.apps_list_layout = QVBoxLayout(self.apps_list_widget)
+        self.apps_list_layout.setContentsMargins(0, 4, 0, 4)
+        self.apps_list_layout.setSpacing(6)
+        c_lay.addWidget(self.apps_list_widget)
+
+        # Строка добавления новой записи
+        add_row = QWidget()
+        add_row.setObjectName("addRow")
+        add_lay = QHBoxLayout(add_row)
+        add_lay.setContentsMargins(0, 0, 0, 0)
+        add_lay.setSpacing(6)
+        self.new_name_edit = _QLineEdit()
+        self.new_name_edit.setObjectName("appInput")
+        self.new_name_edit.setPlaceholderText("Name (e.g. discord)")
+        self.new_name_edit.setFixedHeight(32)
+        self.new_path_edit = _QLineEdit()
+        self.new_path_edit.setObjectName("appInput")
+        self.new_path_edit.setPlaceholderText("Path (e.g. C:\\path\\app.exe)")
+        self.new_path_edit.setFixedHeight(32)
+        add_btn = QPushButton("＋ Add")
+        add_btn.setObjectName("addBtn")
+        add_btn.setFixedHeight(32)
+        add_btn.clicked.connect(self._add_app_entry)
+        add_lay.addWidget(self.new_name_edit, 1)
+        add_lay.addWidget(self.new_path_edit, 2)
+        add_lay.addWidget(add_btn)
+        c_lay.addWidget(add_row)
+
+        # Разделитель
+        sep2 = QFrame(); sep2.setObjectName("sepLine")
+        sep2.setFrameShape(QFrame.HLine); sep2.setFixedHeight(1)
+        c_lay.addWidget(sep2)
 
         # --- About ---
         about_btn = QPushButton("  ℹ  About / My Website")
@@ -1269,12 +1334,16 @@ class SettingsWindow(QWidget):
         c_lay.addWidget(about_btn)
 
         c_lay.addStretch()
-        root.addWidget(content)
+        scroll.setWidget(content)
+        root.addWidget(scroll)
 
         # Перетаскивание
         header.mousePressEvent   = lambda e: self._drag_press(e)
         header.mouseMoveEvent    = lambda e: self._drag_move(e)
         header.mouseReleaseEvent = lambda e: setattr(self, '_drag_pos', None)
+
+        # Заполняем существующие записи
+        self._refresh_apps_list()
 
     def _apply_theme(self):
         accent = "#00ffff" if self.skin == "default" else "#ff69b4"
@@ -1284,18 +1353,82 @@ class SettingsWindow(QWidget):
             QWidget#container {{ background:{bg}; border:2px solid {accent}; border-radius:12px; }}
             QWidget#header {{ background:{hdr}; border-top-left-radius:10px; border-top-right-radius:10px; }}
             QWidget#content {{ background:transparent; }}
+            QWidget#appsListWidget {{ background:transparent; }}
+            QWidget#addRow {{ background:transparent; }}
             QLabel#title {{ color:{accent}; font-family:'Courier New'; font-size:15px; font-weight:bold; background:transparent; }}
+            QLabel#sectionTitle {{ color:{accent}; font-family:'Courier New'; font-size:13px; font-weight:bold; background:transparent; }}
             QLabel#descLabel {{ color:#888; font-family:'Courier New'; font-size:11px; background:transparent; }}
+            QLabel#appRowLabel {{ color:#ccc; font-family:'Courier New'; font-size:12px; background:transparent; }}
             QCheckBox#settingCb {{ color:white; font-family:'Courier New'; font-size:13px; background:transparent; spacing:10px; }}
             QCheckBox#settingCb::indicator {{ width:18px; height:18px; border:2px solid {accent}; border-radius:4px; background:rgba(0,0,0,100); }}
             QCheckBox#settingCb::indicator:checked {{ background:{accent}; }}
             QFrame#divider {{ background:{accent}; }}
             QFrame#sepLine {{ background:rgba(255,255,255,30); }}
+            QLineEdit#appInput {{ background:rgba(0,0,0,120); color:white; border:1px solid {accent}; border-radius:4px; font-family:'Courier New'; font-size:12px; padding:2px 6px; }}
             QPushButton#closeBtn {{ background:transparent; color:#ff4d4d; border:1px solid #ff4d4d; border-radius:5px; font-size:14px; font-weight:bold; }}
             QPushButton#closeBtn:hover {{ background:#ff4d4d; color:white; }}
             QPushButton#aboutBtn {{ background:rgba(0,0,0,100); color:{accent}; border:1px solid {accent}; border-radius:6px; font-family:'Courier New'; font-size:13px; text-align:left; padding-left:8px; }}
             QPushButton#aboutBtn:hover {{ background:{accent}; color:black; }}
+            QPushButton#addBtn {{ background:rgba(0,0,0,100); color:{accent}; border:1px solid {accent}; border-radius:4px; font-family:'Courier New'; font-size:12px; }}
+            QPushButton#addBtn:hover {{ background:{accent}; color:black; }}
+            QPushButton#delBtn {{ background:transparent; color:#ff4d4d; border:1px solid #ff4d4d; border-radius:4px; font-size:12px; }}
+            QPushButton#delBtn:hover {{ background:#ff4d4d; color:white; }}
+            QScrollArea#settingsScroll {{ background:transparent; border:none; }}
+            QScrollBar:vertical {{ background:rgba(0,0,0,60); width:8px; border-radius:4px; }}
+            QScrollBar::handle:vertical {{ background:{accent}; border-radius:4px; }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height:0; }}
         """)
+
+    def _refresh_apps_list(self):
+        """Перестраивает список пользовательских приложений из yuki.custom_apps."""
+        # Очищаем предыдущие строки
+        while self.apps_list_layout.count():
+            item = self.apps_list_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        custom_apps = getattr(self.yuki, 'custom_apps', {})
+        for app_name, app_path in custom_apps.items():
+            row = QWidget()
+            row.setObjectName("addRow")
+            row_lay = QHBoxLayout(row)
+            row_lay.setContentsMargins(0, 0, 0, 0)
+            row_lay.setSpacing(6)
+            lbl = QLabel(f"<b>{app_name}</b>  →  {app_path}")
+            lbl.setObjectName("appRowLabel")
+            lbl.setWordWrap(True)
+            del_btn = QPushButton("✕")
+            del_btn.setObjectName("delBtn")
+            del_btn.setFixedSize(26, 26)
+            # Захватываем имя для лямбды
+            _name = app_name
+            del_btn.clicked.connect(lambda _, n=_name: self._remove_app_entry(n))
+            row_lay.addWidget(lbl, 1)
+            row_lay.addWidget(del_btn)
+            self.apps_list_layout.addWidget(row)
+
+    def _add_app_entry(self):
+        """Добавляет новую запись приложения."""
+        name = self.new_name_edit.text().strip()
+        path = self.new_path_edit.text().strip()
+        if not name or not path:
+            return
+        if not hasattr(self.yuki, 'custom_apps'):
+            self.yuki.custom_apps = {}
+        self.yuki.custom_apps[name] = path
+        self.yuki.save_settings()
+        logger.log("INFO", "Settings", f"Added custom app: {name} -> {path}")
+        self.new_name_edit.clear()
+        self.new_path_edit.clear()
+        self._refresh_apps_list()
+
+    def _remove_app_entry(self, name: str):
+        """Удаляет запись приложения."""
+        if hasattr(self.yuki, 'custom_apps') and name in self.yuki.custom_apps:
+            del self.yuki.custom_apps[name]
+            self.yuki.save_settings()
+            logger.log("INFO", "Settings", f"Removed custom app: {name}")
+        self._refresh_apps_list()
 
     def _on_always_mic_changed(self, state):
         from PyQt5.QtCore import Qt as _Qt
@@ -1317,6 +1450,7 @@ class SettingsWindow(QWidget):
     def update_skin(self, skin):
         self.skin = skin
         self._apply_theme()
+        self._refresh_apps_list()
 
 
 # =============================================
@@ -1929,7 +2063,8 @@ class YukiAssistant(QWidget):
         logger.log("INFO", "Input", f"User: {text}")
 
         # --- Проверяем команды Юки ---
-        handled, response = YukiCommands.handle(text)
+        custom_apps = getattr(self, 'custom_apps', {})
+        handled, response = YukiCommands.handle(text, custom_apps=custom_apps)
         if handled:
             logger.log("COMMAND", "CMD", f"Handled: {text} -> {response}")
             self.holo_screen.show_message(
@@ -1975,21 +2110,24 @@ class YukiAssistant(QWidget):
                 self.start_x       = data.get('x', 100)
                 self.start_y       = data.get('y', 100)
                 self.always_listen = data.get('always_listen', False)
+                self.custom_apps   = data.get('custom_apps', {})
         except (FileNotFoundError, json.JSONDecodeError):
             self.current_skin  = 'default'
             self.is_chibi      = False
             self.start_x       = 100
             self.start_y       = 100
             self.always_listen = False
+            self.custom_apps   = {}
 
     def save_settings(self):
         data = {
             'skin': self.current_skin, 'chibi': self.is_chibi,
             'x': self.x(), 'y': self.y(),
-            'always_listen': self.always_listen
+            'always_listen': self.always_listen,
+            'custom_apps': getattr(self, 'custom_apps', {})
         }
         with open(self.settings_file, 'w') as f:
-            json.dump(data, f)
+            json.dump(data, f, ensure_ascii=False, indent=2)
 
     def init_tray(self):
         self.tray_icon = QSystemTrayIcon(self)
