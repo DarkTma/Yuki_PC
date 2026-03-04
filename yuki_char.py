@@ -491,7 +491,8 @@ class YukiCommands:
     YOUTUBE_KEYS   = ["открой ютуб", "зайди на ютуб", "включи ютуб"]
     SITE_KEYS      = ["открой сайт", "зайди на", "открой страницу"]
     APP_KEYS       = ["открой программу", "запусти программу",
-                      "открой приложение", "запусти приложение"]
+                      "открой приложение", "запусти приложение",
+                      "запусти", "открой", "запуск"]
     SHUTDOWN_KEYS  = ["выключи компьютер", "выключи пк", "выключи комп",
                       "выключи систему", "shut down"]
     RESTART_KEYS   = ["перезагрузи компьютер", "перезагрузи пк",
@@ -547,37 +548,10 @@ class YukiCommands:
     # ---------- действия ----------
     @staticmethod
     def open_youtube_music(query: str):
-        """Открывает YouTube с поиском и авто-кликает первый результат через selenium (если есть).
-        Если selenium нет — просто открывает поиск в браузере."""
+        """Открывает YouTube-поиск через системный браузер (без selenium).
+        Браузер запускается самостоятельно и не закрывается."""
         search_url = "https://www.youtube.com/results?search_query=" + urllib.parse.quote(query)
-        try:
-            from selenium import webdriver
-            from selenium.webdriver.common.by import By
-            from selenium.webdriver.support.ui import WebDriverWait
-            from selenium.webdriver.support import expected_conditions as EC
-            from selenium.webdriver.chrome.options import Options
-
-            options = Options()
-            options.add_argument("--start-maximized")
-            # Не показываем "Chrome управляется автоматически"
-            options.add_experimental_option("excludeSwitches", ["enable-automation"])
-            options.add_experimental_option("useAutomationExtension", False)
-
-            driver = webdriver.Chrome(options=options)
-            driver.get(search_url)
-
-            # Ждём появления первого видео и кликаем
-            wait = WebDriverWait(driver, 10)
-            first_video = wait.until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "ytd-video-renderer a#video-title"))
-            )
-            first_video.click()
-        except ImportError:
-            # Selenium не установлен — просто открываем поиск
-            webbrowser.open(search_url)
-        except Exception:
-            # Что-то пошло не так — открываем поиск
-            webbrowser.open(search_url)
+        webbrowser.open(search_url)
 
     @staticmethod
     def open_youtube():
@@ -872,6 +846,15 @@ class YukiCommands:
             return True, "Перехожу в спящий режим... 😴"
 
         # Команда с 'юки', но неизвестная → передаём в ИИ
+        # НО сначала проверяем, не является ли тело команды именем приложения из custom_apps
+        if custom_apps:
+            body_stripped = body.strip()
+            for app_name, app_path in custom_apps.items():
+                if app_name.strip().lower() == body_stripped.lower():
+                    _n, _p = app_name, app_path
+                    Thread(target=lambda n=_n, p=_p: cls.open_app(n, custom_apps={n: p}),
+                           daemon=True).start()
+                    return True, f"Запускаю {app_name}! 💻"
         return False, ""
 
 
