@@ -6,7 +6,11 @@ import requests
 import json
 import warnings
 import winsound
-import os
+import webbrowser
+import subprocess
+import urllib.parse
+import time
+from threading import Thread
 from dotenv import load_dotenv
 import google.generativeai as genai
 
@@ -40,6 +44,399 @@ from PyQt5.QtMultimedia import QSoundEffect
 load_dotenv()  # загружает переменные из .env файла
 
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+
+# =============================================
+# --- СИСТЕМА КОМАНД ЮКИ ---
+# =============================================
+
+class YukiCommands:
+    """
+    Обрабатывает команды, начинающиеся с 'юки'.
+    Возвращает (handled: bool, response_text: str)
+    """
+
+    TRIGGERS = ["юки,", "юки"]
+
+    # --- Ключевые слова для каждой команды ---
+    MUSIC_KEYS     = ["включи музыку", "включи песню", "поставь музыку",
+                      "поставь песню", "включи трек", "сыграй"]
+    YOUTUBE_KEYS   = ["открой ютуб", "зайди на ютуб", "включи ютуб"]
+    SITE_KEYS      = ["открой сайт", "зайди на", "открой страницу"]
+    APP_KEYS       = ["открой программу", "запусти программу",
+                      "открой приложение", "запусти приложение"]
+    SHUTDOWN_KEYS  = ["выключи компьютер", "выключи пк", "выключи комп",
+                      "выключи систему", "shut down"]
+    RESTART_KEYS   = ["перезагрузи компьютер", "перезагрузи пк",
+                      "перезапусти систему", "restart"]
+    SLEEP_KEYS     = ["спящий режим", "усыпи компьютер", "сон"]
+    VOLUME_UP_KEYS = ["громче", "увеличь громкость", "прибавь звук"]
+    VOLUME_DOWN_KEYS = ["тише", "уменьши громкость", "убавь звук"]
+    MUTE_KEYS      = ["выключи звук", "без звука", "тихо"]
+    SCREENSHOT_KEYS = ["сделай скриншот", "скриншот", "снимок экрана"]
+    NOTEPAD_KEYS   = ["открой блокнот", "запусти блокнот"]
+    CALC_KEYS      = ["открой калькулятор", "запусти калькулятор", "калькулятор"]
+    EXPLORER_KEYS  = ["открой проводник", "проводник", "мой компьютер"]
+    SEARCH_KEYS    = ["найди в гугле", "загугли", "поищи"]
+    TIME_KEYS      = ["который час", "сколько времени", "скажи время", "время"]
+    DATE_KEYS      = ["какое сегодня число", "скажи дату", "дата", "какой день"]
+    HELLO_KEYS     = ["привет", "здравствуй", "хей", "hi", "hello"]
+
+    @classmethod
+    def is_yuki_command(cls, text: str) -> bool:
+        """Проверяет, начинается ли текст с обращения к Юки."""
+        t = text.strip().lower()
+        for trigger in cls.TRIGGERS:
+            if t.startswith(trigger):
+                return True
+        return False
+
+    @classmethod
+    def extract_body(cls, text: str) -> str:
+        """Убирает 'юки' в начале и возвращает остаток."""
+        t = text.strip().lower()
+        for trigger in ["юки,", "юки"]:
+            if t.startswith(trigger):
+                return t[len(trigger):].strip()
+        return t
+
+    # ---------- помощники ----------
+    @staticmethod
+    def _starts_with_any(text: str, keys: list) -> tuple:
+        """Возвращает (True, suffix) если text начинается с одного из ключей."""
+        for k in keys:
+            if text.startswith(k):
+                return True, text[len(k):].strip()
+        return False, ""
+
+    @staticmethod
+    def _contains_any(text: str, keys: list) -> tuple:
+        """Возвращает (True, keyword) если text содержит одно из ключевых слов."""
+        for k in keys:
+            if k in text:
+                return True, k
+        return False, ""
+
+    # ---------- действия ----------
+    @staticmethod
+    def open_youtube_music(query: str):
+        """Открывает YouTube с поиском и авто-кликает первый результат через selenium (если есть).
+        Если selenium нет — просто открывает поиск в браузере."""
+        search_url = "https://www.youtube.com/results?search_query=" + urllib.parse.quote(query)
+        try:
+            from selenium import webdriver
+            from selenium.webdriver.common.by import By
+            from selenium.webdriver.support.ui import WebDriverWait
+            from selenium.webdriver.support import expected_conditions as EC
+            from selenium.webdriver.chrome.options import Options
+
+            options = Options()
+            options.add_argument("--start-maximized")
+            # Не показываем "Chrome управляется автоматически"
+            options.add_experimental_option("excludeSwitches", ["enable-automation"])
+            options.add_experimental_option("useAutomationExtension", False)
+
+            driver = webdriver.Chrome(options=options)
+            driver.get(search_url)
+
+            # Ждём появления первого видео и кликаем
+            wait = WebDriverWait(driver, 10)
+            first_video = wait.until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "ytd-video-renderer a#video-title"))
+            )
+            first_video.click()
+        except ImportError:
+            # Selenium не установлен — просто открываем поиск
+            webbrowser.open(search_url)
+        except Exception:
+            # Что-то пошло не так — открываем поиск
+            webbrowser.open(search_url)
+
+    @staticmethod
+    def open_youtube():
+        webbrowser.open("https://www.youtube.com")
+
+    @staticmethod
+    def open_website(url: str):
+        if not url.startswith("http"):
+            url = "https://" + url
+        webbrowser.open(url)
+
+    @staticmethod
+    def search_google(query: str):
+        url = "https://www.google.com/search?q=" + urllib.parse.quote(query)
+        webbrowser.open(url)
+
+    @staticmethod
+    def shutdown_pc():
+        subprocess.Popen(["shutdown", "/s", "/t", "5"])
+
+    @staticmethod
+    def restart_pc():
+        subprocess.Popen(["shutdown", "/r", "/t", "5"])
+
+    @staticmethod
+    def sleep_pc():
+        subprocess.Popen(["rundll32.exe", "powrprof.dll,SetSuspendState", "0,1,0"])
+
+    @staticmethod
+    def volume_up():
+        try:
+            from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+            from comtypes import CLSCTX_ALL
+            import comtypes
+            devices = AudioUtilities.GetSpeakers()
+            interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+            volume = interface.QueryInterface(IAudioEndpointVolume)
+            current = volume.GetMasterVolumeLevelScalar()
+            volume.SetMasterVolumeLevelScalar(min(1.0, current + 0.1), None)
+        except Exception:
+            # Fallback: нажать клавишу громкости через PowerShell
+            subprocess.Popen(["powershell", "-c",
+                "(New-Object -comObject WScript.Shell).SendKeys([char]175)"])
+
+    @staticmethod
+    def volume_down():
+        try:
+            from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+            from comtypes import CLSCTX_ALL
+            devices = AudioUtilities.GetSpeakers()
+            interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+            volume = interface.QueryInterface(IAudioEndpointVolume)
+            current = volume.GetMasterVolumeLevelScalar()
+            volume.SetMasterVolumeLevelScalar(max(0.0, current - 0.1), None)
+        except Exception:
+            subprocess.Popen(["powershell", "-c",
+                "(New-Object -comObject WScript.Shell).SendKeys([char]174)"])
+
+    @staticmethod
+    def mute():
+        try:
+            from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+            from comtypes import CLSCTX_ALL
+            devices = AudioUtilities.GetSpeakers()
+            interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+            volume = interface.QueryInterface(IAudioEndpointVolume)
+            current_mute = volume.GetMute()
+            volume.SetMute(not current_mute, None)
+        except Exception:
+            subprocess.Popen(["powershell", "-c",
+                "(New-Object -comObject WScript.Shell).SendKeys([char]173)"])
+
+    @staticmethod
+    def take_screenshot():
+        try:
+            import datetime
+            pics = os.path.join(os.path.expanduser("~"), "Pictures")
+            os.makedirs(pics, exist_ok=True)
+            fname = os.path.join(pics, f"yuki_screenshot_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png")
+            # pyautogui
+            import pyautogui
+            img = pyautogui.screenshot()
+            img.save(fname)
+            return fname
+        except ImportError:
+            # Fallback через PowerShell
+            subprocess.Popen(["powershell", "-c",
+                "[System.Windows.Forms.SendKeys]::SendWait('%{PRTSC}')"])
+            return None
+
+    @staticmethod
+    def open_app(name: str):
+        """Пытается открыть программу по имени."""
+        apps = {
+            "блокнот": "notepad.exe",
+            "notepad": "notepad.exe",
+            "калькулятор": "calc.exe",
+            "calculator": "calc.exe",
+            "проводник": "explorer.exe",
+            "explorer": "explorer.exe",
+            "paint": "mspaint.exe",
+            "пейнт": "mspaint.exe",
+            "браузер": None,  # откроем дефолтный
+            "хром": "chrome.exe",
+            "chrome": "chrome.exe",
+            "файрфокс": "firefox.exe",
+            "firefox": "firefox.exe",
+            "discord": "Discord.exe",
+            "дискорд": "Discord.exe",
+            "стим": "Steam.exe",
+            "steam": "Steam.exe",
+            "word": "WINWORD.EXE",
+            "excel": "EXCEL.EXE",
+        }
+        exe = apps.get(name.lower())
+        if exe:
+            try:
+                subprocess.Popen([exe])
+                return True
+            except FileNotFoundError:
+                # Пробуем через start
+                subprocess.Popen(["start", exe], shell=True)
+                return True
+        else:
+            # Пробуем запустить напрямую
+            try:
+                subprocess.Popen([name], shell=True)
+                return True
+            except Exception:
+                return False
+
+    # ---------- главный обработчик ----------
+    @classmethod
+    def handle(cls, raw_text: str):
+        """
+        Главная точка входа.
+        raw_text — полный текст пользователя.
+        Возвращает (handled: bool, response_text: str)
+        """
+        if not cls.is_yuki_command(raw_text):
+            return False, ""
+
+        body = cls.extract_body(raw_text)
+
+        # --- Приветствие ---
+        ok, _ = cls._contains_any(body, cls.HELLO_KEYS)
+        if ok:
+            import random
+            greets = [
+                "Привет! Чем могу помочь? 😊",
+                "Приветик! Я здесь! ✨",
+                "О, привет! Что случилось? 🌸",
+                "Здравствуй! Всегда рада тебя видеть! 💙",
+            ]
+            return True, random.choice(greets)
+
+        # --- Время ---
+        ok, _ = cls._contains_any(body, cls.TIME_KEYS)
+        if ok:
+            import datetime
+            now = datetime.datetime.now().strftime("%H:%M")
+            return True, f"Сейчас {now} ⏰"
+
+        # --- Дата ---
+        ok, _ = cls._contains_any(body, cls.DATE_KEYS)
+        if ok:
+            import datetime
+            MONTHS = ["января","февраля","марта","апреля","мая","июня",
+                      "июля","августа","сентября","октября","ноября","декабря"]
+            d = datetime.datetime.now()
+            return True, f"Сегодня {d.day} {MONTHS[d.month-1]} {d.year} года 📅"
+
+        # --- Музыка на YouTube ---
+        ok, suffix = cls._starts_with_any(body, cls.MUSIC_KEYS)
+        if ok:
+            if suffix:
+                Thread(target=cls.open_youtube_music, args=(suffix,), daemon=True).start()
+                return True, f"Включаю «{suffix}» на YouTube! 🎵"
+            else:
+                return True, "Что включить? Скажи название песни! 🎶"
+
+        # --- Открыть YouTube ---
+        ok, _ = cls._contains_any(body, cls.YOUTUBE_KEYS)
+        if ok:
+            Thread(target=cls.open_youtube, daemon=True).start()
+            return True, "Открываю YouTube! 📺"
+
+        # --- Поиск в гугле ---
+        ok, kw = cls._starts_with_any(body, cls.SEARCH_KEYS)
+        if ok:
+            if suffix := body[body.index(kw) + len(kw):].strip() if kw in body else "":
+                Thread(target=cls.search_google, args=(suffix,), daemon=True).start()
+                return True, f"Ищу «{suffix}» в Google! 🔍"
+            else:
+                # Ещё раз через starts_with
+                ok2, q = cls._starts_with_any(body, cls.SEARCH_KEYS)
+                if q:
+                    Thread(target=cls.search_google, args=(q,), daemon=True).start()
+                    return True, f"Ищу «{q}» в Google! 🔍"
+                return True, "Что найти в Google? 🔍"
+
+        # --- Открыть сайт ---
+        ok, suffix = cls._starts_with_any(body, cls.SITE_KEYS)
+        if ok and suffix:
+            Thread(target=cls.open_website, args=(suffix,), daemon=True).start()
+            return True, f"Открываю {suffix}! 🌐"
+        elif ok:
+            return True, "Какой сайт открыть? 🌐"
+
+        # --- Открыть приложение ---
+        ok, suffix = cls._starts_with_any(body, cls.APP_KEYS)
+        if ok:
+            if suffix:
+                result = cls.open_app(suffix)
+                if result:
+                    return True, f"Запускаю {suffix}! 💻"
+                else:
+                    return True, f"Не нашла программу «{suffix}» 😕"
+            return True, "Какую программу открыть? 💻"
+
+        # --- Блокнот ---
+        ok, _ = cls._contains_any(body, cls.NOTEPAD_KEYS)
+        if ok:
+            Thread(target=lambda: subprocess.Popen(["notepad.exe"]), daemon=True).start()
+            return True, "Открываю Блокнот! 📝"
+
+        # --- Калькулятор ---
+        ok, _ = cls._contains_any(body, cls.CALC_KEYS)
+        if ok:
+            Thread(target=lambda: subprocess.Popen(["calc.exe"]), daemon=True).start()
+            return True, "Открываю Калькулятор! 🔢"
+
+        # --- Проводник ---
+        ok, _ = cls._contains_any(body, cls.EXPLORER_KEYS)
+        if ok:
+            Thread(target=lambda: subprocess.Popen(["explorer.exe"]), daemon=True).start()
+            return True, "Открываю Проводник! 📁"
+
+        # --- Скриншот ---
+        ok, _ = cls._contains_any(body, cls.SCREENSHOT_KEYS)
+        if ok:
+            def do_screenshot():
+                path = cls.take_screenshot()
+                return path
+            Thread(target=do_screenshot, daemon=True).start()
+            return True, "Делаю скриншот! 📸"
+
+        # --- Громкость ---
+        ok, _ = cls._contains_any(body, cls.VOLUME_UP_KEYS)
+        if ok:
+            Thread(target=cls.volume_up, daemon=True).start()
+            return True, "Делаю громче! 🔊"
+
+        ok, _ = cls._contains_any(body, cls.VOLUME_DOWN_KEYS)
+        if ok:
+            Thread(target=cls.volume_down, daemon=True).start()
+            return True, "Делаю тише! 🔉"
+
+        ok, _ = cls._contains_any(body, cls.MUTE_KEYS)
+        if ok:
+            Thread(target=cls.mute, daemon=True).start()
+            return True, "Переключаю звук! 🔇"
+
+        # --- Выключить / перезагрузить / спящий режим ---
+        ok, _ = cls._contains_any(body, cls.SHUTDOWN_KEYS)
+        if ok:
+            Thread(target=cls.shutdown_pc, daemon=True).start()
+            return True, "Выключаю компьютер через 5 секунд... 🖥️"
+
+        ok, _ = cls._contains_any(body, cls.RESTART_KEYS)
+        if ok:
+            Thread(target=cls.restart_pc, daemon=True).start()
+            return True, "Перезагружаю компьютер через 5 секунд... 🔄"
+
+        ok, _ = cls._contains_any(body, cls.SLEEP_KEYS)
+        if ok:
+            Thread(target=cls.sleep_pc, daemon=True).start()
+            return True, "Перехожу в спящий режим... 😴"
+
+        # Команда с 'юки', но неизвестная → передаём в ИИ
+        return False, ""
+
+
+# =============================================
+# --- КОНЕЦ СИСТЕМЫ КОМАНД ---
+# =============================================
 
 
 # --- Класс мозга (работает в фоне) ---
@@ -138,12 +535,12 @@ class ChatInputDialog(QDialog):
         # Поле ввода текста
         self.input_field = QLineEdit(self)
         self.input_field.setPlaceholderText("Что скажешь?")
-        self.input_field.setMinimumHeight(40) # <--- ДЕЛАЕМ ПОЛЕ ТОЛЩЕ
+        self.input_field.setMinimumHeight(40)
         self.input_field.returnPressed.connect(self.accept) 
 
         # Кнопка отправки
         self.send_btn = QPushButton("➤", self)
-        self.send_btn.setFixedSize(40, 40) # <--- Чуть увеличили кнопку для пропорций
+        self.send_btn.setFixedSize(40, 40)
         self.send_btn.clicked.connect(self.accept)
 
         self.layout.addWidget(self.input_field)
@@ -151,7 +548,7 @@ class ChatInputDialog(QDialog):
 
         self.apply_style(skin)
         
-        # <--- АВТОФОКУС: курсор сразу ставится в поле ввода при открытии
+        # Автофокус: курсор сразу ставится в поле ввода при открытии
         self.input_field.setFocus()
 
     def apply_style(self, skin):
@@ -172,9 +569,9 @@ class ChatInputDialog(QDialog):
                 background-color: transparent;
                 color: white;
                 font-family: 'Courier New', monospace;
-                font-size: 16px; /* <--- Увеличили шрифт для удобства */
+                font-size: 16px;
                 border: none;
-                padding: 5px 10px; /* <--- Добавили внутренние отступы */
+                padding: 5px 10px;
             }}
             QPushButton {{
                 background-color: transparent;
@@ -221,14 +618,19 @@ class HolographicScreen(QWidget):
         self.full_text = ""
         self.current_index = 0
 
-        # --- НОВОЕ: Таймер для анимации ожидания ---
+        # Таймер для анимации ожидания
         self.loading_timer = QTimer(self)
         self.loading_timer.timeout.connect(self.animate_loading)
         self.dot_count = 0
 
+        # Таймер для авто-скрытия (для команд без TTS)
+        self.auto_hide_timer = QTimer(self)
+        self.auto_hide_timer.setSingleShot(True)
+        self.auto_hide_timer.timeout.connect(self.hide)
+
     def show_loading(self, skin, x, y):
-        # Останавливаем печать, если она шла
         self.type_timer.stop()
+        self.auto_hide_timer.stop()
         
         if skin == 'default':
             main_color = "#00ffff"
@@ -243,7 +645,6 @@ class HolographicScreen(QWidget):
         """)
         self.glow_effect.setColor(QColor(main_color))
 
-        # Снимаем фиксацию размера
         self.setMinimumSize(0, 0)
         self.setMaximumSize(16777215, 16777215)
         
@@ -253,20 +654,22 @@ class HolographicScreen(QWidget):
         self.move(x, y)
         self.show()
 
-        # Запускаем анимацию мигающих точек (каждые 400 мс)
         self.dot_count = 0
         self.loading_timer.start(400)
 
     def animate_loading(self):
-        # Добавляем от 0 до 3 точек
         self.dot_count = (self.dot_count + 1) % 4
         dots = "." * self.dot_count
         self.label.setText(f"Думаю{dots}")
 
-    def show_message(self, text, skin, x, y):
-        # --- НОВОЕ: Останавливаем анимацию ожидания ---
+    def show_message(self, text, skin, x, y, auto_hide_ms=0):
+        """
+        Показывает сообщение.
+        auto_hide_ms > 0 — автоматически скрыть через N миллисекунд (для команд без TTS).
+        """
         self.loading_timer.stop()
         self.type_timer.stop()
+        self.auto_hide_timer.stop()
 
         if skin == 'default':
             main_color = "#00ffff"
@@ -299,6 +702,9 @@ class HolographicScreen(QWidget):
         self.show()
 
         self.type_timer.start(35)
+
+        if auto_hide_ms > 0:
+            self.auto_hide_timer.start(auto_hide_ms)
 
     def type_next_char(self):
         if self.current_index < len(self.full_text):
@@ -398,20 +804,35 @@ class YukiAssistant(QWidget):
         if dialog.exec_() == QDialog.Accepted:
             text = dialog.get_text()
             if text.strip():
-                # --- НОВОЕ: Запускаем анимацию "Думаю..." ---
-                screen_x = self.x() + self.width() + 10
-                screen_y = self.y() + 20
-                self.holo_screen.show_loading(self.current_skin, screen_x, screen_y)
-                
-                # Запускаем генерацию ответа
-                self.brain = YukiBrain(prompt=text, language="ru")
-                self.brain.reply_ready.connect(self.on_yuki_reply)
-                self.brain.error_occurred.connect(self.on_yuki_error)
-                self.brain.start()
+                self._process_input(text.strip())
+
+    def _process_input(self, text: str):
+        """Обрабатывает ввод: сначала проверяет команды, потом отправляет в ИИ."""
+        screen_x = self.x() + self.width() + 10
+        screen_y = self.y() + 20
+
+        # --- Проверяем команды Юки ---
+        handled, response = YukiCommands.handle(text)
+        if handled:
+            # Показываем ответ на экране без ИИ и TTS
+            # Авто-скрытие через 4 секунды
+            self.holo_screen.show_message(
+                response, self.current_skin,
+                screen_x, screen_y,
+                auto_hide_ms=4000
+            )
+            return
+
+        # --- Если команда не распознана — отдаём в ИИ ---
+        self.holo_screen.show_loading(self.current_skin, screen_x, screen_y)
+        
+        self.brain = YukiBrain(prompt=text, language="ru")
+        self.brain.reply_ready.connect(self.on_yuki_reply)
+        self.brain.error_occurred.connect(self.on_yuki_error)
+        self.brain.start()
 
     def on_yuki_error(self, error_msg):
         print(error_msg)
-        # Если произошла ошибка (нет интернета и т.д.), выводим её на экран
         screen_x = self.x() + self.width() + 10
         screen_y = self.y() + 20
         self.holo_screen.show_message("Ой, ошибка сети... 😵", self.current_skin, screen_x, screen_y)
@@ -421,9 +842,7 @@ class YukiAssistant(QWidget):
         screen_y = self.y() + 20
         self.holo_screen.show_message(text, self.current_skin, screen_x, screen_y)
         
-        # Запускаем воспроизведение звука через наш новый поток
         self.audio_thread = AudioPlayerThread(audio_path)
-        # Когда звук закончится, прячем голографический экран
         self.audio_thread.finished_playing.connect(self.holo_screen.hide)
         self.audio_thread.start()
 
