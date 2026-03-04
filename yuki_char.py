@@ -840,7 +840,7 @@ class YukiBrain(QThread):
         super().__init__()
         self.prompt = prompt
         self.language = language
-        self.model = genai.GenerativeModel('gemini-3-flash-preview')
+        self.model = genai.GenerativeModel('gemini-2.5-flash')
 
     def run(self):
         try:
