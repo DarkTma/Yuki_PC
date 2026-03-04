@@ -1003,8 +1003,8 @@ class HolographicScreen(QWidget):
         self.label = QLabel("", self)
         self.label.setWordWrap(True)
         self.label.setAlignment(Qt.AlignLeft | Qt.AlignTop) 
-        self.label.setMinimumWidth(200)
-        self.label.setMaximumWidth(350)
+        self.label.setMinimumWidth(250)
+        self.label.setMaximumWidth(550)
         self.layout.addWidget(self.label)
         
         self.glow_effect = QGraphicsDropShadowEffect(self)
@@ -1041,7 +1041,7 @@ class HolographicScreen(QWidget):
 
         self.setStyleSheet(f"""
             QWidget {{ background-color: {bg_color}; border: 2px solid {main_color}; border-radius: 10px; }}
-            QLabel  {{ color: {main_color}; font-family: 'Courier New', monospace; font-size: 14px; font-weight: bold; border: none; background: transparent; }}
+            QLabel  {{ color: {main_color}; font-family: 'Courier New', monospace; font-size: 28px; font-weight: bold; border: none; background: transparent; }}
         """)
         self.glow_effect.setColor(QColor(main_color))
 
@@ -1080,7 +1080,7 @@ class HolographicScreen(QWidget):
 
         self.setStyleSheet(f"""
             QWidget {{ background-color: {bg_color}; border: 2px solid {main_color}; border-radius: 10px; }}
-            QLabel  {{ color: {main_color}; font-family: 'Courier New', monospace; font-size: 14px; font-weight: bold; border: none; background: transparent; }}
+            QLabel  {{ color: {main_color}; font-family: 'Courier New', monospace; font-size: 28px; font-weight: bold; border: none; background: transparent; }}
         """)
         self.glow_effect.setColor(QColor(main_color))
 
