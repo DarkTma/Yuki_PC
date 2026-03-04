@@ -521,8 +521,10 @@ class YukiCommands:
 
     @classmethod
     def extract_body(cls, text: str) -> str:
-        """Убирает 'юки' в начале и возвращает остаток."""
+        """Убирает 'юки' в начале, удаляет точки в конце и возвращает остаток."""
         t = text.strip().lower()
+        t = t.rstrip(".?!")  # Очищаем от мусора, который ставит Google STT
+        
         for trigger in ["юки,", "юки"]:
             if t.startswith(trigger):
                 return t[len(trigger):].strip()
@@ -699,13 +701,13 @@ class YukiCommands:
 
     # ---------- главный обработчик ----------
     @classmethod
-    def handle(cls, raw_text: str, custom_apps: dict = None):
+    def handle(cls, raw_text: str, custom_apps: dict = None, force_command: bool = False):
         """
         Главная точка входа.
-        raw_text — полный текст пользователя.
-        Возвращает (handled: bool, response_text: str)
+        force_command=True позволяет выполнить команду даже если пользователь не сказал "Юки".
         """
-        if not cls.is_yuki_command(raw_text):
+        # Если это фоновый шум (не принудительно) и нет имени Юки — игнорируем
+        if not force_command and not cls.is_yuki_command(raw_text):
             return False, ""
 
         body = cls.extract_body(raw_text)
@@ -1896,7 +1898,7 @@ class YukiAssistant(QWidget):
         self.initUI()
         self.init_tray()
         # Подключаем сигнал always-listen -> _process_input
-        self._always_listen_signal.connect(self._process_input)
+        self._always_listen_signal.connect(lambda t: self._process_input(t, is_explicit=False))
         # Если always-listen был включён — запускаем сразу
         if self.always_listen:
             QTimer.singleShot(2000, self._start_always_listen_loop)
@@ -1914,7 +1916,7 @@ class YukiAssistant(QWidget):
         if dialog.exec_() == QDialog.Accepted:
             text = dialog.get_text()
             if text.strip():
-                self._process_input(text.strip())
+                self._process_input(text.strip(), is_explicit=True)
 
     def show_logs(self):
         """Открывает окно логов."""
@@ -2025,7 +2027,7 @@ class YukiAssistant(QWidget):
             self.current_skin, screen_x, screen_y, auto_hide_ms=2000
         )
         # Через 2 сек обрабатываем
-        QTimer.singleShot(500, lambda: self._process_input(text))
+        QTimer.singleShot(500, lambda: self._process_input(text, is_explicit=True))
 
     def _on_voice_error(self, error_msg: str):
         """Ошибка голосового ввода."""
@@ -2038,16 +2040,23 @@ class YukiAssistant(QWidget):
     # Сигнал для always-listen (вызов из фонового потока → главный поток Qt)
     _always_listen_signal = pyqtSignal(str)
 
-    def _process_input(self, text: str):
-        """Обрабатывает ввод: сначала проверяет команды, потом отправляет в ИИ."""
+    def _process_input(self, text: str, is_explicit: bool = True):
+        """Обрабатывает ввод. is_explicit=True если нажали кнопку (микрофон/чат)."""
         screen_x = self.x() + self.width() + 10
         screen_y = self.y() + 20
 
         logger.log("INFO", "Input", f"User: {text}")
 
+        # Если работает фоновый микрофон и к Юки не обращались по имени — игнорируем,
+        # чтобы Gemini не реагировал на каждый звук в комнате.
+        if not is_explicit and not YukiCommands.is_yuki_command(text):
+            return
+
         # --- Проверяем команды Юки ---
         custom_apps = getattr(self, 'custom_apps', {})
-        handled, response = YukiCommands.handle(text, custom_apps=custom_apps)
+        # Передаем флаг is_explicit в force_command
+        handled, response = YukiCommands.handle(text, custom_apps=custom_apps, force_command=is_explicit)
+        
         if handled:
             logger.log("COMMAND", "CMD", f"Handled: {text} -> {response}")
             self.holo_screen.show_message(
@@ -2057,7 +2066,7 @@ class YukiAssistant(QWidget):
             )
             return
 
-        # --- Если команда не распознана — отдаём в ИИ ---
+        # --- Если локальная команда не распознана — отдаём в ИИ (Gemini) ---
         self.holo_screen.show_loading(self.current_skin, screen_x, screen_y)
 
         self.brain = YukiBrain(prompt=text, language="ru")
