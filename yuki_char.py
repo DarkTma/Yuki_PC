@@ -13,6 +13,11 @@ import time
 import traceback
 import datetime
 from threading import Thread
+try:
+    import speech_recognition as sr
+    SR_AVAILABLE = True
+except ImportError:
+    SR_AVAILABLE = False
 from dotenv import load_dotenv
 import google.generativeai as genai
 
@@ -831,6 +836,66 @@ class YukiCommands:
 # =============================================
 
 
+# =============================================
+# --- ПОТОК ГОЛОСОВОГО ВВОДА ---
+# =============================================
+
+class SpeechThread(QThread):
+    """
+    Записывает голос с микрофона и распознаёт его.
+    Сигналы:
+      - listening_started  — микрофон открыт, идёт запись
+      - result_ready(str)  — распознанный текст
+      - error_occurred(str)— что-то пошло не так
+    """
+    listening_started = pyqtSignal()
+    result_ready      = pyqtSignal(str)
+    error_occurred    = pyqtSignal(str)
+
+    def run(self):
+        if not SR_AVAILABLE:
+            self.error_occurred.emit(
+                "speech_recognition not installed.\nRun: pip install speechrecognition pyaudio"
+            )
+            return
+
+        recognizer = sr.Recognizer()
+        recognizer.pause_threshold   = 1.0   # пауза 1 сек = конец фразы
+        recognizer.energy_threshold  = 300
+        recognizer.dynamic_energy_threshold = True
+
+        try:
+            with sr.Microphone() as source:
+                logger.log("INFO", "Voice", "Microphone opened, adjusting for noise...")
+                recognizer.adjust_for_ambient_noise(source, duration=0.5)
+                self.listening_started.emit()          # сигнал «Слушаю...»
+                logger.log("INFO", "Voice", "Listening...")
+                audio = recognizer.listen(source, timeout=8, phrase_time_limit=15)
+
+            logger.log("INFO", "Voice", "Recognizing...")
+            # Пробуем Google Speech Recognition (онлайн, бесплатно)
+            text = recognizer.recognize_google(audio, language="ru-RU")
+            logger.log("COMMAND", "Voice", f"Recognized: {text}")
+            self.result_ready.emit(text)
+
+        except sr.WaitTimeoutError:
+            logger.log("WARNING", "Voice", "No speech detected (timeout)")
+            self.error_occurred.emit("Ничего не услышала... 🎤")
+        except sr.UnknownValueError:
+            logger.log("WARNING", "Voice", "Could not understand audio")
+            self.error_occurred.emit("Не разобрала, повтори! 🤔")
+        except sr.RequestError as e:
+            logger.log("ERROR", "Voice", f"Google STT error: {e}")
+            self.error_occurred.emit("Ошибка распознавания речи 😵")
+        except OSError as e:
+            logger.log("ERROR", "Voice", f"Microphone error: {e}")
+            self.error_occurred.emit("Микрофон не найден! 🎤")
+        except Exception as e:
+            tb = traceback.format_exc()
+            logger.log("ERROR", "Voice", f"{e}\n{tb}")
+            self.error_occurred.emit(f"Ошибка: {str(e)}")
+
+
 # --- Класс мозга (работает в фоне) ---
 class YukiBrain(QThread):
     reply_ready = pyqtSignal(str, str)
@@ -1124,11 +1189,12 @@ class RadialMenu(QWidget):
         self.resize(300, 300)
         self.animations = []
 
-        self.skin_btn = self.create_button("Скин", "#ffb6c1", self.change_skin)
+        self.skin_btn  = self.create_button("Скин",  "#ffb6c1", self.change_skin)
         self.close_btn = self.create_button("Выход", "#ff6b6b", self.close_app)
-        self.chibi_btn = self.create_button("Чиби", "#87ceeb", self.toggle_chibi)
-        self.chat_btn = self.create_button("Чат", "#a8ff78", self.yuki.ask_yuki)
-        self.logs_btn = self.create_button("Логи", "#ffa07a", self.yuki.show_logs)
+        self.chibi_btn = self.create_button("Чиби",  "#87ceeb", self.toggle_chibi)
+        self.chat_btn  = self.create_button("Чат",   "#a8ff78", self.yuki.ask_yuki)
+        self.logs_btn  = self.create_button("Логи",  "#ffa07a", self.yuki.show_logs)
+        self.mic_btn   = self.create_button("🎤",    "#c9a0ff", self.start_voice)
 
     def create_button(self, text, color, connect_func):
         btn = QPushButton(text, self)
@@ -1144,18 +1210,19 @@ class RadialMenu(QWidget):
         self.move(x - self.width() // 2, y - self.height() // 2)
         center_pos = QPoint(self.width() // 2 - 30, self.height() // 2 - 30)
 
-        # 5 кнопок по кругу
-        pos_skin  = QPoint(self.width() // 2 + 70, self.height() // 2 - 30)   # право
-        pos_close = QPoint(self.width() // 2 - 100, self.height() // 2 - 30)  # лево
-        pos_chibi = QPoint(self.width() // 2 - 30, self.height() // 2 - 100)  # верх
-        pos_chat  = QPoint(self.width() // 2 - 30, self.height() // 2 + 50)   # низ
-        pos_logs  = QPoint(self.width() // 2 + 50, self.height() // 2 + 40)   # право-низ
-
-        self.animate_btn(self.skin_btn,  center_pos, pos_skin)
-        self.animate_btn(self.close_btn, center_pos, pos_close)
-        self.animate_btn(self.chibi_btn, center_pos, pos_chibi)
-        self.animate_btn(self.chat_btn,  center_pos, pos_chat)
-        self.animate_btn(self.logs_btn,  center_pos, pos_logs)
+        # 6 кнопок равномерно по кругу (угол 60° между каждой)
+        import math
+        cx = self.width()  // 2 - 30
+        cy = self.height() // 2 - 30
+        r  = 90  # радиус
+        angles = [270, 330, 30, 90, 150, 210]  # верх, право-верх, право-низ, низ, лево-низ, лево-верх
+        buttons = [self.chibi_btn, self.skin_btn, self.logs_btn,
+                   self.chat_btn,  self.mic_btn,  self.close_btn]
+        for btn, angle in zip(buttons, angles):
+            rad = math.radians(angle)
+            px  = int(cx + r * math.cos(rad))
+            py  = int(cy + r * math.sin(rad))
+            self.animate_btn(btn, center_pos, QPoint(px, py))
 
         self.show()
 
@@ -1186,6 +1253,10 @@ class RadialMenu(QWidget):
     def show_logs(self):
         self.hide()
         self.yuki.show_logs()
+
+    def start_voice(self):
+        self.hide()
+        self.yuki.start_voice_input()
 
 
 # --- Основной класс Юки ---
@@ -1223,6 +1294,60 @@ class YukiAssistant(QWidget):
         self.log_window.show()
         self.log_window.raise_()
         self.log_window.activateWindow()
+
+    def start_voice_input(self):
+        """Запускает голосовой ввод."""
+        screen_x = self.x() + self.width() + 10
+        screen_y = self.y() + 20
+
+        if not SR_AVAILABLE:
+            self.holo_screen.show_message(
+                "Установи: pip install speechrecognition pyaudio 🎤",
+                self.current_skin, screen_x, screen_y, auto_hide_ms=5000
+            )
+            logger.log("WARNING", "Voice", "speech_recognition not installed")
+            return
+
+        # Показываем «Говори...» пока ждём
+        self.holo_screen.show_message(
+            "🎤 Говори...",
+            self.current_skin, screen_x, screen_y
+        )
+
+        self.speech_thread = SpeechThread()
+        self.speech_thread.listening_started.connect(self._on_listening_started)
+        self.speech_thread.result_ready.connect(self._on_voice_result)
+        self.speech_thread.error_occurred.connect(self._on_voice_error)
+        self.speech_thread.start()
+
+    def _on_listening_started(self):
+        """Микрофон открыт — обновляем текст."""
+        screen_x = self.x() + self.width() + 10
+        screen_y = self.y() + 20
+        self.holo_screen.show_message(
+            "🎤 Слушаю...",
+            self.current_skin, screen_x, screen_y
+        )
+
+    def _on_voice_result(self, text: str):
+        """Получили распознанный текст — обрабатываем как обычный ввод."""
+        screen_x = self.x() + self.width() + 10
+        screen_y = self.y() + 20
+        # Показываем что услышала
+        self.holo_screen.show_message(
+            f"🎤 Услышала: {text}",
+            self.current_skin, screen_x, screen_y, auto_hide_ms=2000
+        )
+        # Через 2 сек обрабатываем
+        QTimer.singleShot(500, lambda: self._process_input(text))
+
+    def _on_voice_error(self, error_msg: str):
+        """Ошибка голосового ввода."""
+        screen_x = self.x() + self.width() + 10
+        screen_y = self.y() + 20
+        self.holo_screen.show_message(
+            error_msg, self.current_skin, screen_x, screen_y, auto_hide_ms=4000
+        )
 
     def _process_input(self, text: str):
         """Обрабатывает ввод: сначала проверяет команды, потом отправляет в ИИ."""

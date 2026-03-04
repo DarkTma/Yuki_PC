@@ -36,10 +36,18 @@ echo  [OK] pip found.
 
 :: --- Marker file: if exists - libraries already installed ---
 set MARKER=.yuki_installed
+set MARKER_VER=3
 
+:: Check marker version (re-install if outdated)
 if exist %MARKER% (
-    echo  [OK] Libraries already installed.
-    goto :launch
+    findstr /c:"v%MARKER_VER%" %MARKER% >nul 2>&1
+    if errorlevel 1 (
+        echo  [INFO] Updating libraries...
+        del %MARKER%
+    ) else (
+        echo  [OK] Libraries already installed.
+        goto :launch
+    )
 )
 
 :: --- First launch: install dependencies ---
@@ -77,8 +85,19 @@ pip install pycaw comtypes >nul 2>&1
 echo  Installing pyautogui (screenshots)...
 pip install pyautogui >nul 2>&1
 
-:: --- Create marker ---
-echo installed > %MARKER%
+echo  Installing SpeechRecognition (voice input)...
+pip install SpeechRecognition >nul 2>&1
+
+echo  Installing PyAudio (microphone)...
+pip install pyaudio >nul 2>&1
+if errorlevel 1 (
+    echo  [INFO] PyAudio failed with pip, trying pipwin...
+    pip install pipwin >nul 2>&1
+    pipwin install pyaudio >nul 2>&1
+)
+
+:: --- Create marker with version ---
+echo v3 > %MARKER%
 
 echo.
 echo  [DONE] All libraries installed!
