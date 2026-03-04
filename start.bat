@@ -1,112 +1,112 @@
 @echo off
-title Yuki - Запуск
-chcp 65001 >nul
+title Yuki Assistant - Launcher
+chcp 437 >nul
 
 echo.
-echo  ╔══════════════════════════════════╗
-echo  ║        Yuki Assistant            ║
-echo  ╚══════════════════════════════════╝
+echo  +==================================+
+echo  ^|       Yuki Assistant             ^|
+echo  +==================================+
 echo.
 
-:: --- Проверка Python ---
+:: --- Check Python ---
 python --version >nul 2>&1
 if errorlevel 1 (
-    echo  [ОШИБКА] Python не найден!
+    echo  [ERROR] Python not found!
     echo.
-    echo  Пожалуйста, скачай Python с сайта:
+    echo  Please download Python from:
     echo  https://www.python.org/downloads/
     echo.
-    echo  Важно: при установке поставь галочку
-    echo  "Add Python to PATH"
+    echo  IMPORTANT: Check "Add Python to PATH" during install!
     echo.
     pause
     start https://www.python.org/downloads/
     exit /b 1
 )
 
-echo  [OK] Python найден.
+echo  [OK] Python found.
 
-:: --- Проверка pip ---
+:: --- Check pip ---
 pip --version >nul 2>&1
 if errorlevel 1 (
-    echo  [INFO] pip не найден, устанавливаю...
+    echo  [INFO] pip not found, installing...
     python -m ensurepip --upgrade
 )
 
-:: --- Файл-маркер: если есть — библиотеки уже ставились ---
+echo  [OK] pip found.
+
+:: --- Marker file: if exists - libraries already installed ---
 set MARKER=.yuki_installed
 
 if exist %MARKER% (
-    echo  [OK] Библиотеки уже установлены.
+    echo  [OK] Libraries already installed.
     goto :launch
 )
 
-:: --- Первый запуск: устанавливаем зависимости ---
+:: --- First launch: install dependencies ---
 echo.
-echo  ╔══════════════════════════════════╗
-echo  ║   Первый запуск — установка      ║
-echo  ║   библиотек (1-2 минуты)...      ║
-echo  ╚══════════════════════════════════╝
+echo  +==================================+
+echo  ^|  First launch - installing       ^|
+echo  ^|  libraries (1-2 minutes)...      ^|
+echo  +==================================+
 echo.
 
+echo  Upgrading pip...
 pip install --upgrade pip >nul 2>&1
 
-echo  Устанавливаю PyQt5...
+echo  Installing PyQt5...
 pip install PyQt5 >nul 2>&1
 if errorlevel 1 (
-    echo  [ПРЕДУПРЕЖДЕНИЕ] PyQt5 не удалось установить. Попробуй вручную: pip install PyQt5
+    echo  [WARNING] PyQt5 failed. Try manually: pip install PyQt5
 )
 
-echo  Устанавливаю requests...
+echo  Installing requests...
 pip install requests >nul 2>&1
 
-echo  Устанавливаю python-dotenv...
+echo  Installing python-dotenv...
 pip install python-dotenv >nul 2>&1
 
-echo  Устанавливаю google-generativeai...
+echo  Installing google-generativeai...
 pip install google-generativeai >nul 2>&1
 
-echo  Устанавливаю selenium (для YouTube авто-клика)...
+echo  Installing selenium (YouTube auto-click)...
 pip install selenium >nul 2>&1
 
-echo  Устанавливаю pycaw (управление громкостью)...
+echo  Installing pycaw (volume control)...
 pip install pycaw comtypes >nul 2>&1
 
-echo  Устанавливаю pyautogui (скриншоты)...
+echo  Installing pyautogui (screenshots)...
 pip install pyautogui >nul 2>&1
 
-:: --- Создаём маркер ---
+:: --- Create marker ---
 echo installed > %MARKER%
 
 echo.
-echo  [ГОТОВО] Все библиотеки установлены!
+echo  [DONE] All libraries installed!
 echo.
 
 :launch
-:: --- Проверяем .env файл ---
+:: --- Check .env file ---
 if not exist .env (
-    echo  [ВНИМАНИЕ] Файл .env не найден!
+    echo  [WARNING] .env file not found!
     echo.
-    echo  Создаю .env файл...
-    echo GEMINI_API_KEY=ВСТАВЬ_СВОЙ_КЛЮЧ_СЮДА > .env
+    echo  Creating .env template...
+    echo GEMINI_API_KEY=PASTE_YOUR_KEY_HERE > .env
     echo.
-    echo  ┌─────────────────────────────────────────────┐
-    echo  │  Открой файл .env в папке с Юки             │
-    echo  │  и вставь свой ключ от Google Gemini API    │
-    echo  │                                             │
-    echo  │  Получить ключ: https://aistudio.google.com │
-    echo  └─────────────────────────────────────────────┘
+    echo  +---------------------------------------------+
+    echo  ^|  Open the .env file in Yuki folder          ^|
+    echo  ^|  and paste your Google Gemini API key       ^|
+    echo  ^|                                             ^|
+    echo  ^|  Get key: https://aistudio.google.com       ^|
+    echo  +---------------------------------------------+
     echo.
     pause
     notepad .env
     echo.
 )
 
-:: --- Запуск Юки ---
-echo  Запускаю Юки...
+:: --- Launch Yuki ---
+echo  Launching Yuki...
 start "" pythonw yuki_char.py
-
-:: Если pythonw не сработал — пробуем python
 if errorlevel 1 (
     start "" python yuki_char.py
 )
