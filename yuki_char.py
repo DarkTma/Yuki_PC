@@ -10,6 +10,8 @@ import webbrowser
 import subprocess
 import urllib.parse
 import time
+import traceback
+import datetime
 from threading import Thread
 from dotenv import load_dotenv
 import google.generativeai as genai
@@ -32,11 +34,13 @@ for p in paths:
         break
 
 # --- Импорты PyQt5 ---
-from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton, 
-                             QSystemTrayIcon, QMenu, QAction, QVBoxLayout, 
-                             QGraphicsDropShadowEffect, QDialog, QHBoxLayout, QLineEdit)
+from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton,
+                             QSystemTrayIcon, QMenu, QAction, QVBoxLayout,
+                             QGraphicsDropShadowEffect, QDialog, QHBoxLayout,
+                             QLineEdit, QTextEdit, QScrollArea, QComboBox,
+                             QSizePolicy, QFrame)
 from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, QThread, pyqtSignal, QUrl, QTimer
-from PyQt5.QtGui import QPixmap, QIcon, QColor, QFont
+from PyQt5.QtGui import QPixmap, QIcon, QColor, QFont, QTextCursor
 from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, QThread, pyqtSignal, QUrl
 from PyQt5.QtMultimedia import QSoundEffect
 
@@ -44,6 +48,394 @@ from PyQt5.QtMultimedia import QSoundEffect
 load_dotenv()  # загружает переменные из .env файла
 
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+
+# =============================================
+# --- ГЛОБАЛЬНЫЙ ЛОГГЕР ЮКИ ---
+# =============================================
+
+class YukiLogger:
+    """
+    Глобальный синглтон-логгер.
+    Хранит все записи в памяти и пишет в файл yuki.log.
+    Категории: INFO, WARNING, ERROR, COMMAND, AI
+    """
+    _instance = None
+    LOG_FILE = "yuki.log"
+    MAX_ENTRIES = 500  # максимум записей в памяти
+
+    # Сигнал — чтобы LogWindow обновлялась в реальном времени
+    # (не QObject, поэтому используем callback)
+    _listeners = []
+
+    @classmethod
+    def get(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+
+    def __init__(self):
+        self.entries = []  # список dict: {time, level, source, message}
+        # Перехватываем sys.excepthook — ловим все необработанные исключения
+        sys._yuki_orig_excepthook = sys.excepthook
+        sys.excepthook = self._excepthook
+
+    def _excepthook(self, exc_type, exc_value, exc_tb):
+        msg = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+        self.log("ERROR", "CRASH", msg.strip())
+        # Вызываем оригинальный обработчик
+        sys._yuki_orig_excepthook(exc_type, exc_value, exc_tb)
+
+    def log(self, level: str, source: str, message: str):
+        """level: INFO | WARNING | ERROR | COMMAND | AI"""
+        now = datetime.datetime.now().strftime("%H:%M:%S")
+        entry = {"time": now, "level": level, "source": source, "message": message}
+        self.entries.append(entry)
+        if len(self.entries) > self.MAX_ENTRIES:
+            self.entries.pop(0)
+
+        # Пишем в файл
+        try:
+            with open(self.LOG_FILE, "a", encoding="utf-8") as f:
+                date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                f.write(f"[{date}] [{level}] [{source}] {message}\n")
+        except Exception:
+            pass
+
+        # Уведомляем слушателей (LogWindow)
+        for cb in self._listeners:
+            try:
+                cb(entry)
+            except Exception:
+                pass
+
+    def add_listener(self, callback):
+        self._listeners.append(callback)
+
+    def remove_listener(self, callback):
+        if callback in self._listeners:
+            self._listeners.remove(callback)
+
+    def clear(self):
+        self.entries.clear()
+        try:
+            open(self.LOG_FILE, "w").close()
+        except Exception:
+            pass
+
+
+# Глобальный экземпляр
+logger = YukiLogger.get()
+logger.log("INFO", "STARTUP", "Yuki started")
+
+
+# =============================================
+# --- ОКНО ЛОГОВ ---
+# =============================================
+
+class LogWindow(QWidget):
+    """Красивое окно логов в стиле Юки."""
+
+    # Цвета уровней
+    LEVEL_COLORS = {
+        "INFO":    "#00ffff",
+        "WARNING": "#ffdd57",
+        "ERROR":   "#ff4d4d",
+        "COMMAND": "#a8ff78",
+        "AI":      "#cc99ff",
+    }
+
+    def __init__(self, skin="default"):
+        super().__init__()
+        self.skin = skin
+        self.current_filter = "ALL"
+        self._setup_ui()
+        self._apply_theme()
+        # Подписываемся на новые записи
+        logger.add_listener(self._on_new_entry)
+        # Загружаем существующие записи
+        self._reload_all()
+
+    def _setup_ui(self):
+        self.setWindowTitle("Yuki — Logs")
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.resize(700, 450)
+
+        # Центрируем по экрану
+        screen = QApplication.primaryScreen().geometry()
+        self.move(
+            screen.center().x() - 350,
+            screen.center().y() - 225
+        )
+
+        # --- Основной контейнер ---
+        self.container = QWidget(self)
+        self.container.setObjectName("container")
+        self.container.resize(700, 450)
+
+        root = QVBoxLayout(self.container)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(0)
+
+        # --- Заголовок ---
+        header = QWidget()
+        header.setObjectName("header")
+        header.setFixedHeight(44)
+        h_lay = QHBoxLayout(header)
+        h_lay.setContentsMargins(14, 0, 10, 0)
+
+        title = QLabel("  Yuki — Logs")
+        title.setObjectName("title")
+        h_lay.addWidget(title)
+        h_lay.addStretch()
+
+        # Фильтр по уровню
+        self.filter_box = QComboBox()
+        self.filter_box.setObjectName("filterBox")
+        self.filter_box.addItems(["ALL", "INFO", "WARNING", "ERROR", "COMMAND", "AI"])
+        self.filter_box.setFixedWidth(110)
+        self.filter_box.currentTextChanged.connect(self._on_filter_changed)
+        h_lay.addWidget(self.filter_box)
+
+        # Кнопка копировать
+        copy_btn = QPushButton("Copy")
+        copy_btn.setObjectName("headerBtn")
+        copy_btn.setFixedSize(60, 28)
+        copy_btn.clicked.connect(self._copy_logs)
+        h_lay.addWidget(copy_btn)
+
+        # Кнопка очистить
+        clear_btn = QPushButton("Clear")
+        clear_btn.setObjectName("headerBtn")
+        clear_btn.setFixedSize(60, 28)
+        clear_btn.clicked.connect(self._clear_logs)
+        h_lay.addWidget(clear_btn)
+
+        # Кнопка закрыть
+        close_btn = QPushButton("✕")
+        close_btn.setObjectName("closeBtn")
+        close_btn.setFixedSize(32, 32)
+        close_btn.clicked.connect(self.hide)
+        h_lay.addWidget(close_btn)
+
+        root.addWidget(header)
+
+        # --- Разделитель ---
+        line = QFrame()
+        line.setObjectName("divider")
+        line.setFrameShape(QFrame.HLine)
+        line.setFixedHeight(1)
+        root.addWidget(line)
+
+        # --- Лог-текст ---
+        self.log_text = QTextEdit()
+        self.log_text.setObjectName("logText")
+        self.log_text.setReadOnly(True)
+        self.log_text.setLineWrapMode(QTextEdit.NoWrap)
+        root.addWidget(self.log_text)
+
+        # --- Строка статуса ---
+        self.status_bar = QLabel(" Ready")
+        self.status_bar.setObjectName("statusBar")
+        self.status_bar.setFixedHeight(24)
+        root.addWidget(self.status_bar)
+
+        # Перетаскивание окна
+        self._drag_pos = None
+        header.mousePressEvent   = self._header_press
+        header.mouseMoveEvent    = self._header_move
+        header.mouseReleaseEvent = self._header_release
+
+    def _apply_theme(self):
+        if self.skin == "default":
+            accent = "#00ffff"
+            bg     = "rgba(8, 22, 48, 230)"
+            hdr    = "rgba(0, 180, 200, 40)"
+            div    = "#00aaaa"
+        else:
+            accent = "#ff69b4"
+            bg     = "rgba(48, 8, 22, 230)"
+            hdr    = "rgba(200, 0, 100, 40)"
+            div    = "#cc3377"
+
+        self.container.setStyleSheet(f"""
+            QWidget#container {{
+                background-color: {bg};
+                border: 2px solid {accent};
+                border-radius: 12px;
+            }}
+            QWidget#header {{
+                background-color: {hdr};
+                border-top-left-radius: 10px;
+                border-top-right-radius: 10px;
+            }}
+            QLabel#title {{
+                color: {accent};
+                font-family: 'Courier New', monospace;
+                font-size: 15px;
+                font-weight: bold;
+                background: transparent;
+            }}
+            QComboBox#filterBox {{
+                background-color: rgba(0,0,0,120);
+                color: {accent};
+                border: 1px solid {accent};
+                border-radius: 4px;
+                font-family: 'Courier New', monospace;
+                font-size: 12px;
+                padding: 2px 6px;
+            }}
+            QComboBox#filterBox QAbstractItemView {{
+                background-color: rgba(10,20,40,240);
+                color: {accent};
+                selection-background-color: rgba(0,180,200,80);
+            }}
+            QPushButton#headerBtn {{
+                background-color: rgba(0,0,0,100);
+                color: {accent};
+                border: 1px solid {accent};
+                border-radius: 5px;
+                font-family: 'Courier New', monospace;
+                font-size: 12px;
+            }}
+            QPushButton#headerBtn:hover {{
+                background-color: {accent};
+                color: black;
+            }}
+            QPushButton#closeBtn {{
+                background-color: transparent;
+                color: #ff4d4d;
+                border: 1px solid #ff4d4d;
+                border-radius: 5px;
+                font-size: 14px;
+                font-weight: bold;
+            }}
+            QPushButton#closeBtn:hover {{
+                background-color: #ff4d4d;
+                color: white;
+            }}
+            QFrame#divider {{
+                background-color: {div};
+            }}
+            QTextEdit#logText {{
+                background-color: transparent;
+                color: #cccccc;
+                font-family: 'Courier New', monospace;
+                font-size: 12px;
+                border: none;
+                padding: 6px 10px;
+            }}
+            QScrollBar:vertical {{
+                background: rgba(0,0,0,60);
+                width: 8px;
+                border-radius: 4px;
+            }}
+            QScrollBar::handle:vertical {{
+                background: {accent};
+                border-radius: 4px;
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
+            QLabel#statusBar {{
+                color: rgba(150,150,150,180);
+                font-family: 'Courier New', monospace;
+                font-size: 11px;
+                background: transparent;
+                padding-left: 10px;
+            }}
+        """)
+
+    # --- Перетаскивание ---
+    def _header_press(self, e):
+        if e.button() == Qt.LeftButton:
+            self._drag_pos = e.globalPos() - self.frameGeometry().topLeft()
+
+    def _header_move(self, e):
+        if e.buttons() == Qt.LeftButton and self._drag_pos:
+            self.move(e.globalPos() - self._drag_pos)
+
+    def _header_release(self, e):
+        self._drag_pos = None
+
+    # --- Логика ---
+    def _on_filter_changed(self, value):
+        self.current_filter = value
+        self._reload_all()
+
+    def _reload_all(self):
+        """Перерисовывает все записи с учётом фильтра."""
+        self.log_text.clear()
+        entries = logger.entries
+        if self.current_filter != "ALL":
+            entries = [e for e in entries if e["level"] == self.current_filter]
+        for entry in entries:
+            self._append_entry(entry)
+        self._update_status()
+
+    def _on_new_entry(self, entry):
+        """Вызывается логгером при новой записи."""
+        if not self.isVisible():
+            return
+        if self.current_filter != "ALL" and entry["level"] != self.current_filter:
+            return
+        self._append_entry(entry)
+        self._update_status()
+
+    def _append_entry(self, entry):
+        color = self.LEVEL_COLORS.get(entry["level"], "#cccccc")
+        # Форматируем строку с HTML-раскраской
+        line = (
+            f'<span style="color:#555555">[{entry["time"]}]</span> '
+            f'<span style="color:{color};font-weight:bold">[{entry["level"]:7s}]</span> '
+            f'<span style="color:#888888">[{entry["source"]}]</span> '
+            f'<span style="color:#dddddd">{entry["message"].replace(chr(10), "<br>&nbsp;&nbsp;")}</span>'
+        )
+        self.log_text.append(line)
+        # Прокрутка вниз
+        self.log_text.moveCursor(QTextCursor.End)
+
+    def _update_status(self):
+        total = len(logger.entries)
+        errors = sum(1 for e in logger.entries if e["level"] == "ERROR")
+        warns  = sum(1 for e in logger.entries if e["level"] == "WARNING")
+        self.status_bar.setText(
+            f"  Total: {total}   Errors: {errors}   Warnings: {warns}"
+        )
+
+    def _copy_logs(self):
+        lines = []
+        entries = logger.entries
+        if self.current_filter != "ALL":
+            entries = [e for e in entries if e["level"] == self.current_filter]
+        for e in entries:
+            lines.append(f"[{e['time']}] [{e['level']}] [{e['source']}] {e['message']}")
+        QApplication.clipboard().setText("\n".join(lines))
+        self.status_bar.setText("  Copied to clipboard!")
+        QTimer.singleShot(2000, self._update_status)
+
+    def _clear_logs(self):
+        logger.clear()
+        self.log_text.clear()
+        self._update_status()
+
+    def update_skin(self, skin):
+        self.skin = skin
+        self._apply_theme()
+
+    def closeEvent(self, event):
+        logger.remove_listener(self._on_new_entry)
+        event.accept()
+
+    def hideEvent(self, event):
+        logger.remove_listener(self._on_new_entry)
+        super().hideEvent(event)
+
+    def showEvent(self, event):
+        # При показе — переподписываемся и обновляем
+        if self._on_new_entry not in logger._listeners:
+            logger.add_listener(self._on_new_entry)
+        self._reload_all()
+        super().showEvent(event)
 
 
 # =============================================
@@ -452,16 +844,20 @@ class YukiBrain(QThread):
 
     def run(self):
         try:
+            logger.log("AI", "Gemini", f"Request: {self.prompt[:80]}")
             system_instruction = "Ты Юки, милая и умная ИИ-ассистентка. Отвечай кратко, дружелюбно и по делу."
             full_prompt = f"{system_instruction}\nПользователь: {self.prompt}"
             response = self.model.generate_content(full_prompt)
             ai_text = response.text.strip()
+            logger.log("AI", "Gemini", f"Response: {ai_text[:80]}")
             audio_path = self.synthesize_audio(ai_text, self.language)
             if audio_path:
                 self.reply_ready.emit(ai_text, audio_path)
             else:
                 self.error_occurred.emit("Ошибка синтеза речи.")
         except Exception as e:
+            tb = traceback.format_exc()
+            logger.log("ERROR", "YukiBrain", f"{e}\n{tb}")
             self.error_occurred.emit(f"Ошибка: {str(e)}")
 
     def synthesize_audio(self, text, lang):
@@ -471,7 +867,8 @@ class YukiBrain(QThread):
             else:
                 return self.speak_coqui(text, lang)
         except Exception as e:
-            print(f"TTS Error: {e}")
+            tb = traceback.format_exc()
+            logger.log("ERROR", "TTS", f"{e}\n{tb}")
             return None
 
     def speak_coqui(self, text, lang):
@@ -728,6 +1125,7 @@ class RadialMenu(QWidget):
         self.close_btn = self.create_button("Выход", "#ff6b6b", self.close_app)
         self.chibi_btn = self.create_button("Чиби", "#87ceeb", self.toggle_chibi)
         self.chat_btn = self.create_button("Чат", "#a8ff78", self.yuki.ask_yuki)
+        self.logs_btn = self.create_button("Логи", "#ffa07a", self.yuki.show_logs)
 
     def create_button(self, text, color, connect_func):
         btn = QPushButton(text, self)
@@ -742,16 +1140,19 @@ class RadialMenu(QWidget):
     def show_around(self, x, y):
         self.move(x - self.width() // 2, y - self.height() // 2)
         center_pos = QPoint(self.width() // 2 - 30, self.height() // 2 - 30)
-        
-        pos_skin = QPoint(self.width() // 2 + 30, self.height() // 2 - 30)  
-        pos_close = QPoint(self.width() // 2 - 90, self.height() // 2 - 30) 
-        pos_chibi = QPoint(self.width() // 2 - 30, self.height() // 2 - 90) 
-        pos_chat = QPoint(self.width() // 2 - 30, self.height() // 2 + 30)  
 
-        self.animate_btn(self.skin_btn, center_pos, pos_skin)
+        # 5 кнопок по кругу
+        pos_skin  = QPoint(self.width() // 2 + 70, self.height() // 2 - 30)   # право
+        pos_close = QPoint(self.width() // 2 - 100, self.height() // 2 - 30)  # лево
+        pos_chibi = QPoint(self.width() // 2 - 30, self.height() // 2 - 100)  # верх
+        pos_chat  = QPoint(self.width() // 2 - 30, self.height() // 2 + 50)   # низ
+        pos_logs  = QPoint(self.width() // 2 + 50, self.height() // 2 + 40)   # право-низ
+
+        self.animate_btn(self.skin_btn,  center_pos, pos_skin)
         self.animate_btn(self.close_btn, center_pos, pos_close)
         self.animate_btn(self.chibi_btn, center_pos, pos_chibi)
-        self.animate_btn(self.chat_btn, center_pos, pos_chat)
+        self.animate_btn(self.chat_btn,  center_pos, pos_chat)
+        self.animate_btn(self.logs_btn,  center_pos, pos_logs)
 
         self.show()
 
@@ -767,6 +1168,7 @@ class RadialMenu(QWidget):
     def change_skin(self):
         self.yuki.current_skin = 'alt_skin' if self.yuki.current_skin == 'default' else 'default'
         self.yuki.update_image()
+        self.yuki.log_window.update_skin(self.yuki.current_skin)
         self.hide()
 
     def toggle_chibi(self):
@@ -778,6 +1180,10 @@ class RadialMenu(QWidget):
         self.yuki.save_settings()
         QApplication.quit()
 
+    def show_logs(self):
+        self.hide()
+        self.yuki.show_logs()
+
 
 # --- Основной класс Юки ---
 class YukiAssistant(QWidget):
@@ -788,9 +1194,11 @@ class YukiAssistant(QWidget):
         self.load_settings()
         self.menu = RadialMenu(self)
         self.holo_screen = HolographicScreen()
+        self.log_window = LogWindow(self.current_skin)
 
         self.initUI()
         self.init_tray()
+        logger.log("INFO", "UI", "Yuki UI initialized")
 
     def ask_yuki(self):
         self.menu.hide()
@@ -806,16 +1214,24 @@ class YukiAssistant(QWidget):
             if text.strip():
                 self._process_input(text.strip())
 
+    def show_logs(self):
+        """Открывает окно логов."""
+        self.log_window.update_skin(self.current_skin)
+        self.log_window.show()
+        self.log_window.raise_()
+        self.log_window.activateWindow()
+
     def _process_input(self, text: str):
         """Обрабатывает ввод: сначала проверяет команды, потом отправляет в ИИ."""
         screen_x = self.x() + self.width() + 10
         screen_y = self.y() + 20
 
+        logger.log("INFO", "Input", f"User: {text}")
+
         # --- Проверяем команды Юки ---
         handled, response = YukiCommands.handle(text)
         if handled:
-            # Показываем ответ на экране без ИИ и TTS
-            # Авто-скрытие через 4 секунды
+            logger.log("COMMAND", "CMD", f"Handled: {text} -> {response}")
             self.holo_screen.show_message(
                 response, self.current_skin,
                 screen_x, screen_y,
@@ -825,14 +1241,14 @@ class YukiAssistant(QWidget):
 
         # --- Если команда не распознана — отдаём в ИИ ---
         self.holo_screen.show_loading(self.current_skin, screen_x, screen_y)
-        
+
         self.brain = YukiBrain(prompt=text, language="ru")
         self.brain.reply_ready.connect(self.on_yuki_reply)
         self.brain.error_occurred.connect(self.on_yuki_error)
         self.brain.start()
 
     def on_yuki_error(self, error_msg):
-        print(error_msg)
+        logger.log("ERROR", "YukiReply", error_msg)
         screen_x = self.x() + self.width() + 10
         screen_y = self.y() + 20
         self.holo_screen.show_message("Ой, ошибка сети... 😵", self.current_skin, screen_x, screen_y)
