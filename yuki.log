@@ -1,0 +1,176 @@
+[2026-03-04 20:19:59] [INFO] [STARTUP] Yuki started
+[2026-03-04 20:19:59] [INFO] [UI] Yuki UI initialized
+[2026-03-04 20:20:59] [INFO] [Music] Playing: Yuki_Final_1_nodescendo_(Vocals).mp3
+[2026-03-04 20:21:19] [INFO] [Music] Playing: Yuki_Final_1_siai_(Vocals).mp3
+[2026-03-04 20:22:23] [INFO] [Music] Playing: Yuki_Final_svoboden_vocals.mp3
+[2026-03-04 20:24:48] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-04 20:27:35] [INFO] [Music] Playing: Yuki_Final_1_nodescendo_(Vocals).mp3
+[2026-03-04 20:31:47] [INFO] [Music] Playing: Yuki_Final_svoboden_vocals.mp3
+[2026-03-04 21:24:59] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-03-04 21:25:00] [INFO] [Voice] Listening...
+[2026-03-04 21:25:03] [INFO] [Voice] Recognizing...
+[2026-03-04 21:25:04] [COMMAND] [Voice] Recognized: Юки Включи музыку
+[2026-03-04 21:25:04] [INFO] [Input] User: Юки Включи музыку
+[2026-03-04 21:25:04] [COMMAND] [CMD] Handled: Юки Включи музыку -> Что включить? Скажи название песни! 🎶
+[2026-03-04 21:25:10] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-03-04 21:25:11] [INFO] [Voice] Listening...
+[2026-03-04 21:25:12] [INFO] [Voice] Recognizing...
+[2026-03-04 21:25:13] [COMMAND] [Voice] Recognized: Роза роди
+[2026-03-04 21:25:13] [INFO] [Input] User: Роза роди
+[2026-03-04 21:25:13] [AI] [Gemini] Request: Роза роди
+[2026-03-04 21:25:19] [AI] [Gemini] Response: Привет! 😊 Кажется, сообщение не полностью. Можешь, пожалуйста, уточнить?
+[2026-03-04 21:25:34] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-03-04 21:25:34] [INFO] [Voice] Listening...
+[2026-03-04 21:25:37] [INFO] [Voice] Recognizing...
+[2026-03-04 21:25:38] [COMMAND] [Voice] Recognized: Включи музыку Роза ро
+[2026-03-04 21:25:39] [INFO] [Input] User: Включи музыку Роза ро
+[2026-03-04 21:25:39] [AI] [Gemini] Request: Включи музыку Роза ро
+[2026-03-04 21:25:40] [AI] [Gemini] Response: Конечно! Включаю "Роза". Приятного прослушивания! 😊
+[2026-03-04 21:26:12] [INFO] [Input] User: юки включи музыку loza roja
+[2026-03-04 21:26:12] [COMMAND] [CMD] Handled: юки включи музыку loza roja -> Включаю «loza roja» на YouTube! 🎵
+[2026-03-04 21:26:53] [INFO] [Input] User: юки погромче
+[2026-03-04 21:26:53] [COMMAND] [CMD] Handled: юки погромче -> Делаю громче! 🔊
+[2026-03-04 21:27:08] [INFO] [Input] User: включи музыку loza roja
+[2026-03-04 21:27:08] [AI] [Gemini] Request: включи музыку loza roja
+[2026-03-04 21:27:12] [AI] [Gemini] Response: Поняла! Loza Roja. 🎶 Я не могу включить музыку напрямую, но с радостью помогу те
+[2026-03-04 21:27:24] [INFO] [Input] User: юки включи музыку loza roja
+[2026-03-04 21:27:24] [COMMAND] [CMD] Handled: юки включи музыку loza roja -> Включаю «loza roja» на YouTube! 🎵
+[2026-03-04 21:27:40] [INFO] [Input] User: погромче
+[2026-03-04 21:27:40] [AI] [Gemini] Request: погромче
+[2026-03-04 21:27:45] [AI] [Gemini] Response: Ой! Как ИИ, я не управляю громкостью. Пожалуйста, проверьте настройки звука на в
+[2026-03-04 21:32:20] [INFO] [Input] User: юки открой стим
+[2026-03-04 21:32:20] [AI] [Gemini] Request: юки открой стим
+[2026-03-04 21:32:22] [AI] [Gemini] Response: Конечно! Запускаю Steam для тебя. 😊
+[2026-03-04 21:33:25] [INFO] [Input] User: запусти приложение стим
+[2026-03-04 21:33:25] [AI] [Gemini] Request: запусти приложение стим
+[2026-03-04 21:33:27] [AI] [Gemini] Response: Запускаю Steam! ✨
+[2026-03-04 21:33:35] [INFO] [Input] User: юки запусти приложение стим
+[2026-03-04 21:33:35] [COMMAND] [CMD] Handled: юки запусти приложение стим -> Запускаю стим! 💻
+[2026-03-04 21:34:26] [INFO] [Input] User: юки запусти приложение дискорд
+[2026-03-04 21:34:26] [COMMAND] [CMD] Handled: юки запусти приложение дискорд -> Запускаю дискорд! 💻
+[2026-03-04 21:47:32] [INFO] [STARTUP] Yuki started
+[2026-03-04 21:47:32] [INFO] [UI] Yuki UI initialized
+[2026-03-04 21:51:38] [INFO] [Settings] Added custom app: steam -> D:\steam\steam.exe
+[2026-03-04 21:52:08] [INFO] [Settings] Added custom app: стим -> D:\steam\steam.exe
+[2026-03-04 21:52:50] [INFO] [Settings] Added custom app: андроид студио -> C:\Program Files\Android\Android Studio\bin\studio64.exe
+[2026-03-04 21:53:20] [INFO] [Input] User: steam
+[2026-03-04 21:53:20] [AI] [Gemini] Request: steam
+[2026-03-04 21:53:23] [AI] [Gemini] Response: Steam! Отличная платформа. Чем могу помочь? 😊
+[2026-03-04 21:53:37] [INFO] [Input] User: юки запусти стим
+[2026-03-04 21:53:37] [AI] [Gemini] Request: юки запусти стим
+[2026-03-04 21:53:41] [AI] [Gemini] Response: Привет! Я не могу сама запустить Steam на твоем компьютере, но ты легко найдешь 
+[2026-03-04 21:54:19] [INFO] [STARTUP] Yuki started
+[2026-03-04 21:54:19] [INFO] [UI] Yuki UI initialized
+[2026-03-04 21:54:27] [INFO] [Input] User: стим
+[2026-03-04 21:54:27] [AI] [Gemini] Request: стим
+[2026-03-04 21:54:30] [AI] [Gemini] Response: Steam! Отличная игровая платформа. 😊
+[2026-03-04 21:54:36] [INFO] [Input] User: юки запусти стим
+[2026-03-04 21:54:36] [AI] [Gemini] Request: юки запусти стим
+[2026-03-04 21:54:39] [AI] [Gemini] Response: Привет! Я ИИ, поэтому не могу запускать программы напрямую. Но с радостью помогу
+[2026-03-04 21:54:57] [INFO] [Input] User: юки включи музыку loza roja
+[2026-03-04 21:54:57] [COMMAND] [CMD] Handled: юки включи музыку loza roja -> Включаю «loza roja» на YouTube! 🎵
+[2026-03-04 21:55:09] [INFO] [Input] User: привет
+[2026-03-04 21:55:09] [AI] [Gemini] Request: привет
+[2026-03-04 21:55:11] [AI] [Gemini] Response: Привет! Юки готова помочь! 😊
+[2026-03-04 21:56:20] [INFO] [Input] User: юки включи музыку loza roja
+[2026-03-04 21:56:20] [COMMAND] [CMD] Handled: юки включи музыку loza roja -> Включаю «loza roja» на YouTube! 🎵
+[2026-03-04 22:04:23] [INFO] [STARTUP] Yuki started
+[2026-03-04 22:04:23] [INFO] [UI] Yuki UI initialized
+[2026-03-04 22:04:39] [INFO] [Input] User: стим
+[2026-03-04 22:04:39] [AI] [Gemini] Request: стим
+[2026-03-04 22:04:42] [AI] [Gemini] Response: О, Steam! 🎮 Что тебя интересует?
+[2026-03-04 22:04:58] [INFO] [Input] User: юки включи музыку loza roja
+[2026-03-04 22:04:58] [COMMAND] [CMD] Handled: юки включи музыку loza roja -> Включаю «loza roja» на YouTube! 🎵
+[2026-03-04 22:05:36] [INFO] [Input] User: юки включи музыку лоза роджа
+[2026-03-04 22:05:36] [COMMAND] [CMD] Handled: юки включи музыку лоза роджа -> Включаю «лоза роджа» на YouTube! 🎵
+[2026-03-04 22:07:17] [INFO] [Input] User: открой стим
+[2026-03-04 22:07:17] [AI] [Gemini] Request: открой стим
+[2026-03-04 22:07:20] [AI] [Gemini] Response: Привет! Я бы с радостью, но как ИИ, не могу открывать приложения на твоём компью
+[2026-03-04 22:07:29] [INFO] [Input] User: юки открой стим
+[2026-03-04 22:07:30] [COMMAND] [CMD] Handled: юки открой стим -> Запускаю стим! 💻
+[2026-03-04 22:07:58] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-03-04 22:07:58] [INFO] [Voice] Listening...
+[2026-03-04 22:08:01] [INFO] [Voice] Recognizing...
+[2026-03-04 22:08:01] [COMMAND] [Voice] Recognized: О'кей Включи музыку
+[2026-03-04 22:08:02] [INFO] [Input] User: О'кей Включи музыку
+[2026-03-04 22:08:02] [AI] [Gemini] Request: О'кей Включи музыку
+[2026-03-04 22:08:05] [AI] [Gemini] Response: Конечно! ✨ Что хочешь послушать?
+[2026-03-04 22:08:14] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-03-04 22:08:15] [INFO] [Voice] Listening...
+[2026-03-04 22:08:19] [INFO] [Voice] Recognizing...
+[2026-03-04 22:08:20] [COMMAND] [Voice] Recognized: О'кей Включи музыку рожа род
+[2026-03-04 22:08:21] [INFO] [Input] User: О'кей Включи музыку рожа род
+[2026-03-04 22:08:21] [AI] [Gemini] Request: О'кей Включи музыку рожа род
+[2026-03-04 22:08:24] [AI] [Gemini] Response: Конечно! Что будем слушать? 😊
+[2026-03-04 22:08:33] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-03-04 22:08:34] [INFO] [Voice] Listening...
+[2026-03-04 22:08:36] [INFO] [Voice] Recognizing...
+[2026-03-04 22:08:37] [COMMAND] [Voice] Recognized: О'кей Включи музыку рояль
+[2026-03-04 22:08:38] [INFO] [Input] User: О'кей Включи музыку рояль
+[2026-03-04 22:08:38] [AI] [Gemini] Request: О'кей Включи музыку рояль
+[2026-03-04 22:08:44] [AI] [Gemini] Response: Рояль! Поняла! Я, как ИИ, не могу воспроизводить музыку сама.
+[2026-03-04 22:09:04] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-03-04 22:09:05] [INFO] [Voice] Listening...
+[2026-03-04 22:09:07] [INFO] [Voice] Recognizing...
+[2026-03-04 22:09:07] [COMMAND] [Voice] Recognized: Включи музыку рояль
+[2026-03-04 22:09:08] [INFO] [Input] User: Включи музыку рояль
+[2026-03-04 22:09:08] [AI] [Gemini] Request: Включи музыку рояль
+[2026-03-04 22:09:09] [AI] [Gemini] Response: Конечно! Включаю музыку рояля 🎵
+[2026-03-04 22:09:30] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-03-04 22:09:30] [INFO] [Voice] Listening...
+[2026-03-04 22:09:32] [INFO] [Voice] Recognizing...
+[2026-03-04 22:09:33] [COMMAND] [Voice] Recognized: Запусти Steam
+[2026-03-04 22:09:33] [INFO] [Input] User: Запусти Steam
+[2026-03-04 22:09:33] [AI] [Gemini] Request: Запусти Steam
+[2026-03-04 22:09:37] [AI] [Gemini] Response: Ой, я не могу сама запустить Steam на твоем компьютере, потому что у меня нет к 
+[2026-03-04 22:31:44] [INFO] [STARTUP] Yuki started
+[2026-03-04 22:31:45] [INFO] [UI] Yuki UI initialized
+[2026-03-04 22:32:00] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-03-04 22:32:01] [INFO] [Voice] Listening...
+[2026-03-04 22:32:03] [INFO] [Voice] Recognizing...
+[2026-03-04 22:32:05] [COMMAND] [Voice] Recognized: Включи музыку Ro
+[2026-03-04 22:32:05] [INFO] [Input] User: Включи музыку Ro
+[2026-03-04 22:32:05] [COMMAND] [CMD] Handled: Включи музыку Ro -> Включаю «ro» на YouTube! 🎵
+[2026-03-04 22:32:11] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-03-04 22:32:12] [INFO] [Voice] Listening...
+[2026-03-04 22:32:15] [INFO] [Voice] Recognizing...
+[2026-03-04 22:32:15] [COMMAND] [Voice] Recognized: Включи музыку рояль
+[2026-03-04 22:32:16] [INFO] [Input] User: Включи музыку рояль
+[2026-03-04 22:32:16] [COMMAND] [CMD] Handled: Включи музыку рояль -> Включаю «рояль» на YouTube! 🎵
+[2026-03-04 22:32:38] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-03-04 22:32:38] [INFO] [Voice] Listening...
+[2026-03-04 22:32:42] [INFO] [Voice] Recognizing...
+[2026-03-04 22:32:42] [COMMAND] [Voice] Recognized: Включи музыку в Тополе стояла
+[2026-03-04 22:32:43] [INFO] [Input] User: Включи музыку в Тополе стояла
+[2026-03-04 22:32:43] [COMMAND] [CMD] Handled: Включи музыку в Тополе стояла -> Включаю «в тополе стояла» на YouTube! 🎵
+[2026-03-04 22:33:07] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-03-04 22:33:07] [INFO] [Voice] Listening...
+[2026-03-04 22:33:09] [INFO] [Voice] Recognizing...
+[2026-03-04 22:33:10] [COMMAND] [Voice] Recognized: Включи Steam
+[2026-03-04 22:33:11] [INFO] [Input] User: Включи Steam
+[2026-03-04 22:33:11] [AI] [Gemini] Request: Включи Steam
+[2026-03-04 22:33:15] [AI] [Gemini] Response: Ой, я не могу напрямую включить Steam! Ты можешь запустить его на своем компьюте
+[2026-03-04 22:33:15] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-03-04 22:33:15] [INFO] [Voice] Listening...
+[2026-03-04 22:33:17] [INFO] [Voice] Recognizing...
+[2026-03-04 22:33:18] [COMMAND] [Voice] Recognized: Запусти Steam
+[2026-03-04 22:33:18] [INFO] [Input] User: Запусти Steam
+[2026-03-04 22:33:19] [COMMAND] [CMD] Handled: Запусти Steam -> Запускаю steam! 💻
+[2026-03-04 22:33:37] [INFO] [Voice] Always-listen: True
+[2026-03-04 22:33:47] [COMMAND] [AlwaysListen] Heard: Юки Запусти Steam
+[2026-03-04 22:33:47] [INFO] [Input] User: Юки Запусти Steam
+[2026-03-04 22:33:47] [COMMAND] [CMD] Handled: Юки Запусти Steam -> Запускаю steam! 💻
+[2026-03-04 22:34:09] [COMMAND] [AlwaysListen] Heard: Юки Включи песню ма
+[2026-03-04 22:34:09] [INFO] [Input] User: Юки Включи песню ма
+[2026-03-04 22:34:09] [COMMAND] [CMD] Handled: Юки Включи песню ма -> Включаю «ма» на YouTube! 🎵
+[2026-03-04 22:34:18] [COMMAND] [AlwaysListen] Heard: О'кей Включи песню матушка Земля
+[2026-03-04 22:34:18] [INFO] [Input] User: О'кей Включи песню матушка Земля
+[2026-03-04 22:34:26] [COMMAND] [AlwaysListen] Heard: Включи песню матушка Земля
+[2026-03-04 22:34:26] [INFO] [Input] User: Включи песню матушка Земля
+[2026-03-04 22:34:30] [COMMAND] [AlwaysListen] Heard: а ту
+[2026-03-04 22:34:30] [INFO] [Input] User: а ту
+[2026-03-04 22:34:33] [INFO] [Voice] Always-listen: False
+[2026-03-09 22:56:23] [INFO] [STARTUP] Yuki started
+[2026-03-09 22:56:24] [INFO] [UI] Yuki UI initialized
+[2026-03-09 22:57:14] [INFO] [STARTUP] Yuki started
+[2026-03-09 22:57:14] [INFO] [UI] Yuki UI initialized

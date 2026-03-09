@@ -1,1 +1,12 @@
-{"skin": "alt_skin", "chibi": false, "x": 1735, "y": 705}
+{
+  "skin": "alt_skin",
+  "chibi": false,
+  "x": 651,
+  "y": 862,
+  "always_listen": false,
+  "custom_apps": {
+    "steam": "D:\\steam\\steam.exe",
+    "стим": "D:\\steam\\steam.exe",
+    "андроид студио": "C:\\Program Files\\Android\\Android Studio\\bin\\studio64.exe"
+  }
+}
