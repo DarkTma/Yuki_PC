@@ -1,8 +1,8 @@
 {
-  "skin": "alt_skin",
+  "skin": "default",
   "chibi": false,
-  "x": 651,
-  "y": 862,
+  "x": 1317,
+  "y": 638,
   "always_listen": false,
   "custom_apps": {
     "steam": "D:\\steam\\steam.exe",
