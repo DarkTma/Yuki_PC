@@ -92,10 +92,19 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 # ---------------------------------------------------------------------------
 
 def get_window_rect_under_cursor(exclude_hwnd=None):
+<<<<<<< HEAD
+=======
+    """
+    Возвращает (hwnd, (left, top, right, bottom)) окна верхнего уровня
+    под текущим положением курсора мыши (исключая само окно Юки).
+    Если подходящего окна нет — возвращает (None, None).
+    """
+>>>>>>> af108d012f0ab1e3539344f6b46ed043d96da75b
     try:
         user32 = ctypes.windll.user32
         pt = ctypes.wintypes.POINT()
         user32.GetCursorPos(ctypes.byref(pt))
+<<<<<<< HEAD
 
         # Находим окно именно под курсором
         hwnd = user32.WindowFromPoint(pt)
@@ -153,6 +162,24 @@ def get_window_rect_under_cursor(exclude_hwnd=None):
             logger.log("ERROR", "SnapScan", f"Win32 error: {e}")
         except:
             pass
+=======
+        hwnd = user32.WindowFromPoint(pt)
+        if not hwnd:
+            return None, None
+        root = user32.GetAncestor(hwnd, 2)  # GA_ROOT = 2
+        if not root:
+            root = hwnd
+        if exclude_hwnd and root == exclude_hwnd:
+            return None, None
+        if not user32.IsWindowVisible(root):
+            return None, None
+        if user32.IsIconic(root):
+            return None, None
+        rect = ctypes.wintypes.RECT()
+        user32.GetWindowRect(root, ctypes.byref(rect))
+        return root, (rect.left, rect.top, rect.right, rect.bottom)
+    except Exception:
+>>>>>>> af108d012f0ab1e3539344f6b46ed043d96da75b
         return None, None
 
 
@@ -176,7 +203,11 @@ SNAP_SCREEN_TOP   = 5
 SNAP_SCREEN_BOT   = 6
 SNAP_SCREEN_LEFT  = 7
 SNAP_SCREEN_RIGHT = 8
+<<<<<<< HEAD
 SNAP_DISTANCE     = 80  # пикселей — зона притяжения
+=======
+SNAP_DISTANCE     = 40  # пикселей — зона притяжения
+>>>>>>> af108d012f0ab1e3539344f6b46ed043d96da75b
 
 
 class WindowTracker(QThread):
@@ -2422,6 +2453,100 @@ class YukiAssistant(QWidget):
             print(f"Ошибка загрузки {filename}: {e}")
             import traceback
             traceback.print_exc()
+
+    # -----------------------------------------------------------------------
+    # --- Snap методы -------------------------------------------------------
+    # -----------------------------------------------------------------------
+
+    def _try_snap(self):
+        yuki_cx = self.x() + self.width()  // 2
+        yuki_cy = self.y() + self.height() // 2
+        screen_rect = QApplication.primaryScreen().geometry()
+        sw, sh = screen_rect.width(), screen_rect.height()
+
+        if yuki_cy <= SNAP_DISTANCE:
+            self._do_snap_screen(SNAP_SCREEN_TOP, sw, sh); return
+        if yuki_cy >= sh - SNAP_DISTANCE:
+            self._do_snap_screen(SNAP_SCREEN_BOT, sw, sh); return
+        if yuki_cx <= SNAP_DISTANCE:
+            self._do_snap_screen(SNAP_SCREEN_LEFT, sw, sh); return
+        if yuki_cx >= sw - SNAP_DISTANCE:
+            self._do_snap_screen(SNAP_SCREEN_RIGHT, sw, sh); return
+
+        own_hwnd = int(self.winId())
+        hwnd, r = get_window_rect_under_cursor(exclude_hwnd=own_hwnd)
+        if hwnd is None:
+            self._detach(); return
+
+        wl, wt, wr, wb = r
+        dist_top    = abs(yuki_cy - wt)
+        dist_bottom = abs(yuki_cy - wb)
+        dist_left   = abs(yuki_cx - wl)
+        dist_right  = abs(yuki_cx - wr)
+        min_dist = min(dist_top, dist_bottom, dist_left, dist_right)
+        if min_dist > SNAP_DISTANCE:
+            self._detach(); return
+
+        if min_dist == dist_top:      snap = SNAP_WIN_TOP
+        elif min_dist == dist_bottom: snap = SNAP_WIN_BOTTOM
+        elif min_dist == dist_left:   snap = SNAP_WIN_LEFT
+        else:                         snap = SNAP_WIN_RIGHT
+        self._do_snap_window(hwnd, snap, wl, wt, wr, wb)
+
+    def _do_snap_window(self, hwnd, snap_mode, wl, wt, wr, wb):
+        self._stop_tracker()
+        self.snap_mode    = snap_mode
+        self.snapped_hwnd = hwnd
+        self.is_floating  = True
+        self.update_image()
+        x, y = self._calc_window_snap_pos(snap_mode, wl, wt, wr, wb)
+        self.move(x, y)
+        self.window_tracker = WindowTracker(hwnd, snap_mode, self.width(), self.height())
+        self.window_tracker.position_changed.connect(self._on_tracker_pos)
+        self.window_tracker.window_closed.connect(self._detach)
+        self.window_tracker.start()
+        logger.log("INFO", "Snap", f"Snapped to window hwnd={hwnd}, mode={snap_mode}")
+
+    def _calc_window_snap_pos(self, snap_mode, l, t, r, b):
+        w, h = self.width(), self.height()
+        if snap_mode == SNAP_WIN_TOP:    return l + (r-l)//2 - w//2, t - h
+        if snap_mode == SNAP_WIN_BOTTOM: return l + (r-l)//2 - w//2, b
+        if snap_mode == SNAP_WIN_LEFT:   return l - w, t + (b-t)//2 - h//2
+        if snap_mode == SNAP_WIN_RIGHT:  return r,     t + (b-t)//2 - h//2
+        return self.x(), self.y()
+
+    def _do_snap_screen(self, snap_mode, sw, sh):
+        self._stop_tracker()
+        self.snap_mode    = snap_mode
+        self.snapped_hwnd = None
+        self.is_floating  = True
+        self.update_image()
+        w, h = self.width(), self.height()
+        if snap_mode == SNAP_SCREEN_TOP:    self.move(sw//2 - w//2, 0)
+        elif snap_mode == SNAP_SCREEN_BOT:  self.move(sw//2 - w//2, sh - h)
+        elif snap_mode == SNAP_SCREEN_LEFT: self.move(0, sh//2 - h//2)
+        else:                               self.move(sw - w, sh//2 - h//2)
+        logger.log("INFO", "Snap", f"Snapped to screen edge, mode={snap_mode}")
+
+    def _on_tracker_pos(self, x, y):
+        self.move(x, y)
+        if self.holo_screen.isVisible():
+            self.holo_screen.move(self.x() + self.width() + 10, self.y() + 20)
+
+    def _detach(self):
+        self._stop_tracker()
+        self.snap_mode    = SNAP_NONE
+        self.snapped_hwnd = None
+        self.is_floating  = False
+        self.update_image()
+        logger.log("INFO", "Snap", "Detached")
+
+    def _stop_tracker(self):
+        if self.window_tracker is not None:
+            self.window_tracker.stop()
+            self.window_tracker = None
+
+    # -----------------------------------------------------------------------
 
     # -----------------------------------------------------------------------
     # --- Snap методы -------------------------------------------------------
