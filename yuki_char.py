@@ -6,6 +6,8 @@ import requests
 import json
 import warnings
 import winsound
+import ctypes
+import ctypes.wintypes
 import webbrowser
 import subprocess
 import urllib.parse
@@ -76,13 +78,116 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton,
                              QGraphicsDropShadowEffect, QDialog, QHBoxLayout,
                              QLineEdit, QTextEdit, QScrollArea, QComboBox,
                              QSizePolicy, QFrame)
-from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, QThread, pyqtSignal, QUrl, QTimer
+from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, QThread, pyqtSignal, QUrl, QTimer, QRect
 from PyQt5.QtGui import QPixmap, QIcon, QColor, QFont, QTextCursor
 
 # --- НАСТРОЙКА GEMINI ---
 load_dotenv()  # загружает переменные из .env файла
 
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+
+# ---------------------------------------------------------------------------
+# --- Win32 хелперы для snap-прикрепления -----------------------------------
+# ---------------------------------------------------------------------------
+
+def get_window_rect_under_cursor(exclude_hwnd=None):
+    """
+    Возвращает (hwnd, (left, top, right, bottom)) окна верхнего уровня
+    под текущим положением курсора мыши (исключая само окно Юки).
+    Если подходящего окна нет — возвращает (None, None).
+    """
+    try:
+        user32 = ctypes.windll.user32
+        pt = ctypes.wintypes.POINT()
+        user32.GetCursorPos(ctypes.byref(pt))
+        hwnd = user32.WindowFromPoint(pt)
+        if not hwnd:
+            return None, None
+        root = user32.GetAncestor(hwnd, 2)  # GA_ROOT = 2
+        if not root:
+            root = hwnd
+        if exclude_hwnd and root == exclude_hwnd:
+            return None, None
+        if not user32.IsWindowVisible(root):
+            return None, None
+        if user32.IsIconic(root):
+            return None, None
+        rect = ctypes.wintypes.RECT()
+        user32.GetWindowRect(root, ctypes.byref(rect))
+        return root, (rect.left, rect.top, rect.right, rect.bottom)
+    except Exception:
+        return None, None
+
+
+def get_hwnd_rect(hwnd):
+    """Возвращает (left, top, right, bottom) для заданного hwnd."""
+    try:
+        rect = ctypes.wintypes.RECT()
+        ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect))
+        return rect.left, rect.top, rect.right, rect.bottom
+    except Exception:
+        return None
+
+
+# --- Константы режима прикрепления ---
+SNAP_NONE         = 0
+SNAP_WIN_TOP      = 1
+SNAP_WIN_BOTTOM   = 2
+SNAP_WIN_LEFT     = 3
+SNAP_WIN_RIGHT    = 4
+SNAP_SCREEN_TOP   = 5
+SNAP_SCREEN_BOT   = 6
+SNAP_SCREEN_LEFT  = 7
+SNAP_SCREEN_RIGHT = 8
+SNAP_DISTANCE     = 40  # пикселей — зона притяжения
+
+
+class WindowTracker(QThread):
+    """
+    Каждые 150 мс проверяет позицию прикреплённого окна и
+    сигнализирует новое положение Юки.
+    """
+    position_changed = pyqtSignal(int, int)
+    window_closed    = pyqtSignal()
+
+    def __init__(self, hwnd, snap_mode, yuki_w, yuki_h):
+        super().__init__()
+        self.hwnd      = hwnd
+        self.snap_mode = snap_mode
+        self.yuki_w    = yuki_w
+        self.yuki_h    = yuki_h
+        self._running  = True
+
+    def run(self):
+        user32 = ctypes.windll.user32
+        while self._running:
+            self.msleep(150)
+            if not user32.IsWindow(self.hwnd) or not user32.IsWindowVisible(self.hwnd):
+                self.window_closed.emit()
+                return
+            r = get_hwnd_rect(self.hwnd)
+            if r is None:
+                self.window_closed.emit()
+                return
+            l, t, ri, b = r
+            x, y = self._calc_pos(l, t, ri, b)
+            self.position_changed.emit(x, y)
+
+    def _calc_pos(self, l, t, r, b):
+        if self.snap_mode == SNAP_WIN_TOP:    return l + (r-l)//2 - self.yuki_w//2, t - self.yuki_h
+        if self.snap_mode == SNAP_WIN_BOTTOM: return l + (r-l)//2 - self.yuki_w//2, b
+        if self.snap_mode == SNAP_WIN_LEFT:   return l - self.yuki_w, t + (b-t)//2 - self.yuki_h//2
+        if self.snap_mode == SNAP_WIN_RIGHT:  return r, t + (b-t)//2 - self.yuki_h//2
+        return l, t
+
+    def update_yuki_size(self, w, h):
+        self.yuki_w = w
+        self.yuki_h = h
+
+    def stop(self):
+        self._running = False
+        self.wait(500)
 
 
 # =============================================
@@ -1793,14 +1898,15 @@ class RadialMenu(QWidget):
         self.resize(300, 300)
         self.animations = []
 
-        self.skin_btn     = self.create_button("Скин",    "#ffb6c1", self.change_skin)
-        self.close_btn    = self.create_button("Выход",   "#ff6b6b", self.close_app)
-        self.chibi_btn    = self.create_button("Чиби",    "#87ceeb", self.toggle_chibi)
-        self.chat_btn     = self.create_button("Чат",     "#a8ff78", self.yuki.ask_yuki)
-        self.logs_btn     = self.create_button("Логи",    "#ffa07a", self.yuki.show_logs)
-        self.mic_btn      = self.create_button("🎤",      "#c9a0ff", self.start_voice)
-        self.music_btn    = self.create_button("Музыка",  "#ffd700", self.show_music)
-        self.settings_btn = self.create_button("⚙",      "#aaaaaa", self.show_settings)
+        self.skin_btn     = self.create_button("Скин",      "#ffb6c1", self.change_skin)
+        self.close_btn    = self.create_button("Выход",     "#ff6b6b", self.close_app)
+        self.chibi_btn    = self.create_button("Чиби",      "#87ceeb", self.toggle_chibi)
+        self.chat_btn     = self.create_button("Чат",       "#a8ff78", self.yuki.ask_yuki)
+        self.logs_btn     = self.create_button("Логи",      "#ffa07a", self.yuki.show_logs)
+        self.mic_btn      = self.create_button("🎤",        "#c9a0ff", self.start_voice)
+        self.music_btn    = self.create_button("Музыка",    "#ffd700", self.show_music)
+        self.settings_btn = self.create_button("⚙",        "#aaaaaa", self.show_settings)
+        self.detach_btn   = self.create_button("Открепить", "#00ffaa", self.detach_yuki)
 
     def create_button(self, text, color, connect_func):
         btn = QPushButton(text, self)
@@ -1832,6 +1938,16 @@ class RadialMenu(QWidget):
             px  = int(cx + r * math.cos(rad))
             py  = int(cy + r * math.sin(rad))
             self.animate_btn(btn, center_pos, QPoint(px, py))
+
+        # Кнопка «Открепить» — видна только когда Юки прикреплена
+        if self.yuki.is_floating:
+            rad_d = math.radians(292)
+            px_d  = int(cx + (r + 20) * math.cos(rad_d))
+            py_d  = int(cy + (r + 20) * math.sin(rad_d))
+            self.animate_btn(self.detach_btn, center_pos, QPoint(px_d, py_d))
+            self.detach_btn.show()
+        else:
+            self.detach_btn.hide()
 
         self.show()
 
@@ -1878,15 +1994,25 @@ class RadialMenu(QWidget):
         self.hide()
         self.yuki.show_settings()
 
+    def detach_yuki(self):
+        self.yuki._detach()
+        self.hide()
+
 
 # --- Основной класс Юки ---
 class YukiAssistant(QWidget):
     def __init__(self):
         super().__init__()
         self.settings_file = 'yuki_settings.json'
-        
-        self.always_listen     = False
+
+        self.always_listen        = False
         self.always_listen_thread = None
+
+        # --- Snap-состояние ---
+        self.snap_mode      = SNAP_NONE
+        self.snapped_hwnd   = None
+        self.window_tracker = None
+        self.is_floating    = False
 
         self.load_settings()
         self.menu         = RadialMenu(self)
@@ -1897,9 +2023,7 @@ class YukiAssistant(QWidget):
 
         self.initUI()
         self.init_tray()
-        # Подключаем сигнал always-listen -> _process_input
         self._always_listen_signal.connect(lambda t: self._process_input(t, is_explicit=False))
-        # Если always-listen был включён — запускаем сразу
         if self.always_listen:
             QTimer.singleShot(2000, self._start_always_listen_loop)
         logger.log("INFO", "UI", "Yuki UI initialized")
@@ -2150,11 +2274,21 @@ class YukiAssistant(QWidget):
         self.oldPos = self.pos()
 
     def update_image(self):
-        if self.current_skin == 'default':
+        if self.is_floating:
+            # Floating-спрайт при прикреплении к окну/экрану
+            if self.current_skin == 'default':
+                filename = 'floating_yuki.png'
+            else:
+                filename = 'floating_yuki_skin.png'
+            if not os.path.exists(filename):
+                filename = 'yuki_chibi.png' if self.current_skin == 'default' else 'yuki_skin_chibi.png'
+        elif self.current_skin == 'default':
             filename = 'yuki_chibi.png' if self.is_chibi else 'yuki.png'
         else:
             filename = 'yuki_skin_chibi.png' if self.is_chibi else 'yuki_skin.png'
         self.load_image(filename)
+        if self.window_tracker is not None:
+            self.window_tracker.update_yuki_size(self.width(), self.height())
 
     def load_image(self, filename):
         if not os.path.exists(filename):
@@ -2179,6 +2313,100 @@ class YukiAssistant(QWidget):
         except Exception as e:
             print(f"Ошибка загрузки {filename}, {e}")
 
+    # -----------------------------------------------------------------------
+    # --- Snap методы -------------------------------------------------------
+    # -----------------------------------------------------------------------
+
+    def _try_snap(self):
+        yuki_cx = self.x() + self.width()  // 2
+        yuki_cy = self.y() + self.height() // 2
+        screen_rect = QApplication.primaryScreen().geometry()
+        sw, sh = screen_rect.width(), screen_rect.height()
+
+        if yuki_cy <= SNAP_DISTANCE:
+            self._do_snap_screen(SNAP_SCREEN_TOP, sw, sh); return
+        if yuki_cy >= sh - SNAP_DISTANCE:
+            self._do_snap_screen(SNAP_SCREEN_BOT, sw, sh); return
+        if yuki_cx <= SNAP_DISTANCE:
+            self._do_snap_screen(SNAP_SCREEN_LEFT, sw, sh); return
+        if yuki_cx >= sw - SNAP_DISTANCE:
+            self._do_snap_screen(SNAP_SCREEN_RIGHT, sw, sh); return
+
+        own_hwnd = int(self.winId())
+        hwnd, r = get_window_rect_under_cursor(exclude_hwnd=own_hwnd)
+        if hwnd is None:
+            self._detach(); return
+
+        wl, wt, wr, wb = r
+        dist_top    = abs(yuki_cy - wt)
+        dist_bottom = abs(yuki_cy - wb)
+        dist_left   = abs(yuki_cx - wl)
+        dist_right  = abs(yuki_cx - wr)
+        min_dist = min(dist_top, dist_bottom, dist_left, dist_right)
+        if min_dist > SNAP_DISTANCE:
+            self._detach(); return
+
+        if min_dist == dist_top:      snap = SNAP_WIN_TOP
+        elif min_dist == dist_bottom: snap = SNAP_WIN_BOTTOM
+        elif min_dist == dist_left:   snap = SNAP_WIN_LEFT
+        else:                         snap = SNAP_WIN_RIGHT
+        self._do_snap_window(hwnd, snap, wl, wt, wr, wb)
+
+    def _do_snap_window(self, hwnd, snap_mode, wl, wt, wr, wb):
+        self._stop_tracker()
+        self.snap_mode    = snap_mode
+        self.snapped_hwnd = hwnd
+        self.is_floating  = True
+        self.update_image()
+        x, y = self._calc_window_snap_pos(snap_mode, wl, wt, wr, wb)
+        self.move(x, y)
+        self.window_tracker = WindowTracker(hwnd, snap_mode, self.width(), self.height())
+        self.window_tracker.position_changed.connect(self._on_tracker_pos)
+        self.window_tracker.window_closed.connect(self._detach)
+        self.window_tracker.start()
+        logger.log("INFO", "Snap", f"Snapped to window hwnd={hwnd}, mode={snap_mode}")
+
+    def _calc_window_snap_pos(self, snap_mode, l, t, r, b):
+        w, h = self.width(), self.height()
+        if snap_mode == SNAP_WIN_TOP:    return l + (r-l)//2 - w//2, t - h
+        if snap_mode == SNAP_WIN_BOTTOM: return l + (r-l)//2 - w//2, b
+        if snap_mode == SNAP_WIN_LEFT:   return l - w, t + (b-t)//2 - h//2
+        if snap_mode == SNAP_WIN_RIGHT:  return r,     t + (b-t)//2 - h//2
+        return self.x(), self.y()
+
+    def _do_snap_screen(self, snap_mode, sw, sh):
+        self._stop_tracker()
+        self.snap_mode    = snap_mode
+        self.snapped_hwnd = None
+        self.is_floating  = True
+        self.update_image()
+        w, h = self.width(), self.height()
+        if snap_mode == SNAP_SCREEN_TOP:    self.move(sw//2 - w//2, 0)
+        elif snap_mode == SNAP_SCREEN_BOT:  self.move(sw//2 - w//2, sh - h)
+        elif snap_mode == SNAP_SCREEN_LEFT: self.move(0, sh//2 - h//2)
+        else:                               self.move(sw - w, sh//2 - h//2)
+        logger.log("INFO", "Snap", f"Snapped to screen edge, mode={snap_mode}")
+
+    def _on_tracker_pos(self, x, y):
+        self.move(x, y)
+        if self.holo_screen.isVisible():
+            self.holo_screen.move(self.x() + self.width() + 10, self.y() + 20)
+
+    def _detach(self):
+        self._stop_tracker()
+        self.snap_mode    = SNAP_NONE
+        self.snapped_hwnd = None
+        self.is_floating  = False
+        self.update_image()
+        logger.log("INFO", "Snap", "Detached")
+
+    def _stop_tracker(self):
+        if self.window_tracker is not None:
+            self.window_tracker.stop()
+            self.window_tracker = None
+
+    # -----------------------------------------------------------------------
+
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.oldPos = event.globalPos()
@@ -2188,6 +2416,11 @@ class YukiAssistant(QWidget):
         if event.buttons() == Qt.LeftButton:
             delta = event.globalPos() - self.oldPos
             if delta.manhattanLength() > 3:
+                # При перетаскивании откреплять от окна (но не от экрана)
+                if self.snap_mode not in (SNAP_NONE,
+                                          SNAP_SCREEN_TOP, SNAP_SCREEN_BOT,
+                                          SNAP_SCREEN_LEFT, SNAP_SCREEN_RIGHT):
+                    self._detach()
                 self.move(self.x() + delta.x(), self.y() + delta.y())
                 if self.holo_screen.isVisible():
                     self.holo_screen.move(self.x() + self.width() + 10, self.y() + 20)
@@ -2200,6 +2433,12 @@ class YukiAssistant(QWidget):
             self.menu.show_around(center_x, center_y)
         elif event.button() == Qt.LeftButton:
             self.save_settings()
+            self._try_snap()
+
+    def mouseDoubleClickEvent(self, event):
+        """Двойной клик — открепиться от окна/экрана."""
+        if event.button() == Qt.LeftButton and self.is_floating:
+            self._detach()
 
 
 if __name__ == '__main__':
