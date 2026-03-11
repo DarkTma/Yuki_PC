@@ -91,20 +91,21 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 # --- Win32 хелперы для snap-прикрепления -----------------------------------
 # ---------------------------------------------------------------------------
 
+
+##<<<<<<< HEAD
+#*====
+    #"""
+    #Возвращает (hwnd, (left, top, right, bottom)) окна верхнего уровня
+    #под текущим положением курсора мыши (исключая само окно Юки).
+# Если подходящего окна нет — возвращает (None, None).
+# """
+##> af108d012f0ab1e3539344f6b46ed043d96da75b
 def get_window_rect_under_cursor(exclude_hwnd=None):
-<<<<<<< HEAD
-=======
-    """
-    Возвращает (hwnd, (left, top, right, bottom)) окна верхнего уровня
-    под текущим положением курсора мыши (исключая само окно Юки).
-    Если подходящего окна нет — возвращает (None, None).
-    """
->>>>>>> af108d012f0ab1e3539344f6b46ed043d96da75b
     try:
         user32 = ctypes.windll.user32
         pt = ctypes.wintypes.POINT()
         user32.GetCursorPos(ctypes.byref(pt))
-<<<<<<< HEAD
+### HEAD
 
         # Находим окно именно под курсором
         hwnd = user32.WindowFromPoint(pt)
@@ -162,7 +163,7 @@ def get_window_rect_under_cursor(exclude_hwnd=None):
             logger.log("ERROR", "SnapScan", f"Win32 error: {e}")
         except:
             pass
-=======
+#=======
         hwnd = user32.WindowFromPoint(pt)
         if not hwnd:
             return None, None
@@ -179,7 +180,7 @@ def get_window_rect_under_cursor(exclude_hwnd=None):
         user32.GetWindowRect(root, ctypes.byref(rect))
         return root, (rect.left, rect.top, rect.right, rect.bottom)
     except Exception:
->>>>>>> af108d012f0ab1e3539344f6b46ed043d96da75b
+#>>>>>>> af108d012f0ab1e3539344f6b46ed043d96da75b
         return None, None
 
 
@@ -203,11 +204,10 @@ SNAP_SCREEN_TOP   = 5
 SNAP_SCREEN_BOT   = 6
 SNAP_SCREEN_LEFT  = 7
 SNAP_SCREEN_RIGHT = 8
-<<<<<<< HEAD
+
 SNAP_DISTANCE     = 80  # пикселей — зона притяжения
-=======
-SNAP_DISTANCE     = 40  # пикселей — зона притяжения
->>>>>>> af108d012f0ab1e3539344f6b46ed043d96da75b
+
+#>>>>>>> af108d012f0ab1e3539344f6b46ed043d96da75b
 
 
 class WindowTracker(QThread):
