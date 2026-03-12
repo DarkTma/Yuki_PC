@@ -748,3 +748,157 @@ KeyboardInterrupt
 [2026-03-10 23:33:20] [INFO] [Snap] Snapped to window hwnd=526982, mode=4
 [2026-03-10 23:33:20] [INFO] [Snap] Detached
 [2026-03-10 23:33:20] [INFO] [Snap] Detached
+[2026-03-12 18:39:14] [INFO] [STARTUP] Yuki started
+[2026-03-12 18:39:15] [INFO] [UI] Yuki UI initialized
+[2026-03-12 18:39:21] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 18:39:23] [INFO] [Snap] Detached
+[2026-03-12 18:39:23] [INFO] [Snap] Detached
+[2026-03-12 18:39:24] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 18:39:25] [INFO] [Snap] Detached
+[2026-03-12 18:39:25] [INFO] [Snap] Detached
+[2026-03-12 18:39:25] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 18:39:26] [INFO] [Snap] Detached
+[2026-03-12 18:39:26] [INFO] [Snap] Snapped to window hwnd=853920, mode=4
+[2026-03-12 18:39:28] [INFO] [Snap] Detached
+[2026-03-12 18:39:28] [INFO] [Snap] Detached
+[2026-03-12 18:39:29] [INFO] [Snap] Snapped to window hwnd=853920, mode=3
+[2026-03-12 18:39:32] [INFO] [Snap] Detached
+[2026-03-12 18:39:33] [INFO] [Snap] Detached
+[2026-03-12 18:39:34] [INFO] [Snap] Snapped to window hwnd=853920, mode=2
+[2026-03-12 18:39:37] [INFO] [Snap] Detached
+[2026-03-12 18:39:37] [INFO] [Snap] Snapped to window hwnd=853920, mode=2
+[2026-03-12 18:39:38] [INFO] [Snap] Detached
+[2026-03-12 18:39:38] [INFO] [Snap] Detached
+[2026-03-12 18:39:39] [INFO] [Snap] Snapped to window hwnd=853920, mode=4
+[2026-03-12 18:39:41] [INFO] [Snap] Detached
+[2026-03-12 18:39:42] [INFO] [Snap] Detached
+[2026-03-12 18:39:43] [INFO] [Snap] Snapped to window hwnd=196654, mode=3
+[2026-03-12 18:39:45] [INFO] [Snap] Detached
+[2026-03-12 18:39:46] [INFO] [Snap] Detached
+[2026-03-12 18:39:47] [INFO] [Snap] Snapped to screen edge, mode=5
+[2026-03-12 18:39:48] [INFO] [Snap] Detached
+[2026-03-12 18:39:49] [INFO] [Snap] Snapped to screen edge, mode=5
+[2026-03-12 18:39:50] [INFO] [Snap] Detached
+[2026-03-12 18:39:51] [INFO] [Snap] Detached
+[2026-03-12 18:39:52] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 18:39:53] [INFO] [Snap] Detached
+[2026-03-12 18:39:53] [INFO] [Snap] Detached
+[2026-03-12 18:41:26] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 18:41:27] [INFO] [Snap] Detached
+[2026-03-12 18:41:27] [INFO] [Snap] Detached
+[2026-03-12 18:42:52] [INFO] [Snap] Detached
+[2026-03-12 18:50:21] [INFO] [STARTUP] Yuki started
+[2026-03-12 18:50:22] [INFO] [UI] Yuki UI initialized
+[2026-03-12 18:50:30] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 18:50:33] [INFO] [Snap] Detached
+[2026-03-12 18:50:34] [INFO] [Snap] Snapped to window hwnd=853920, mode=4
+[2026-03-12 18:50:35] [INFO] [Snap] Detached
+[2026-03-12 18:50:36] [INFO] [Snap] Detached
+[2026-03-12 18:50:37] [INFO] [Snap] Snapped to screen edge, mode=7
+[2026-03-12 18:50:38] [INFO] [Snap] Snapped to window hwnd=853920, mode=3
+[2026-03-12 18:50:40] [INFO] [Snap] Detached
+[2026-03-12 18:50:40] [INFO] [Snap] Detached
+[2026-03-12 18:50:41] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 18:50:45] [INFO] [Snap] Detached
+[2026-03-12 18:50:46] [INFO] [Snap] Detached
+[2026-03-12 18:50:52] [INFO] [Music] Playing: Yuki_Final_1_nodescendo_(Vocals).mp3
+[2026-03-12 18:51:09] [INFO] [Music] Playing: Yuki_Final_svoboden_vocals.mp3
+[2026-03-12 18:51:13] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-12 18:51:15] [INFO] [Music] Playing: yuki_luz_roja.mp3
+[2026-03-12 18:51:20] [INFO] [Music] Playing: yuki_nodescend.mp3
+[2026-03-12 18:51:58] [INFO] [Snap] Snapped to screen edge, mode=5
+[2026-03-12 18:51:59] [INFO] [Snap] Detached
+[2026-03-12 18:52:00] [INFO] [Snap] Snapped to screen edge, mode=6
+[2026-03-12 18:52:01] [INFO] [Snap] Detached
+[2026-03-12 18:52:04] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 18:52:18] [INFO] [Snap] Detached
+[2026-03-12 18:52:18] [INFO] [Snap] Detached
+[2026-03-12 18:52:20] [INFO] [Snap] Snapped to window hwnd=853920, mode=4
+[2026-03-12 18:52:21] [INFO] [Snap] Detached
+[2026-03-12 18:52:21] [INFO] [Snap] Detached
+[2026-03-12 18:52:23] [INFO] [Snap] Detached
+[2026-03-12 18:52:24] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 18:52:27] [INFO] [Snap] Detached
+[2026-03-12 18:52:28] [INFO] [Snap] Detached
+[2026-03-12 19:01:50] [INFO] [STARTUP] Yuki started
+[2026-03-12 19:01:51] [INFO] [UI] Yuki UI initialized
+[2026-03-12 19:02:24] [INFO] [STARTUP] Yuki started
+[2026-03-12 19:02:24] [INFO] [UI] Yuki UI initialized
+[2026-03-12 19:05:21] [INFO] [STARTUP] Yuki started
+[2026-03-12 19:05:21] [INFO] [UI] Yuki UI initialized
+[2026-03-12 19:05:25] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 19:05:31] [INFO] [Snap] Detached
+[2026-03-12 19:05:31] [INFO] [Snap] Detached
+[2026-03-12 19:05:32] [INFO] [Snap] Detached
+[2026-03-12 19:05:33] [INFO] [Snap] Snapped to window hwnd=853920, mode=3
+[2026-03-12 19:05:34] [INFO] [Snap] Detached
+[2026-03-12 19:05:35] [INFO] [Snap] Detached
+[2026-03-12 19:05:36] [INFO] [Snap] Snapped to window hwnd=853920, mode=4
+[2026-03-12 19:05:37] [INFO] [Snap] Detached
+[2026-03-12 19:05:37] [INFO] [Snap] Detached
+[2026-03-12 19:05:38] [INFO] [Snap] Detached
+[2026-03-12 19:05:39] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 19:05:47] [ERROR] [CRASH] Traceback (most recent call last):
+  File "D:\yukigit\Yuki_PC\yuki_char.py", line 2698, in _on_tracker_pos
+    def _on_tracker_pos(self, x, y):
+    
+KeyboardInterrupt
+[2026-03-12 19:06:33] [INFO] [STARTUP] Yuki started
+[2026-03-12 19:06:33] [INFO] [UI] Yuki UI initialized
+[2026-03-12 19:06:37] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 19:06:40] [INFO] [Snap] Detached
+[2026-03-12 19:06:40] [INFO] [Snap] Detached
+[2026-03-12 19:06:41] [INFO] [Snap] Snapped to window hwnd=853920, mode=3
+[2026-03-12 19:06:43] [INFO] [Snap] Detached
+[2026-03-12 19:06:43] [INFO] [Snap] Detached
+[2026-03-12 19:06:44] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 19:06:48] [INFO] [Snap] Detached
+[2026-03-12 19:06:48] [INFO] [Snap] Detached
+[2026-03-12 19:06:49] [INFO] [Snap] Snapped to screen edge, mode=5
+[2026-03-12 19:06:52] [INFO] [Snap] Snapped to screen edge, mode=6
+[2026-03-12 19:06:58] [INFO] [Snap] Detached
+[2026-03-12 19:06:59] [INFO] [Snap] Detached
+[2026-03-12 19:07:36] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 19:07:40] [INFO] [Snap] Detached
+[2026-03-12 19:07:40] [INFO] [Snap] Detached
+[2026-03-12 19:07:42] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 19:09:10] [INFO] [Snap] Detached
+[2026-03-12 19:09:10] [INFO] [Snap] Detached
+[2026-03-12 19:09:11] [INFO] [Snap] Detached
+[2026-03-12 19:11:36] [INFO] [Snap] Detached
+[2026-03-12 19:14:08] [INFO] [Settings] Opened about/website
+[2026-03-12 19:29:25] [INFO] [STARTUP] Yuki started
+[2026-03-12 19:29:25] [INFO] [UI] Yuki UI initialized
+[2026-03-12 19:29:36] [INFO] [Snap] Detached
+[2026-03-12 19:29:38] [INFO] [Snap] Snapped to window hwnd=3541444, mode=1
+[2026-03-12 19:29:39] [INFO] [Snap] Detached
+[2026-03-12 19:29:39] [INFO] [Snap] Detached
+[2026-03-12 19:29:41] [INFO] [Snap] Snapped to screen edge, mode=5
+[2026-03-12 19:29:42] [INFO] [Snap] Detached
+[2026-03-12 19:29:43] [INFO] [Snap] Snapped to screen edge, mode=6
+[2026-03-12 19:29:45] [INFO] [Snap] Detached
+[2026-03-12 19:29:48] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 19:29:52] [INFO] [Snap] Detached
+[2026-03-12 19:29:52] [INFO] [Snap] Detached
+[2026-03-12 19:29:53] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 19:30:02] [INFO] [Snap] Detached
+[2026-03-12 19:30:02] [INFO] [Snap] Detached
+[2026-03-12 19:30:04] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 19:30:08] [INFO] [Snap] Detached
+[2026-03-12 19:36:54] [INFO] [STARTUP] Yuki started
+[2026-03-12 19:36:54] [INFO] [UI] Yuki UI initialized
+[2026-03-12 19:37:01] [INFO] [Snap] Detached
+[2026-03-12 19:37:01] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 19:37:07] [INFO] [Snap] Detached
+[2026-03-12 19:37:07] [INFO] [Snap] Detached
+[2026-03-12 19:37:09] [INFO] [Snap] Detached
+[2026-03-12 19:37:11] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 19:37:12] [INFO] [Snap] Detached
+[2026-03-12 19:37:12] [INFO] [Snap] Detached
+[2026-03-12 19:37:14] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 19:37:25] [INFO] [Snap] Detached
+[2026-03-12 19:37:26] [INFO] [Snap] Detached
+[2026-03-12 19:37:26] [INFO] [Snap] Snapped to window hwnd=853920, mode=1
+[2026-03-12 19:37:30] [INFO] [Snap] Detached
+[2026-03-12 19:37:31] [INFO] [Snap] Detached
+[2026-03-12 19:37:45] [INFO] [Snap] Detached

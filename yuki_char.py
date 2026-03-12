@@ -242,10 +242,11 @@ class WindowTracker(QThread):
             self.position_changed.emit(x, y)
 
     def _calc_pos(self, l, t, r, b):
-        if self.snap_mode == SNAP_WIN_TOP:    return l + (r-l)//2 - self.yuki_w//2, t - self.yuki_h
-        if self.snap_mode == SNAP_WIN_BOTTOM: return l + (r-l)//2 - self.yuki_w//2, b
-        if self.snap_mode == SNAP_WIN_LEFT:   return l - self.yuki_w, t + (b-t)//2 - self.yuki_h//2
-        if self.snap_mode == SNAP_WIN_RIGHT:  return r, t + (b-t)//2 - self.yuki_h//2
+        overlap = 10  # На сколько пикселей Юки залезает на окно
+        if self.snap_mode == SNAP_WIN_TOP:    return l + (r - l) // 2 - self.yuki_w // 2, t - self.yuki_h + overlap
+        if self.snap_mode == SNAP_WIN_BOTTOM: return l + (r - l) // 2 - self.yuki_w // 2, b - overlap
+        if self.snap_mode == SNAP_WIN_LEFT:   return l - self.yuki_w + overlap, t + (b - t) // 2 - self.yuki_h // 2
+        if self.snap_mode == SNAP_WIN_RIGHT:  return r - overlap, t + (b - t) // 2 - self.yuki_h // 2
         return l, t
 
     def update_yuki_size(self, w, h):
@@ -1319,15 +1320,17 @@ class MusicPlayerWindow(QWidget):
         """Каждые 500 мс: обновляем позицию и проверяем конец трека."""
         if not PYGAME_AVAILABLE:
             return
-        if not pygame.mixer.music.get_busy() and self._is_playing and not self._is_paused:
-            # Трек закончился — следующий
-            if self.current_index < len(self.tracks) - 1:
-                self._play_index(self.current_index + 1)
-            else:
-                self._stop()
-                self.current_index = -1
-                self._reload_list()
+
+        # Если Юки "думает", что играет, с паузы снято, а pygame молчит — значит трек закончился
+        if self._is_playing and not self._is_paused and not pygame.mixer.music.get_busy():
+            if self.tracks:
+                # Берем следующий индекс. Оператор % (остаток от деления) делает так,
+                # что после последнего трека снова включится первый (нулевой).
+                next_index = (self.current_index + 1) % len(self.tracks)
+                self._play_index(next_index)
             return
+
+        # Обновляем ползунок времени, если трек еще играет
         if self._track_len_ms > 0 and not self._seeking:
             pos_ms = pygame.mixer.music.get_pos()
             if pos_ms >= 0:
@@ -1431,6 +1434,18 @@ class SettingsWindow(QWidget):
         mic_desc = QLabel("  Yuki will always listen and respond when she hears you.")
         mic_desc.setObjectName("descLabel")
         c_lay.addWidget(mic_desc)
+
+        # --- НОВЫЙ БЛОК: Галочка для парения ---
+        self.hover_cb = QCheckBox("Enable floating animation (Анимация парения)")
+        self.hover_cb.setObjectName("settingCb")
+        self.hover_cb.setChecked(getattr(self.yuki, 'enable_hover', True))
+        self.hover_cb.stateChanged.connect(self._on_hover_changed)
+        c_lay.addWidget(self.hover_cb)
+
+        hover_desc = QLabel("  Yuki will gently float up and down when sitting on your screen.")
+        hover_desc.setObjectName("descLabel")
+        c_lay.addWidget(hover_desc)
+        # ----------------------------------------
 
         # Разделитель
         sep1 = QFrame(); sep1.setObjectName("sepLine")
@@ -1592,6 +1607,13 @@ class SettingsWindow(QWidget):
         enabled = (state == _Qt.Checked)
         self.yuki.set_always_listen(enabled)
 
+    def _on_hover_changed(self, state):
+        from PyQt5.QtCore import Qt as _Qt
+        enabled = (state == _Qt.Checked)
+        self.yuki.enable_hover = enabled
+        self.yuki.save_settings()
+        self.yuki.update_image()  # Перерисовываем Юки, чтобы анимация сразу остановилась/запустилась
+
     def _open_website(self):
         webbrowser.open("https://darktma.github.io")  # поменяй на свой сайт
         logger.log("INFO", "Settings", "Opened about/website")
@@ -1692,10 +1714,8 @@ class YukiBrain(QThread):
             # Для TTS убираем emoji — они ломают синтез
             tts_text = strip_emoji(ai_text)
             audio_path = self.synthesize_audio(tts_text, self.language)
-            if audio_path:
-                self.reply_ready.emit(ai_text, audio_path)
-            else:
-                self.error_occurred.emit("Ошибка синтеза речи.")
+            # Отправляем текст в любом случае. Если аудио нет, передаем пустую строку.
+            self.reply_ready.emit(ai_text, audio_path if audio_path else "")
         except Exception as e:
             tb = traceback.format_exc()
             logger.log("ERROR", "YukiBrain", f"{e}\n{tb}")
@@ -1723,7 +1743,8 @@ class YukiBrain(QThread):
             speed = 0.9
 
         payload = {"text": text, "language": lang, "speaker_wav": voice_file, "speed": speed}
-        response = requests.post(url, json=payload, timeout=60)
+        # timeout=(2, 60) означает: 2 сек на попытку подключения, 60 сек на саму генерацию
+        response = requests.post(url, json=payload, timeout=(2, 60))
         response.raise_for_status()
 
         temp_dir = tempfile.gettempdir()
@@ -2274,11 +2295,16 @@ class YukiAssistant(QWidget):
     def on_yuki_reply(self, text, audio_path):
         screen_x = self.x() + self.width() + 10
         screen_y = self.y() + 20
-        self.holo_screen.show_message(text, self.current_skin, screen_x, screen_y)
-        
-        self.audio_thread = AudioPlayerThread(audio_path)
-        self.audio_thread.finished_playing.connect(self.holo_screen.hide)
-        self.audio_thread.start()
+
+        if audio_path:
+            # Если звук сгенерирован, показываем текст и ждем окончания озвучки
+            self.holo_screen.show_message(text, self.current_skin, screen_x, screen_y)
+            self.audio_thread = AudioPlayerThread(audio_path)
+            self.audio_thread.finished_playing.connect(self.holo_screen.hide)
+            self.audio_thread.start()
+        else:
+            # Если звука нет (сервер отключен), просто показываем текст на 7 секунд
+            self.holo_screen.show_message(text, self.current_skin, screen_x, screen_y, auto_hide_ms=7000)
 
     def on_audio_state_changed(self):
         if not self.audio_effect.isPlaying():
@@ -2294,6 +2320,8 @@ class YukiAssistant(QWidget):
                 self.start_y       = data.get('y', 100)
                 self.always_listen = data.get('always_listen', False)
                 self.custom_apps   = data.get('custom_apps', {})
+                # --- НОВОЕ ---
+                self.enable_hover  = data.get('enable_hover', True)
         except (FileNotFoundError, json.JSONDecodeError):
             self.current_skin  = 'default'
             self.is_chibi      = False
@@ -2301,13 +2329,17 @@ class YukiAssistant(QWidget):
             self.start_y       = 100
             self.always_listen = False
             self.custom_apps   = {}
+            # --- НОВОЕ ---
+            self.enable_hover  = True
 
     def save_settings(self):
         data = {
             'skin': self.current_skin, 'chibi': self.is_chibi,
             'x': self.x(), 'y': self.y(),
             'always_listen': self.always_listen,
-            'custom_apps': getattr(self, 'custom_apps', {})
+            'custom_apps': getattr(self, 'custom_apps', {}),
+            # --- НОВОЕ ---
+            'enable_hover': self.enable_hover
         }
         with open(self.settings_file, 'w') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -2364,6 +2396,96 @@ class YukiAssistant(QWidget):
         if self.window_tracker is not None:
             self.window_tracker.update_yuki_size(self.width(), self.height())
 
+    # def load_image(self, filename):
+    #     if not os.path.exists(filename):
+    #         print(f"ВНИМАНИЕ: Файл {filename} не найден!")
+    #         return
+    #
+    #     try:
+    #         from PyQt5.QtGui import QTransform
+    #         from PyQt5.QtCore import QPoint
+    #
+    #         pixmap = QPixmap(filename)
+    #         base_scale = 3
+    #         new_width = max(1, pixmap.width() // base_scale)
+    #         new_height = max(1, pixmap.height() // base_scale)
+    #
+    #         if self.is_chibi:
+    #             chibi_scale = 2
+    #             new_width = max(1, new_width // chibi_scale)
+    #             new_height = max(1, new_height // chibi_scale)
+    #
+    #         # 1. ОБЯЗАТЕЛЬНО задаем начальные значения ДО всех проверок!
+    #         self.snap_shift = QPoint(0, 0)
+    #         transform = QTransform()
+    #
+    #         if self.is_floating:
+    #             snap_scale = 3  # Сделать в 3 раза меньше
+    #             new_width = max(1, new_width // snap_scale)
+    #             new_height = max(1, new_height // snap_scale)
+    #
+    #             # Задаем вращение
+    #             if self.snap_mode in (1, 5):  # ВЕРХ (потолок)
+    #                 transform.rotate(180)
+    #             elif self.snap_mode in (3, 7):  # ЛЕВЫЙ край
+    #                 transform.rotate(-90)
+    #             elif self.snap_mode in (4, 8):  # ПРАВЫЙ край
+    #                 transform.rotate(90)
+    #
+    #             # Если мы повернули Юки боком, ее ширина и высота физически меняются местами
+    #             if self.snap_mode in (3, 7, 4, 8):
+    #                 shift_w, shift_h = new_height, new_width
+    #             else:
+    #                 shift_w, shift_h = new_width, new_height
+    #
+    #             # Задаем сдвиг внутрь окна на её собственный размер
+    #             if self.snap_mode in (1, 5):  # ВЕРХ: сдвиг вниз
+    #                 self.snap_shift = QPoint(0, shift_h)
+    #             elif self.snap_mode in (2, 6):  # НИЗ: сдвиг вверх
+    #                 self.snap_shift = QPoint(0, -shift_h)
+    #             elif self.snap_mode in (3, 7):  # ЛЕВЫЙ: сдвиг вправо
+    #                 self.snap_shift = QPoint(shift_w, 0)
+    #             elif self.snap_mode in (4, 8):  # ПРАВЫЙ: сдвиг влево
+    #                 self.snap_shift = QPoint(-shift_w, 0)
+    #
+    #         # 2. Масштабируем
+    #         pixmap = pixmap.scaled(new_width, new_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+    #
+    #         # 3. Вращаем картинку (если нужно)
+    #         if not transform.isIdentity():
+    #             pixmap = pixmap.transformed(transform, Qt.SmoothTransformation)
+    #
+    #         self.label.setPixmap(pixmap)
+    #         self.label.resize(pixmap.width(), pixmap.height())
+    #
+    #         # 4. Вычисляем размеры главного невидимого окна и базовую позицию картинки
+    #         # Если сдвиг положительный, отступаем от края. Если отрицательный, базовая точка остается 0.
+    #         base_x = self.snap_shift.x() if self.snap_shift.x() > 0 else 0
+    #         base_y = self.snap_shift.y() if self.snap_shift.y() > 0 else 0
+    #
+    #         hover_offset = 15
+    #
+    #         # Окно должно вмещать саму Юки + величину отступа + место для парения
+    #         window_width = pixmap.width() + abs(self.snap_shift.x())
+    #         window_height = pixmap.height() + abs(self.snap_shift.y()) + hover_offset
+    #         self.resize(window_width, window_height)
+    #
+    #         # 5. Анимация напрямую меняет координаты (pos) картинки внутри окна
+    #         self.hover_anim.stop()
+    #         self.hover_anim.setDuration(3000)
+    #
+    #         # Анимируем от нижней точки (base_y + hover) к верхней (base_y) и обратно
+    #         self.hover_anim.setStartValue(QPoint(base_x, base_y + hover_offset))
+    #         self.hover_anim.setKeyValueAt(0.5, QPoint(base_x, base_y))
+    #         self.hover_anim.setEndValue(QPoint(base_x, base_y + hover_offset))
+    #
+    #         self.hover_anim.start()
+    #
+    #     except Exception as e:
+    #         print(f"Ошибка загрузки {filename}: {e}")
+    #         import traceback
+    #         traceback.print_exc()
+
     def load_image(self, filename):
         if not os.path.exists(filename):
             print(f"ВНИМАНИЕ: Файл {filename} не найден!")
@@ -2383,71 +2505,58 @@ class YukiAssistant(QWidget):
                 new_width = max(1, new_width // chibi_scale)
                 new_height = max(1, new_height // chibi_scale)
 
-            # 1. ОБЯЗАТЕЛЬНО задаем начальные значения ДО всех проверок!
-            self.snap_shift = QPoint(0, 0)
             transform = QTransform()
 
             if self.is_floating:
-                snap_scale = 3  # Сделать в 3 раза меньше
-                new_width = max(1, new_width // snap_scale)
-                new_height = max(1, new_height // snap_scale)
+                # Если Юки уже чиби, сжимаем ее всего в 1.5 раза (или поставь 1, чтобы вообще не сжимать)
+                # Если обычная Юки — сжимаем в 3 раза
+                snap_scale = 1.5 if self.is_chibi else 3.0
 
-                # Задаем вращение
-                if self.snap_mode in (1, 5):  # ВЕРХ (потолок)
+                # Используем int( ... / snap_scale), так как 1.5 — это дробное число
+                new_width = max(1, int(new_width / snap_scale))
+                new_height = max(1, int(new_height / snap_scale))
+
+                # Поворачиваем так, чтобы она стояла снаружи окна
+                # ...
+
+                # Поворачиваем так, чтобы она стояла снаружи окна
+                if self.snap_mode in (2, 5): # Низ окна
                     transform.rotate(180)
-                elif self.snap_mode in (3, 7):  # ЛЕВЫЙ край
-                    transform.rotate(-90)
-                elif self.snap_mode in (4, 8):  # ПРАВЫЙ край
+                elif self.snap_mode in (4, 7): # Правый край
                     transform.rotate(90)
+                elif self.snap_mode in (3, 8): # Левый край
+                    transform.rotate(-90)
 
-                # Если мы повернули Юки боком, ее ширина и высота физически меняются местами
-                if self.snap_mode in (3, 7, 4, 8):
-                    shift_w, shift_h = new_height, new_width
-                else:
-                    shift_w, shift_h = new_width, new_height
+                # Меняем местами ширину и высоту при повороте на бок
+                if self.snap_mode in (3, 4, 7, 8):
+                    new_width, new_height = new_height, new_width
 
-                # Задаем сдвиг внутрь окна на её собственный размер
-                if self.snap_mode in (1, 5):  # ВЕРХ: сдвиг вниз
-                    self.snap_shift = QPoint(0, shift_h)
-                elif self.snap_mode in (2, 6):  # НИЗ: сдвиг вверх
-                    self.snap_shift = QPoint(0, -shift_h)
-                elif self.snap_mode in (3, 7):  # ЛЕВЫЙ: сдвиг вправо
-                    self.snap_shift = QPoint(shift_w, 0)
-                elif self.snap_mode in (4, 8):  # ПРАВЫЙ: сдвиг влево
-                    self.snap_shift = QPoint(-shift_w, 0)
-
-            # 2. Масштабируем
             pixmap = pixmap.scaled(new_width, new_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
-            # 3. Вращаем картинку (если нужно)
             if not transform.isIdentity():
                 pixmap = pixmap.transformed(transform, Qt.SmoothTransformation)
 
             self.label.setPixmap(pixmap)
+            self.setContentsMargins(0, 0, 0, 0)
             self.label.resize(pixmap.width(), pixmap.height())
 
-            # 4. Вычисляем размеры главного невидимого окна и базовую позицию картинки
-            # Если сдвиг положительный, отступаем от края. Если отрицательный, базовая точка остается 0.
-            base_x = self.snap_shift.x() if self.snap_shift.x() > 0 else 0
-            base_y = self.snap_shift.y() if self.snap_shift.y() > 0 else 0
+            # Парение работает только если не прилипли
+            hover_offset = 15 if not self.is_floating else 0
+            self.resize(pixmap.width(), pixmap.height() + hover_offset)
 
-            hover_offset = 15
-
-            # Окно должно вмещать саму Юки + величину отступа + место для парения
-            window_width = pixmap.width() + abs(self.snap_shift.x())
-            window_height = pixmap.height() + abs(self.snap_shift.y()) + hover_offset
-            self.resize(window_width, window_height)
-
-            # 5. Анимация напрямую меняет координаты (pos) картинки внутри окна
+            # 5. Управление анимацией
             self.hover_anim.stop()
-            self.hover_anim.setDuration(3000)
-
-            # Анимируем от нижней точки (base_y + hover) к верхней (base_y) и обратно
-            self.hover_anim.setStartValue(QPoint(base_x, base_y + hover_offset))
-            self.hover_anim.setKeyValueAt(0.5, QPoint(base_x, base_y))
-            self.hover_anim.setEndValue(QPoint(base_x, base_y + hover_offset))
-
-            self.hover_anim.start()
+            # Парит, только если не прилипла И настройка включена
+            if not self.is_floating and getattr(self, 'enable_hover', True):
+                self.hover_anim.setDuration(3000)
+                self.hover_anim.setStartValue(QPoint(0, hover_offset))
+                self.hover_anim.setKeyValueAt(0.5, QPoint(0, 0))
+                self.hover_anim.setEndValue(QPoint(0, hover_offset))
+                self.hover_anim.start()
+            else:
+                # Если прилипла ИЛИ парение отключено — жестко фиксируем.
+                # Смещаем вниз на hover_offset, чтобы она стояла на "земле", а не висела.
+                self.label.move(0, hover_offset)
 
         except Exception as e:
             print(f"Ошибка загрузки {filename}: {e}")
@@ -2509,10 +2618,11 @@ class YukiAssistant(QWidget):
 
     def _calc_window_snap_pos(self, snap_mode, l, t, r, b):
         w, h = self.width(), self.height()
-        if snap_mode == SNAP_WIN_TOP:    return l + (r-l)//2 - w//2, t - h
-        if snap_mode == SNAP_WIN_BOTTOM: return l + (r-l)//2 - w//2, b
-        if snap_mode == SNAP_WIN_LEFT:   return l - w, t + (b-t)//2 - h//2
-        if snap_mode == SNAP_WIN_RIGHT:  return r,     t + (b-t)//2 - h//2
+        overlap = 10  # Тот же самый отступ
+        if snap_mode == SNAP_WIN_TOP:    return l + (r - l) // 2 - w // 2, t - h + overlap
+        if snap_mode == SNAP_WIN_BOTTOM: return l + (r - l) // 2 - w // 2, b - overlap
+        if snap_mode == SNAP_WIN_LEFT:   return l - w + overlap, t + (b - t) // 2 - h // 2
+        if snap_mode == SNAP_WIN_RIGHT:  return r - overlap, t + (b - t) // 2 - h // 2
         return self.x(), self.y()
 
     def _do_snap_screen(self, snap_mode, sw, sh):
@@ -2603,10 +2713,11 @@ class YukiAssistant(QWidget):
 
     def _calc_window_snap_pos(self, snap_mode, l, t, r, b):
         w, h = self.width(), self.height()
-        if snap_mode == SNAP_WIN_TOP:    return l + (r-l)//2 - w//2, t - h
-        if snap_mode == SNAP_WIN_BOTTOM: return l + (r-l)//2 - w//2, b
-        if snap_mode == SNAP_WIN_LEFT:   return l - w, t + (b-t)//2 - h//2
-        if snap_mode == SNAP_WIN_RIGHT:  return r,     t + (b-t)//2 - h//2
+        overlap = 10  # Тот же самый отступ
+        if snap_mode == SNAP_WIN_TOP:    return l + (r - l) // 2 - w // 2, t - h + overlap
+        if snap_mode == SNAP_WIN_BOTTOM: return l + (r - l) // 2 - w // 2, b - overlap
+        if snap_mode == SNAP_WIN_LEFT:   return l - w + overlap, t + (b - t) // 2 - h // 2
+        if snap_mode == SNAP_WIN_RIGHT:  return r - overlap, t + (b - t) // 2 - h // 2
         return self.x(), self.y()
 
     def _do_snap_screen(self, snap_mode, sw, sh):

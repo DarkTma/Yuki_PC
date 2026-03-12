@@ -1,12 +1,13 @@
 {
   "skin": "default",
   "chibi": false,
-  "x": 1317,
-  "y": 638,
+  "x": 399,
+  "y": 649,
   "always_listen": false,
   "custom_apps": {
     "steam": "D:\\steam\\steam.exe",
     "стим": "D:\\steam\\steam.exe",
     "андроид студио": "C:\\Program Files\\Android\\Android Studio\\bin\\studio64.exe"
-  }
+  },
+  "enable_hover": false
 }
