@@ -902,3 +902,231 @@ KeyboardInterrupt
 [2026-03-12 19:37:30] [INFO] [Snap] Detached
 [2026-03-12 19:37:31] [INFO] [Snap] Detached
 [2026-03-12 19:37:45] [INFO] [Snap] Detached
+[2026-03-13 19:05:24] [INFO] [STARTUP] Yuki started
+[2026-03-13 19:05:24] [INFO] [UI] Yuki UI initialized
+[2026-03-13 19:05:29] [INFO] [Music] Playing: Yuki_Final_1_nodescendo_(Vocals).mp3
+[2026-03-13 19:06:22] [INFO] [Music] Playing: Yuki_Final_svoboden_vocals.mp3
+[2026-03-13 19:08:22] [INFO] [Snap] Detached
+[2026-03-13 19:08:26] [INFO] [Snap] Snapped to screen edge, mode=7
+[2026-03-13 19:08:46] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-13 19:11:29] [INFO] [Music] Playing: yuki_luz_roja.mp3
+[2026-03-13 19:13:33] [INFO] [Music] Playing: yuki_nodescend.mp3
+[2026-03-13 19:14:00] [INFO] [Music] Playing: yuki_svoboden.mp3
+[2026-03-13 19:14:06] [INFO] [Music] Playing: yuki_nodescend.mp3
+[2026-03-13 19:14:35] [INFO] [Music] Playing: yuki_svoboden.mp3
+[2026-03-13 19:16:59] [INFO] [Music] Playing: Yuki_Final_1_nodescendo_(Vocals).mp3
+[2026-03-13 19:17:42] [INFO] [Snap] Detached
+[2026-03-17 22:27:32] [INFO] [STARTUP] Yuki started
+[2026-03-17 22:27:33] [INFO] [UI] Yuki UI initialized
+[2026-03-17 22:27:36] [INFO] [Snap] Detached
+[2026-03-17 22:27:39] [ERROR] [Music] Player Error: name 'cv2' is not defined
+[2026-03-17 22:27:40] [INFO] [Snap] Snapped to window hwnd=1246878, mode=4
+[2026-03-17 22:27:42] [INFO] [Snap] Detached
+[2026-03-17 22:27:42] [INFO] [Snap] Detached
+[2026-03-17 22:27:42] [ERROR] [Music] Player Error: name 'cv2' is not defined
+[2026-03-17 22:27:43] [ERROR] [Music] Player Error: name 'cv2' is not defined
+[2026-03-17 22:27:50] [ERROR] [Music] Player Error: name 'cv2' is not defined
+[2026-03-17 22:27:50] [ERROR] [Music] Player Error: name 'cv2' is not defined
+[2026-03-17 22:27:51] [ERROR] [Music] Player Error: name 'cv2' is not defined
+[2026-03-17 22:27:52] [ERROR] [Music] Player Error: name 'cv2' is not defined
+[2026-03-17 22:27:53] [ERROR] [Music] Player Error: name 'cv2' is not defined
+[2026-03-17 22:27:54] [ERROR] [Music] Player Error: name 'cv2' is not defined
+[2026-03-17 22:29:00] [INFO] [STARTUP] Yuki started
+[2026-03-17 22:29:01] [INFO] [UI] Yuki UI initialized
+[2026-03-17 22:29:04] [ERROR] [Video] Не удалось открыть Shuro_dance.mov
+[2026-03-17 22:29:04] [INFO] [Music] Playing: Yuki_Final_svoboden_vocals.mp3
+[2026-03-17 22:29:07] [INFO] [Snap] Detached
+[2026-03-17 22:29:49] [ERROR] [CRASH] Traceback (most recent call last):
+  File "D:\yukigit\Yuki_PC\yuki_char.py", line 1327, in _on_tick
+    def _on_tick(self):
+    
+KeyboardInterrupt
+[2026-03-17 22:29:57] [INFO] [STARTUP] Yuki started
+[2026-03-17 22:29:57] [INFO] [UI] Yuki UI initialized
+[2026-03-17 22:30:00] [INFO] [Music] Playing: Yuki_Final_svoboden_vocals.mp3
+[2026-03-17 22:30:03] [INFO] [Snap] Detached
+[2026-03-17 22:30:37] [INFO] [Snap] Detached
+[2026-03-17 22:32:25] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-17 22:32:41] [INFO] [STARTUP] Yuki started
+[2026-03-17 22:32:41] [INFO] [UI] Yuki UI initialized
+[2026-03-17 22:32:42] [INFO] [Snap] Detached
+[2026-03-17 22:32:45] [ERROR] [Video] Не удалось открыть Shuro_dance.mov
+[2026-03-17 22:32:46] [INFO] [Music] Playing: Yuki_Final_svoboden_vocals.mp3
+[2026-03-17 22:32:47] [INFO] [Snap] Detached
+[2026-03-17 22:33:13] [INFO] [STARTUP] Yuki started
+[2026-03-17 22:33:14] [INFO] [UI] Yuki UI initialized
+[2026-03-17 22:33:16] [INFO] [Music] Playing: Yuki_Final_svoboden_vocals.mp3
+[2026-03-17 22:34:25] [INFO] [STARTUP] Yuki started
+[2026-03-17 22:34:25] [INFO] [UI] Yuki UI initialized
+[2026-03-17 22:34:27] [INFO] [Music] Playing: Yuki_Final_svoboden_vocals.mp3
+[2026-03-17 22:36:20] [INFO] [Snap] Detached
+[2026-03-17 22:36:20] [INFO] [Snap] Snapped to window hwnd=328846, mode=3
+[2026-03-17 22:36:21] [INFO] [Snap] Detached
+[2026-03-17 22:36:21] [INFO] [Snap] Detached
+[2026-03-17 22:36:22] [INFO] [Snap] Detached
+[2026-03-17 22:36:52] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-17 22:37:25] [INFO] [Snap] Detached
+[2026-03-17 22:38:17] [INFO] [Snap] Snapped to window hwnd=2033242, mode=1
+[2026-03-17 22:38:20] [INFO] [Snap] Detached
+[2026-03-17 22:38:20] [INFO] [Snap] Detached
+[2026-03-17 22:38:21] [INFO] [Snap] Snapped to window hwnd=2623534, mode=1
+[2026-03-17 22:38:28] [INFO] [Snap] Detached
+[2026-03-17 22:38:28] [INFO] [Snap] Detached
+[2026-03-17 22:38:32] [INFO] [Snap] Detached
+[2026-03-17 22:41:55] [INFO] [Input] User: юки включи мызыку loza roja
+[2026-03-17 22:41:55] [AI] [Gemini] Request: юки включи мызыку loza roja
+[2026-03-17 22:41:58] [AI] [Gemini] Response: Конечно! Включаю 'Loza Roja'. ♪
+[2026-03-17 22:42:49] [INFO] [Input] User: Юки включи музыку loza roja
+[2026-03-17 22:42:49] [COMMAND] [CMD] Handled: Юки включи музыку loza roja -> Включаю «loza roja» на YouTube! 🎵
+[2026-03-17 22:43:49] [INFO] [Snap] Snapped to window hwnd=2033242, mode=1
+[2026-03-17 22:43:50] [INFO] [Snap] Detached
+[2026-03-17 22:43:50] [INFO] [Snap] Snapped to window hwnd=526678, mode=2
+[2026-03-17 22:43:51] [INFO] [Snap] Detached
+[2026-03-17 22:43:51] [INFO] [Snap] Detached
+[2026-03-17 22:55:31] [INFO] [Snap] Detached
+[2026-03-17 22:56:33] [INFO] [Snap] Snapped to window hwnd=198806, mode=3
+[2026-03-17 23:00:20] [INFO] [Snap] Detached
+[2026-03-17 23:07:47] [ERROR] [CRASH] Traceback (most recent call last):
+  File "D:\yukigit\Yuki_PC\yuki_char.py", line 1327, in _on_tick
+    def _seek_pressed(self):
+    
+KeyboardInterrupt
+[2026-03-17 23:07:51] [INFO] [STARTUP] Yuki started
+[2026-03-17 23:07:52] [INFO] [UI] Yuki UI initialized
+[2026-03-17 23:10:08] [INFO] [STARTUP] Yuki started
+[2026-03-17 23:10:09] [INFO] [UI] Yuki UI initialized
+[2026-03-17 23:10:11] [INFO] [Snap] Detached
+[2026-03-17 23:10:15] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-17 23:10:18] [ERROR] [Music] Player Error: music_drmp3: corrupt mp3 file (bad stream).
+[2026-03-17 23:10:22] [ERROR] [Music] Player Error: music_drmp3: corrupt mp3 file (bad stream).
+[2026-03-17 23:10:23] [ERROR] [Music] Player Error: music_drmp3: corrupt mp3 file (bad stream).
+[2026-03-17 23:10:24] [ERROR] [Music] Player Error: music_drmp3: corrupt mp3 file (bad stream).
+[2026-03-17 23:10:26] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-17 23:12:08] [INFO] [STARTUP] Yuki started
+[2026-03-17 23:12:08] [INFO] [UI] Yuki UI initialized
+[2026-03-17 23:12:11] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-17 23:12:12] [INFO] [Music] Playing: nodescendo.mp3
+[2026-03-17 23:12:31] [INFO] [BeatDetection] Найдено 251 битов (BPM: 92)
+[2026-03-17 23:12:31] [INFO] [BeatDetection] Найдено 534 битов (BPM: 129)
+[2026-03-17 23:12:44] [INFO] [Music] Playing: siai.mp3
+[2026-03-17 23:12:44] [INFO] [BeatDetection] Найдено 255 битов (BPM: 117)
+[2026-03-17 23:15:26] [INFO] [STARTUP] Yuki started
+[2026-03-17 23:15:26] [INFO] [UI] Yuki UI initialized
+[2026-03-17 23:15:35] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-17 23:15:36] [INFO] [Music] Playing: nodescendo.mp3
+[2026-03-17 23:15:42] [INFO] [Snap] Detached
+[2026-03-17 23:15:44] [INFO] [BeatDetection] Найдено 402 реальных ударов (Onsets)
+[2026-03-17 23:15:44] [INFO] [BeatDetection] Найдено 841 реальных ударов (Onsets)
+[2026-03-17 23:16:10] [INFO] [Music] Playing: siai.mp3
+[2026-03-17 23:16:10] [INFO] [BeatDetection] Найдено 429 реальных ударов (Onsets)
+[2026-03-17 23:18:34] [INFO] [Music] Playing: svoboden.mp3
+[2026-03-17 23:18:35] [INFO] [BeatDetection] Найдено 755 реальных ударов (Onsets)
+[2026-03-17 23:20:57] [INFO] [Music] Playing: vocenamira.mp3
+[2026-03-17 23:20:57] [INFO] [BeatDetection] Найдено 563 реальных ударов (Onsets)
+[2026-03-17 23:21:20] [ERROR] [CRASH] Traceback (most recent call last):
+  File "D:\yukigit\Yuki_PC\yuki_char.py", line 2850, in _process_video_frame
+    def _process_video_frame(self):
+                     ^^^^^^^^^^^^^^^
+KeyboardInterrupt
+[2026-03-17 23:21:24] [INFO] [STARTUP] Yuki started
+[2026-03-17 23:21:24] [INFO] [UI] Yuki UI initialized
+[2026-03-17 23:21:26] [INFO] [Snap] Detached
+[2026-03-17 23:21:29] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-17 23:21:30] [INFO] [Music] Playing: nodescendo.mp3
+[2026-03-17 23:21:32] [ERROR] [BeatDetection] Ошибка анализа битов: Attempting to match empty event list
+[2026-03-17 23:21:32] [ERROR] [BeatDetection] Ошибка анализа битов: Attempting to match empty event list
+[2026-03-17 23:21:37] [INFO] [Snap] Detached
+[2026-03-17 23:22:16] [ERROR] [CRASH] Traceback (most recent call last):
+  File "D:\yukigit\Yuki_PC\yuki_char.py", line 2850, in _process_video_frame
+    def _process_video_frame(self):
+    
+KeyboardInterrupt
+[2026-03-17 23:22:19] [INFO] [STARTUP] Yuki started
+[2026-03-17 23:22:19] [INFO] [UI] Yuki UI initialized
+[2026-03-17 23:22:22] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-17 23:22:22] [INFO] [Music] Playing: nodescendo.mp3
+[2026-03-17 23:22:25] [ERROR] [BeatDetection] Ошибка анализа битов: Attempting to match empty event list
+[2026-03-17 23:22:25] [ERROR] [BeatDetection] Ошибка анализа битов: Attempting to match empty event list
+[2026-03-17 23:22:43] [ERROR] [CRASH] Traceback (most recent call last):
+  File "D:\yukigit\Yuki_PC\yuki_char.py", line 2850, in _process_video_frame
+    def _process_video_frame(self):
+    
+KeyboardInterrupt
+[2026-03-17 23:22:46] [INFO] [STARTUP] Yuki started
+[2026-03-17 23:22:47] [INFO] [UI] Yuki UI initialized
+[2026-03-17 23:22:53] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-17 23:22:54] [INFO] [Music] Playing: nodescendo.mp3
+[2026-03-17 23:22:56] [INFO] [BeatDetection] Найдено 19 сильных ударов (Фонк)
+[2026-03-17 23:22:56] [INFO] [BeatDetection] Найдено 22 сильных ударов (Фонк)
+[2026-03-17 23:24:19] [ERROR] [CRASH] Traceback (most recent call last):
+  File "D:\yukigit\Yuki_PC\yuki_char.py", line 2850, in _process_video_frame
+    def _process_video_frame(self):
+    
+KeyboardInterrupt
+[2026-03-17 23:24:22] [INFO] [STARTUP] Yuki started
+[2026-03-17 23:24:23] [INFO] [UI] Yuki UI initialized
+[2026-03-17 23:24:30] [INFO] [Snap] Detached
+[2026-03-17 23:24:32] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-17 23:24:33] [INFO] [Music] Playing: nodescendo.mp3
+[2026-03-17 23:24:35] [INFO] [Snap] Detached
+[2026-03-17 23:24:36] [INFO] [BeatDetection] Найдено 297 сильных ударов (Фонк)
+[2026-03-17 23:24:36] [INFO] [BeatDetection] Найдено 657 сильных ударов (Фонк)
+[2026-03-17 23:24:36] [INFO] [Snap] Detached
+[2026-03-17 23:24:47] [ERROR] [CRASH] Traceback (most recent call last):
+  File "D:\yukigit\Yuki_PC\yuki_char.py", line 2850, in _process_video_frame
+    def _process_video_frame(self):
+    
+KeyboardInterrupt
+[2026-03-17 23:24:54] [INFO] [STARTUP] Yuki started
+[2026-03-17 23:24:55] [INFO] [UI] Yuki UI initialized
+[2026-03-17 23:24:57] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-17 23:24:57] [INFO] [Music] Playing: nodescendo.mp3
+[2026-03-17 23:25:00] [INFO] [BeatDetection] Найдено 101 сильных ударов (Фонк)
+[2026-03-17 23:25:00] [INFO] [BeatDetection] Найдено 116 сильных ударов (Фонк)
+[2026-03-17 23:25:24] [ERROR] [CRASH] Traceback (most recent call last):
+  File "D:\yukigit\Yuki_PC\yuki_char.py", line 2850, in _process_video_frame
+    def _process_video_frame(self):
+    
+KeyboardInterrupt
+[2026-03-17 23:25:27] [INFO] [STARTUP] Yuki started
+[2026-03-17 23:25:27] [INFO] [UI] Yuki UI initialized
+[2026-03-17 23:25:29] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-17 23:25:29] [INFO] [Music] Playing: nodescendo.mp3
+[2026-03-17 23:25:32] [INFO] [BeatDetection] Найдено 141 сильных ударов (Фонк)
+[2026-03-17 23:25:32] [INFO] [BeatDetection] Найдено 216 сильных ударов (Фонк)
+[2026-03-17 23:27:54] [ERROR] [CRASH] Traceback (most recent call last):
+  File "D:\yukigit\Yuki_PC\yuki_char.py", line 2850, in _process_video_frame
+    def _process_video_frame(self):
+    
+KeyboardInterrupt
+[2026-03-17 23:27:57] [INFO] [STARTUP] Yuki started
+[2026-03-17 23:27:57] [INFO] [UI] Yuki UI initialized
+[2026-03-17 23:28:00] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-17 23:28:00] [INFO] [Music] Playing: nodescendo.mp3
+[2026-03-17 23:28:03] [INFO] [BeatDetection] Найдено 141 сильных ударов (Фонк)
+[2026-03-17 23:28:03] [INFO] [BeatDetection] Найдено 216 сильных ударов (Фонк)
+[2026-03-17 23:28:22] [INFO] [Snap] Snapped to window hwnd=1051292, mode=1
+[2026-03-17 23:28:23] [INFO] [Snap] Detached
+[2026-03-17 23:28:23] [INFO] [Snap] Detached
+[2026-03-17 23:32:12] [INFO] [Music] Playing: siai.mp3
+[2026-03-17 23:32:12] [INFO] [BeatDetection] Найдено 150 сильных ударов (Фонк)
+[2026-03-17 23:34:36] [INFO] [Music] Playing: svoboden.mp3
+[2026-03-17 23:34:37] [INFO] [BeatDetection] Найдено 283 сильных ударов (Фонк)
+[2026-03-17 23:36:59] [INFO] [Music] Playing: vocenamira.mp3
+[2026-03-17 23:36:59] [INFO] [BeatDetection] Найдено 198 сильных ударов (Фонк)
+[2026-03-17 23:39:24] [INFO] [STARTUP] Yuki started
+[2026-03-17 23:39:25] [INFO] [UI] Yuki UI initialized
+[2026-03-17 23:39:28] [ERROR] [Video] Не удалось открыть Shuro_dance.mov
+[2026-03-17 23:39:28] [ERROR] [Video] Не удалось открыть Shuro_dance.mov
+[2026-03-17 23:39:28] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-17 23:39:28] [ERROR] [Video] Не удалось открыть Shuro_dance.mov
+[2026-03-17 23:39:28] [ERROR] [Video] Не удалось открыть Shuro_dance.mov
+[2026-03-17 23:39:29] [INFO] [Music] Playing: nodescendo.mp3
+[2026-03-17 23:39:31] [INFO] [BeatDetection] Найдено 141 сильных ударов (Фонк)
+[2026-03-17 23:39:31] [INFO] [BeatDetection] Найдено 216 сильных ударов (Фонк)
+[2026-03-17 23:40:04] [INFO] [STARTUP] Yuki started
+[2026-03-17 23:40:04] [INFO] [UI] Yuki UI initialized
+[2026-03-17 23:40:07] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-17 23:40:08] [INFO] [Music] Playing: nodescendo.mp3
+[2026-03-17 23:40:10] [INFO] [BeatDetection] Найдено 141 сильных ударов (Фонк)
+[2026-03-17 23:40:11] [INFO] [BeatDetection] Найдено 216 сильных ударов (Фонк)

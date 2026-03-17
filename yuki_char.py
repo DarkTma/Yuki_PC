@@ -17,6 +17,10 @@ import datetime
 from threading import Thread
 import re
 import math
+import cv2
+import numpy as np
+import librosa
+from PyQt5.QtGui import QImage
 try:
     import speech_recognition as sr
     SR_AVAILABLE = True
@@ -1056,9 +1060,10 @@ if not PYGAME_AVAILABLE:
 class MusicPlayerWindow(QWidget):
     """Окно проигрывателя MP3 из папки music/ (через pygame)."""
 
-    def __init__(self, skin="default"):
+    def __init__(self, yuki_assistant, skin="default"):
         super().__init__()
-        self.skin          = skin
+        self.yuki = yuki_assistant  # Сохраняем ссылку на Юки
+        self.skin = skin
         self.current_index = -1
         self.tracks        = []
         self._is_playing   = False
@@ -1241,6 +1246,15 @@ class MusicPlayerWindow(QWidget):
         try:
             pygame.mixer.music.load(path)
             pygame.mixer.music.play()
+            self.yuki.start_dancing()
+
+            # --- НОВОЕ: Запускаем поиск битов ---
+            self.yuki.current_beats = []  # Очищаем старые биты
+            self.beat_thread = BeatDetectorThread(path)
+            # Когда биты найдутся, передаем их Юки
+            self.beat_thread.beats_ready.connect(lambda beats: setattr(self.yuki, 'current_beats', beats))
+            self.beat_thread.start()
+            self.yuki.start_dancing()
             # Определяем длину трека через mutagen если есть
             self._track_len_ms = 0
             try:
@@ -1280,10 +1294,12 @@ class MusicPlayerWindow(QWidget):
             pygame.mixer.music.pause()
             self._is_paused = True
             self.play_btn.setText("▶")
+            self.yuki.stop_dancing()
         elif self._is_paused:
             pygame.mixer.music.unpause()
             self._is_paused = False
             self.play_btn.setText("⏸")
+            self.yuki.start_dancing()
         else:
             if self.tracks:
                 self._play_index(0)
@@ -1291,6 +1307,7 @@ class MusicPlayerWindow(QWidget):
     def _stop(self):
         if PYGAME_AVAILABLE:
             pygame.mixer.music.stop()
+        self.yuki.stop_dancing()
         self._is_playing = False
         self._is_paused  = False
         self._tick.stop()
@@ -1767,6 +1784,38 @@ class YukiBrain(QThread):
             f.write(synth_res.content)
         return file_path
 
+
+class BeatDetectorThread(QThread):
+    beats_ready = pyqtSignal(list)
+
+    def __init__(self, filepath):
+        super().__init__()
+        self.filepath = filepath
+
+    def run(self):
+        try:
+            y, sr = librosa.load(self.filepath, sr=22050)
+
+            # Считаем силу (громкость) каждого всплеска звука
+            onset_env = librosa.onset.onset_strength(y=y, sr=sr)
+
+            # НОВОЕ: параметр delta=1.5 отсеивает весь "мусор".
+            # Оставляет только самые сильные пики. Если всё еще много битов — сделай delta=2.0
+            onset_frames = librosa.onset.onset_detect(
+                onset_envelope=onset_env,
+                sr=sr,
+                backtrack=True,
+                delta=0.2  # <--- Порог чувствительности
+            )
+            onset_times_sec = librosa.frames_to_time(onset_frames, sr=sr)
+
+            beat_times_ms = [int(b * 1000) for b in onset_times_sec]
+
+            self.beats_ready.emit(beat_times_ms)
+            logger.log("INFO", "BeatDetection", f"Найдено {len(beat_times_ms)} сильных ударов (Фонк)")
+        except Exception as e:
+            logger.log("ERROR", "BeatDetection", f"Ошибка анализа битов: {e}")
+
 class AudioPlayerThread(QThread):
     finished_playing = pyqtSignal()
 
@@ -2106,7 +2155,14 @@ class YukiAssistant(QWidget):
         self.menu         = RadialMenu(self)
         self.holo_screen  = HolographicScreen()
         self.log_window   = LogWindow(self.current_skin)
-        self.music_window = MusicPlayerWindow(self.current_skin)
+        # Было: self.music_window = MusicPlayerWindow(self.current_skin)
+        self.music_window = MusicPlayerWindow(self, self.current_skin)
+
+        # ДОБАВИТЬ ЭТО ДЛЯ ВИДЕО:
+        self.video_timer = QTimer(self)
+        self.video_timer.timeout.connect(self._process_video_frame)
+        self.video_cap = None
+
         self.settings_win = SettingsWindow(self, self.current_skin)
 
         self.initUI()
@@ -2750,6 +2806,112 @@ class YukiAssistant(QWidget):
         if self.window_tracker is not None:
             self.window_tracker.stop()
             self.window_tracker = None
+
+    def start_dancing(self):
+        """Запускает видео анимацию."""
+        if getattr(self, 'video_cap', None) is None:
+            # Открываем видеофайл
+            self.video_cap = cv2.VideoCapture("Shiro_dance.mp4")
+
+            # --- НОВОЕ: Вычисляем кадр, на котором нужно зациклить видео ---
+            if self.video_cap.isOpened():
+                fps = self.video_cap.get(cv2.CAP_PROP_FPS)
+                if fps <= 0:
+                    fps = 30  # Защита, если OpenCV не смог определить FPS
+
+                total_frames = int(self.video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
+                # Вычисляем сколько кадров в 0.5 секундах
+                frames_to_cut = int(fps * 0.7)
+
+                # Запоминаем кадр, на котором будем делать сброс (loop)
+                self.loop_end_frame = max(1, total_frames - frames_to_cut)
+
+        # Если файл не найден
+        if not self.video_cap.isOpened():
+            logger.log("ERROR", "Video", "Не удалось открыть Shuro_dance.mov")
+            return
+
+        self.hover_anim.stop()  # Останавливаем обычное парение
+        self.video_timer.start(25)  # Запускаем таймер видео (~30 FPS)
+
+    def stop_dancing(self):
+        """Останавливает видео и возвращает статичную картинку."""
+        self.video_timer.stop()
+        if self.video_cap:
+            self.video_cap.release()
+            self.video_cap = None
+        self.update_image()  # Возвращаем обычную Юки
+
+        # Возвращаем парение, если оно включено
+        if not self.is_floating and getattr(self, 'enable_hover', True):
+            self.hover_anim.start()
+
+    def _process_video_frame(self):
+        if not getattr(self, 'video_cap', None) or not self.video_cap.isOpened():
+            return
+
+        current_frame = int(self.video_cap.get(cv2.CAP_PROP_POS_FRAMES))
+        if current_frame >= getattr(self, 'loop_end_frame', 999999):
+            self.video_cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
+        ret, frame = self.video_cap.read()
+        if not ret:
+            self.video_cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            ret, frame = self.video_cap.read()
+            if not ret: return
+
+        # 1. СНАЧАЛА создаем маску (до того, как черный цвет испортится эффектами)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        _, mask = cv2.threshold(gray, 20, 255, cv2.THRESH_BINARY)
+
+        # 2. Считаем пульс бита
+        self.beat_pulse = getattr(self, 'beat_pulse', 0.0) * 0.85
+        if self.beat_pulse < 0.01:
+            self.beat_pulse = 0.0
+
+        if getattr(self, 'current_beats', None) and PYGAME_AVAILABLE:
+            current_time = pygame.mixer.music.get_pos() + 50
+            for beat_time in self.current_beats:
+                diff = current_time - beat_time
+                if 0 <= diff <= 100:
+                    self.beat_pulse = 1.0  # Удар!
+                    break
+                elif diff < 0:
+                    break
+
+        # 3. Применяем вспышку света ТОЛЬКО к самому кадру
+        if self.beat_pulse > 0:
+            # Увеличил beta до 50 для более яркого свечения Юки
+            alpha_boost = 1.0 + (0.3 * self.beat_pulse)
+            beta_boost = int(50 * self.beat_pulse)
+            frame = cv2.convertScaleAbs(frame, alpha=alpha_boost, beta=beta_boost)
+
+        # 4. Собираем всё: на осветленный кадр накладываем идеальную маску
+        frame_bgra = cv2.cvtColor(frame, cv2.COLOR_BGR2BGRA)
+        frame_bgra[:, :, 3] = mask
+
+        h, w, ch = frame_bgra.shape
+        bytes_per_line = ch * w
+        qimg = QImage(frame_bgra.data, w, h, bytes_per_line, QImage.Format_ARGB32).copy()
+        pixmap = QPixmap.fromImage(qimg)
+
+        # 5. Масштабируем без прыжков размера!
+        base_scale = 3
+        new_width = max(1, pixmap.width() // base_scale)
+        new_height = max(1, pixmap.height() // base_scale)
+
+        if getattr(self, 'is_chibi', False):
+            new_width = max(1, new_width // 2)
+            new_height = max(1, new_height // 2)
+
+        pixmap = pixmap.scaled(new_width, new_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.label.setPixmap(pixmap)
+
+        self.setContentsMargins(0, 0, 0, 0)
+        self.label.resize(pixmap.width(), pixmap.height())
+        hover_offset = 15 if not getattr(self, 'is_floating', False) else 0
+        self.resize(pixmap.width(), pixmap.height() + hover_offset)
 
     # -----------------------------------------------------------------------
 
