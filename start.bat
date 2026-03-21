@@ -4,7 +4,7 @@ chcp 437 >nul
 
 echo.
 echo  +==================================+
-echo  ^|       Yuki Assistant             ^|
+echo  ^|        Yuki Assistant            ^|
 echo  +==================================+
 echo.
 
@@ -36,7 +36,7 @@ echo  [OK] pip found.
 
 :: --- Marker file: if exists - libraries already installed ---
 set MARKER=.yuki_installed
-set MARKER_VER=4
+set MARKER_VER=5
 
 :: Check marker version (re-install if outdated)
 if exist %MARKER% (
@@ -50,63 +50,36 @@ if exist %MARKER% (
     )
 )
 
-:: --- First launch: install dependencies ---
+:: --- First launch or update: install dependencies ---
 echo.
 echo  +==================================+
-echo  ^|  First launch - installing       ^|
-echo  ^|  libraries (1-2 minutes)...      ^|
+echo  ^|  Installing dependencies...      ^|
+echo  ^|  (This may take a few minutes)   ^|
 echo  +==================================+
 echo.
 
 echo  Upgrading pip...
-pip install --upgrade pip >nul 2>&1
+python -m pip install --upgrade pip >nul 2>&1
 
-echo  Installing PyQt5...
-pip install PyQt5 >nul 2>&1
-if errorlevel 1 (
-    echo  [WARNING] PyQt5 failed. Try manually: pip install PyQt5
+echo  Installing libraries from requirements.txt...
+if exist requirements.txt (
+    pip install -r requirements.txt
+    if errorlevel 1 (
+        echo  [WARNING] Some packages failed or need fallback.
+        echo  [INFO] Trying pipwin fallback for PyAudio...
+        pip install pipwin >nul 2>&1
+        pipwin install pyaudio >nul 2>&1
+    )
+) else (
+    echo  [ERROR] requirements.txt not found! 
+    echo  Please ensure it is in the same folder as start.bat.
+    echo.
+    pause
+    exit /b 1
 )
-
-echo  Installing requests...
-pip install requests >nul 2>&1
-
-echo  Installing python-dotenv...
-pip install python-dotenv >nul 2>&1
-
-echo  Installing google-generativeai...
-pip install google-generativeai >nul 2>&1
-
-echo  Installing selenium (YouTube auto-click)...
-pip install selenium >nul 2>&1
-
-echo  Installing pycaw (volume control)...
-pip install pycaw comtypes >nul 2>&1
-
-echo  Installing pyautogui (screenshots)...
-pip install pyautogui >nul 2>&1
-
-echo  Installing SpeechRecognition (voice input)...
-pip install SpeechRecognition >nul 2>&1
-
-echo  Installing PyAudio (microphone)...
-pip install pyaudio >nul 2>&1
-if errorlevel 1 (
-    echo  [INFO] PyAudio failed with pip, trying pipwin...
-    pip install pipwin >nul 2>&1
-    pipwin install pyaudio >nul 2>&1
-)
-
-echo  Installing pygame (music player)...
-pip install pygame >nul 2>&1
-if errorlevel 1 (
-    echo  [WARNING] pygame failed. Try manually: pip install pygame
-)
-
-echo  Installing mutagen (track duration)...
-pip install mutagen >nul 2>&1
 
 :: --- Create marker with version ---
-echo v4 > %MARKER%
+echo v%MARKER_VER% > %MARKER%
 
 echo.
 echo  [DONE] All libraries installed!

@@ -1130,3 +1130,21 @@ KeyboardInterrupt
 [2026-03-17 23:40:08] [INFO] [Music] Playing: nodescendo.mp3
 [2026-03-17 23:40:10] [INFO] [BeatDetection] Найдено 141 сильных ударов (Фонк)
 [2026-03-17 23:40:11] [INFO] [BeatDetection] Найдено 216 сильных ударов (Фонк)
+[2026-03-21 11:01:14] [INFO] [STARTUP] Yuki started
+[2026-03-21 11:01:16] [INFO] [UI] Yuki UI initialized
+[2026-03-21 11:01:20] [INFO] [Snap] Detached
+[2026-03-21 11:01:22] [INFO] [Snap] Detached
+[2026-03-21 11:01:22] [INFO] [Snap] Detached
+[2026-03-21 11:01:30] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-21 11:01:58] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-03-21 11:01:58] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-03-21 11:01:58] [INFO] [Voice] Listening...
+[2026-03-21 11:01:58] [INFO] [Voice] Listening...
+[2026-03-21 11:13:07] [INFO] [STARTUP] Yuki started
+[2026-03-21 11:13:09] [INFO] [UI] Yuki UI initialized
+[2026-03-21 11:13:16] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-21 11:13:24] [INFO] [Snap] Detached
+[2026-03-21 11:13:24] [INFO] [Snap] Detached
+[2026-03-21 11:13:24] [INFO] [Snap] Detached
+[2026-03-21 11:13:26] [INFO] [Snap] Detached
+[2026-03-21 11:13:37] [INFO] [BeatDetection] Найдено 141 сильных ударов (Фонк)

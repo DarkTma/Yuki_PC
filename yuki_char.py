@@ -1103,20 +1103,32 @@ class MusicPlayerWindow(QWidget):
         header.setFixedHeight(44)
         h_lay = QHBoxLayout(header)
         h_lay.setContentsMargins(14, 0, 10, 0)
+
         title = QLabel("  ♫ Yuki — Music")
         title.setObjectName("title")
         h_lay.addWidget(title)
         h_lay.addStretch()
+
         refresh_btn = QPushButton("↺")
         refresh_btn.setObjectName("headerBtn")
         refresh_btn.setFixedSize(32, 28)
         refresh_btn.clicked.connect(self._reload_list)
         h_lay.addWidget(refresh_btn)
+
+        # --- НОВАЯ КНОПКА СВОРАЧИВАНИЯ ---
+        min_btn = QPushButton("—")
+        min_btn.setObjectName("headerBtn")
+        min_btn.setFixedSize(32, 28)
+        min_btn.clicked.connect(self.showMinimized)
+        h_lay.addWidget(min_btn)
+        # ---------------------------------
+
         close_btn = QPushButton("✕")
         close_btn.setObjectName("closeBtn")
         close_btn.setFixedSize(32, 32)
         close_btn.clicked.connect(self.hide)
         h_lay.addWidget(close_btn)
+
         root.addWidget(header)
 
         div = QFrame(); div.setObjectName("divider")
