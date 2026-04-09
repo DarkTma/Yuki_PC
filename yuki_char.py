@@ -890,16 +890,25 @@ class YukiCommands:
         body = cls.extract_body(raw_text)
 
         # --- Приветствие ---
-        ok, _ = cls._contains_any(body, cls.HELLO_KEYS)
+        # Проверяем, начинается ли фраза с приветствия
+        ok, suffix = cls._starts_with_any(body, cls.HELLO_KEYS)
         if ok:
-            import random
-            greets = [
-                "Привет! Чем могу помочь? 😊",
-                "Приветик! Я здесь! ✨",
-                "О, привет! Что случилось? 🌸",
-                "Здравствуй! Всегда рада тебя видеть! 💙",
-            ]
-            return True, random.choice(greets)
+            # Очищаем остаток фразы от пробелов и знаков препинания
+            clean_suffix = suffix.strip(" ,.!?")
+
+            # Если после слова "привет" ничего нет, отвечаем стандартно
+            if not clean_suffix:
+                import random
+                greets = [
+                    "Привет! Чем могу помочь? 😊",
+                    "Приветик! Я здесь! ✨",
+                    "О, привет! Что случилось? 🌸",
+                    "Здравствуй! Всегда рада тебя видеть! 💙",
+                ]
+                return True, random.choice(greets)
+
+            # Если после "привет" есть текст (например "ты как?"),
+            # мы игнорируем этот блок — код пойдет дальше вниз и отдаст запрос Gemini
 
         # --- Время ---
         ok, _ = cls._contains_any(body, cls.TIME_KEYS)

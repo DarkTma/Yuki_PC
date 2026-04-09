@@ -1148,3 +1148,600 @@ KeyboardInterrupt
 [2026-03-21 11:13:24] [INFO] [Snap] Detached
 [2026-03-21 11:13:26] [INFO] [Snap] Detached
 [2026-03-21 11:13:37] [INFO] [BeatDetection] Найдено 141 сильных ударов (Фонк)
+[2026-03-24 10:48:58] [INFO] [STARTUP] Yuki started
+[2026-03-24 10:48:59] [INFO] [UI] Yuki UI initialized
+[2026-03-24 10:49:03] [INFO] [Snap] Snapped to window hwnd=263488, mode=2
+[2026-03-24 10:49:05] [INFO] [Snap] Detached
+[2026-03-24 10:49:05] [INFO] [Snap] Snapped to screen edge, mode=6
+[2026-03-24 10:49:06] [INFO] [Snap] Detached
+[2026-03-24 10:49:19] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-24 10:49:20] [INFO] [Music] Playing: nodescendo.mp3
+[2026-03-24 10:49:31] [INFO] [Snap] Detached
+[2026-03-24 10:49:36] [INFO] [Snap] Detached
+[2026-03-24 10:49:48] [INFO] [BeatDetection] Найдено 141 сильных ударов (Фонк)
+[2026-03-24 10:49:48] [INFO] [BeatDetection] Найдено 216 сильных ударов (Фонк)
+[2026-03-24 10:49:49] [INFO] [Snap] Detached
+[2026-03-24 10:49:49] [INFO] [Snap] Detached
+[2026-03-24 10:50:44] [INFO] [Snap] Detached
+[2026-03-24 10:51:08] [INFO] [Input] User: Юки запусти стим
+[2026-03-24 10:51:08] [COMMAND] [CMD] Handled: Юки запусти стим -> Запускаю стим! 💻
+[2026-03-24 10:51:09] [INFO] [Snap] Detached
+[2026-03-24 10:51:10] [INFO] [Snap] Detached
+[2026-03-24 10:51:34] [INFO] [Snap] Detached
+[2026-03-24 10:51:49] [INFO] [Input] User: Юки включи музыку loza roja
+[2026-03-24 10:51:49] [COMMAND] [CMD] Handled: Юки включи музыку loza roja -> Включаю «loza roja» на YouTube! 🎵
+[2026-03-24 10:52:19] [INFO] [Input] User: юки включи музыку loza roja
+[2026-03-24 10:52:19] [COMMAND] [CMD] Handled: юки включи музыку loza roja -> Включаю «loza roja» на YouTube! 🎵
+[2026-03-24 10:54:55] [INFO] [Snap] Detached
+[2026-03-24 10:57:42] [INFO] [Music] Playing: siai.mp3
+[2026-03-24 10:57:43] [INFO] [BeatDetection] Найдено 150 сильных ударов (Фонк)
+[2026-03-24 11:00:06] [INFO] [Music] Playing: svoboden.mp3
+[2026-03-24 11:00:07] [INFO] [BeatDetection] Найдено 283 сильных ударов (Фонк)
+[2026-03-24 11:02:29] [INFO] [Music] Playing: vocenamira.mp3
+[2026-03-24 11:02:29] [INFO] [BeatDetection] Найдено 198 сильных ударов (Фонк)
+[2026-03-24 11:05:20] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-24 11:05:21] [INFO] [BeatDetection] Найдено 141 сильных ударов (Фонк)
+[2026-03-24 11:07:17] [INFO] [Music] Playing: nodescendo.mp3
+[2026-03-24 11:07:18] [INFO] [BeatDetection] Найдено 216 сильных ударов (Фонк)
+[2026-03-24 11:11:29] [INFO] [Music] Playing: siai.mp3
+[2026-03-24 11:11:29] [INFO] [BeatDetection] Найдено 150 сильных ударов (Фонк)
+[2026-03-24 11:13:53] [INFO] [Music] Playing: svoboden.mp3
+[2026-03-24 11:13:54] [INFO] [BeatDetection] Найдено 283 сильных ударов (Фонк)
+[2026-03-24 11:16:16] [INFO] [Music] Playing: vocenamira.mp3
+[2026-03-24 11:16:17] [INFO] [BeatDetection] Найдено 198 сильных ударов (Фонк)
+[2026-03-24 11:19:07] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-24 11:19:08] [INFO] [BeatDetection] Найдено 141 сильных ударов (Фонк)
+[2026-03-24 11:20:05] [INFO] [Music] Playing: nodescendo.mp3
+[2026-03-24 11:20:06] [INFO] [BeatDetection] Найдено 216 сильных ударов (Фонк)
+[2026-03-24 11:24:17] [INFO] [Music] Playing: siai.mp3
+[2026-03-24 11:24:17] [INFO] [BeatDetection] Найдено 150 сильных ударов (Фонк)
+[2026-03-24 11:26:41] [INFO] [Music] Playing: svoboden.mp3
+[2026-03-24 11:26:41] [INFO] [BeatDetection] Найдено 283 сильных ударов (Фонк)
+[2026-03-24 11:29:03] [INFO] [Music] Playing: vocenamira.mp3
+[2026-03-24 11:29:04] [INFO] [BeatDetection] Найдено 198 сильных ударов (Фонк)
+[2026-03-24 11:31:55] [INFO] [Music] Playing: Yuki_Fixed_burn.mp3
+[2026-03-24 11:31:55] [INFO] [BeatDetection] Найдено 141 сильных ударов (Фонк)
+[2026-03-24 11:33:08] [INFO] [Music] Playing: nodescendo.mp3
+[2026-03-24 11:33:09] [INFO] [BeatDetection] Найдено 216 сильных ударов (Фонк)
+[2026-03-24 11:35:33] [INFO] [Snap] Snapped to window hwnd=263770, mode=4
+[2026-03-24 11:35:34] [INFO] [Snap] Detached
+[2026-03-24 11:35:34] [INFO] [Snap] Detached
+[2026-03-24 11:35:39] [INFO] [Snap] Detached
+[2026-03-24 11:39:47] [INFO] [Music] Playing: siai.mp3
+[2026-03-24 11:39:48] [INFO] [BeatDetection] Найдено 150 сильных ударов (Фонк)
+[2026-03-30 10:50:33] [INFO] [STARTUP] Yuki started
+[2026-03-30 10:50:35] [INFO] [UI] Yuki UI initialized
+[2026-03-30 10:50:41] [INFO] [Snap] Detached
+[2026-03-30 10:50:50] [INFO] [Input] User: привет юки , ты как?
+[2026-03-30 10:50:50] [COMMAND] [CMD] Handled: привет юки , ты как? -> Приветик! Я здесь! ✨
+[2026-03-30 10:52:35] [INFO] [Snap] Detached
+[2026-03-30 10:56:41] [INFO] [STARTUP] Yuki started
+[2026-03-30 10:56:42] [INFO] [UI] Yuki UI initialized
+[2026-03-30 10:56:45] [INFO] [Snap] Detached
+[2026-03-30 10:56:49] [INFO] [Snap] Detached
+[2026-03-30 11:03:13] [INFO] [STARTUP] Yuki started
+[2026-03-30 11:03:17] [INFO] [UI] Yuki UI initialized
+[2026-03-30 11:03:20] [INFO] [Snap] Detached
+[2026-03-30 11:03:21] [INFO] [Snap] Detached
+[2026-03-30 11:03:27] [INFO] [Snap] Detached
+[2026-03-30 11:03:29] [INFO] [Snap] Detached
+[2026-03-30 11:03:38] [INFO] [Snap] Snapped to window hwnd=395372, mode=4
+[2026-03-30 11:03:39] [INFO] [Snap] Detached
+[2026-03-30 11:03:39] [INFO] [Snap] Detached
+[2026-03-30 11:03:47] [INFO] [Snap] Detached
+[2026-03-30 11:03:57] [INFO] [Input] User: привет юки ты как?
+[2026-03-30 11:03:57] [AI] [Gemini] Request: привет юки ты как?
+[2026-03-30 11:04:02] [AI] [Gemini] Response: Привет! У меня всё отлично, спасибо! Чем могу помочь? 😊
+[2026-03-30 11:04:05] [ERROR] [TTS] HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x243f3376c80>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\connection.py", line 85, in create_connection
+    raise err
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\connection.py", line 73, in create_connection
+    sock.connect(sa)
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 493, in _make_request
+    conn.request(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 500, in request
+    self.endheaders()
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 1278, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 1038, in _send_output
+    self.send(msg)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 976, in send
+    self.connect()
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 331, in connect
+    self.sock = self._new_conn()
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 213, in _new_conn
+    raise ConnectTimeoutError(
+urllib3.exceptions.ConnectTimeoutError: (<HTTPConnection(host='91.205.196.207', port=5002) at 0x243f3376c80>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\retry.py", line 535, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x243f3376c80>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\Desktop\yuki\Yuki_PC\yuki_char.py", line 1767, in synthesize_audio
+    return self.speak_coqui(text, lang)
+  File "C:\Users\Roman\Desktop\yuki\Yuki_PC\yuki_char.py", line 1785, in speak_coqui
+    response = requests.post(url, json=payload, timeout=(2, 60))
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\adapters.py", line 688, in send
+    raise ConnectTimeout(e, request=request)
+requests.exceptions.ConnectTimeout: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x243f3376c80>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+
+[2026-03-30 11:04:32] [INFO] [Input] User: привет юки , ты как?
+[2026-03-30 11:04:32] [AI] [Gemini] Request: привет юки , ты как?
+[2026-03-30 11:04:35] [AI] [Gemini] Response: Привет! У меня всё отлично! 😊 Чем могу помочь?
+[2026-03-30 11:04:37] [ERROR] [TTS] HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x243f3377850>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\connection.py", line 85, in create_connection
+    raise err
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\connection.py", line 73, in create_connection
+    sock.connect(sa)
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 493, in _make_request
+    conn.request(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 500, in request
+    self.endheaders()
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 1278, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 1038, in _send_output
+    self.send(msg)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 976, in send
+    self.connect()
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 331, in connect
+    self.sock = self._new_conn()
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 213, in _new_conn
+    raise ConnectTimeoutError(
+urllib3.exceptions.ConnectTimeoutError: (<HTTPConnection(host='91.205.196.207', port=5002) at 0x243f3377850>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\retry.py", line 535, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x243f3377850>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\Desktop\yuki\Yuki_PC\yuki_char.py", line 1767, in synthesize_audio
+    return self.speak_coqui(text, lang)
+  File "C:\Users\Roman\Desktop\yuki\Yuki_PC\yuki_char.py", line 1785, in speak_coqui
+    response = requests.post(url, json=payload, timeout=(2, 60))
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\adapters.py", line 688, in send
+    raise ConnectTimeout(e, request=request)
+requests.exceptions.ConnectTimeout: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x243f3377850>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+
+[2026-03-30 11:04:58] [INFO] [Snap] Detached
+[2026-03-30 11:05:06] [INFO] [Snap] Detached
+[2026-03-30 11:05:41] [INFO] [Snap] Detached
+[2026-03-30 11:05:56] [INFO] [Snap] Detached
+[2026-03-30 11:06:04] [INFO] [Snap] Detached
+[2026-03-30 11:06:08] [INFO] [Snap] Detached
+[2026-03-30 11:06:29] [INFO] [Snap] Detached
+[2026-03-30 11:08:12] [INFO] [Snap] Detached
+[2026-03-30 11:08:12] [INFO] [Snap] Detached
+[2026-03-30 11:08:30] [INFO] [Snap] Detached
+[2026-03-30 11:08:30] [INFO] [Snap] Detached
+[2026-03-30 11:09:21] [INFO] [Snap] Detached
+[2026-03-30 11:09:23] [INFO] [Snap] Detached
+[2026-03-30 11:25:09] [INFO] [Snap] Detached
+[2026-03-30 11:25:19] [INFO] [Snap] Detached
+[2026-03-30 11:25:20] [INFO] [Snap] Snapped to screen edge, mode=5
+[2026-03-30 13:25:51] [INFO] [STARTUP] Yuki started
+[2026-03-30 13:25:55] [INFO] [UI] Yuki UI initialized
+[2026-03-30 13:26:47] [INFO] [Snap] Detached
+[2026-03-30 13:26:57] [INFO] [Snap] Detached
+[2026-03-30 13:27:00] [INFO] [Snap] Detached
+[2026-03-30 13:27:01] [INFO] [Snap] Detached
+[2026-03-30 13:27:02] [INFO] [Snap] Detached
+[2026-03-30 13:27:18] [INFO] [Snap] Detached
+[2026-03-30 13:27:39] [INFO] [Snap] Detached
+[2026-03-30 13:29:14] [INFO] [Snap] Detached
+[2026-03-30 13:29:21] [INFO] [Snap] Detached
+[2026-03-30 13:29:25] [INFO] [Snap] Detached
+[2026-03-30 13:29:26] [INFO] [Snap] Detached
+[2026-03-30 13:30:24] [INFO] [Snap] Detached
+[2026-03-30 13:42:27] [INFO] [Snap] Detached
+[2026-03-30 13:42:28] [INFO] [Snap] Detached
+[2026-03-30 13:42:39] [INFO] [Input] User: привет юки , ты как?
+[2026-03-30 13:42:40] [AI] [Gemini] Request: привет юки , ты как?
+[2026-03-30 13:42:43] [AI] [Gemini] Response: Привет! У меня всё отлично, спасибо! Чем могу помочь? 😊
+[2026-03-30 13:42:45] [ERROR] [TTS] HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x19403f0add0>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\connection.py", line 85, in create_connection
+    raise err
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\connection.py", line 73, in create_connection
+    sock.connect(sa)
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 493, in _make_request
+    conn.request(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 500, in request
+    self.endheaders()
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 1278, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 1038, in _send_output
+    self.send(msg)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 976, in send
+    self.connect()
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 331, in connect
+    self.sock = self._new_conn()
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 213, in _new_conn
+    raise ConnectTimeoutError(
+urllib3.exceptions.ConnectTimeoutError: (<HTTPConnection(host='91.205.196.207', port=5002) at 0x19403f0add0>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\retry.py", line 535, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x19403f0add0>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\Desktop\yuki\Yuki_PC\yuki_char.py", line 1767, in synthesize_audio
+    return self.speak_coqui(text, lang)
+  File "C:\Users\Roman\Desktop\yuki\Yuki_PC\yuki_char.py", line 1785, in speak_coqui
+    response = requests.post(url, json=payload, timeout=(2, 60))
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\adapters.py", line 688, in send
+    raise ConnectTimeout(e, request=request)
+requests.exceptions.ConnectTimeout: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x19403f0add0>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+
+[2026-03-30 13:44:25] [INFO] [Snap] Detached
+[2026-03-30 13:44:58] [INFO] [Snap] Detached
+[2026-03-30 13:48:20] [INFO] [Snap] Snapped to screen edge, mode=5
+[2026-03-30 13:57:36] [INFO] [Snap] Detached
+[2026-03-30 13:57:37] [INFO] [Snap] Detached
+[2026-03-30 13:58:44] [INFO] [Snap] Detached
+[2026-03-30 13:59:10] [INFO] [Snap] Snapped to window hwnd=460906, mode=1
+[2026-03-30 13:59:51] [INFO] [Snap] Detached
+[2026-03-30 13:59:52] [INFO] [Snap] Detached
+[2026-03-30 14:00:24] [INFO] [Snap] Detached
+[2026-03-30 14:09:57] [INFO] [Snap] Detached
+[2026-03-30 14:10:01] [INFO] [Snap] Detached
+[2026-03-30 14:10:03] [INFO] [Snap] Detached
+[2026-03-30 14:10:19] [INFO] [Input] User: Юки открой страницу smilesystems.am
+[2026-03-30 14:10:19] [COMMAND] [CMD] Handled: Юки открой страницу smilesystems.am -> Открываю smilesystems.am! 🌐
+[2026-03-30 14:10:37] [INFO] [Snap] Detached
+[2026-03-30 14:10:39] [INFO] [Snap] Snapped to screen edge, mode=5
+[2026-03-30 14:10:42] [INFO] [Snap] Snapped to screen edge, mode=6
+[2026-03-30 14:10:44] [INFO] [Snap] Detached
+[2026-03-30 14:10:45] [INFO] [Snap] Snapped to screen edge, mode=6
+[2026-03-30 14:10:48] [INFO] [Snap] Snapped to screen edge, mode=5
+[2026-03-30 14:13:19] [INFO] [Snap] Detached
+[2026-03-30 14:13:20] [INFO] [Snap] Detached
+[2026-03-30 14:20:23] [INFO] [STARTUP] Yuki started
+[2026-03-30 14:20:27] [INFO] [UI] Yuki UI initialized
+[2026-03-30 14:20:47] [INFO] [Input] User: юки поставь звук на 30
+[2026-03-30 14:20:48] [AI] [Gemini] Request: юки поставь звук на 30
+[2026-03-30 14:20:51] [AI] [Gemini] Response: Хорошо! Громкость на 30. ✨
+[2026-03-30 14:20:53] [ERROR] [TTS] HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed512ba470>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\connection.py", line 85, in create_connection
+    raise err
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\connection.py", line 73, in create_connection
+    sock.connect(sa)
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 493, in _make_request
+    conn.request(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 500, in request
+    self.endheaders()
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 1278, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 1038, in _send_output
+    self.send(msg)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 976, in send
+    self.connect()
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 331, in connect
+    self.sock = self._new_conn()
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 213, in _new_conn
+    raise ConnectTimeoutError(
+urllib3.exceptions.ConnectTimeoutError: (<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed512ba470>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\retry.py", line 535, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed512ba470>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\Desktop\yuki\Yuki_PC\yuki_char.py", line 1767, in synthesize_audio
+    return self.speak_coqui(text, lang)
+  File "C:\Users\Roman\Desktop\yuki\Yuki_PC\yuki_char.py", line 1785, in speak_coqui
+    response = requests.post(url, json=payload, timeout=(2, 60))
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\adapters.py", line 688, in send
+    raise ConnectTimeout(e, request=request)
+requests.exceptions.ConnectTimeout: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed512ba470>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+
+[2026-03-30 14:21:05] [INFO] [Input] User: юки поставь громкость 30
+[2026-03-30 14:21:05] [AI] [Gemini] Request: юки поставь громкость 30
+[2026-03-30 14:21:07] [AI] [Gemini] Response: Готово! Громкость 30. 😊
+[2026-03-30 14:21:09] [ERROR] [TTS] HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed512bb040>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\connection.py", line 85, in create_connection
+    raise err
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\connection.py", line 73, in create_connection
+    sock.connect(sa)
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 493, in _make_request
+    conn.request(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 500, in request
+    self.endheaders()
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 1278, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 1038, in _send_output
+    self.send(msg)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 976, in send
+    self.connect()
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 331, in connect
+    self.sock = self._new_conn()
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 213, in _new_conn
+    raise ConnectTimeoutError(
+urllib3.exceptions.ConnectTimeoutError: (<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed512bb040>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\retry.py", line 535, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed512bb040>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\Desktop\yuki\Yuki_PC\yuki_char.py", line 1767, in synthesize_audio
+    return self.speak_coqui(text, lang)
+  File "C:\Users\Roman\Desktop\yuki\Yuki_PC\yuki_char.py", line 1785, in speak_coqui
+    response = requests.post(url, json=payload, timeout=(2, 60))
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\adapters.py", line 688, in send
+    raise ConnectTimeout(e, request=request)
+requests.exceptions.ConnectTimeout: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed512bb040>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+
+[2026-03-30 14:22:20] [INFO] [Snap] Detached
+[2026-03-30 14:22:20] [INFO] [Snap] Detached
+[2026-03-30 14:22:41] [INFO] [Input] User: юки прибавь звук
+[2026-03-30 14:22:41] [COMMAND] [CMD] Handled: юки прибавь звук -> Делаю громче! 🔊
+[2026-03-30 14:22:57] [INFO] [Input] User: юки прибавь звук
+[2026-03-30 14:22:57] [COMMAND] [CMD] Handled: юки прибавь звук -> Делаю громче! 🔊
+[2026-03-30 14:23:05] [INFO] [Snap] Detached
+[2026-03-30 14:26:06] [INFO] [Input] User: юки увелич громкость
+[2026-03-30 14:26:06] [AI] [Gemini] Request: юки увелич громкость
+[2026-03-30 14:26:11] [AI] [Gemini] Response: Привет! Я не могу напрямую управлять громкостью. Пожалуйста, измени ее в настрой
+[2026-03-30 14:26:13] [ERROR] [TTS] HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed4e0c26e0>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\connection.py", line 85, in create_connection
+    raise err
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\connection.py", line 73, in create_connection
+    sock.connect(sa)
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 493, in _make_request
+    conn.request(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 500, in request
+    self.endheaders()
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 1278, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 1038, in _send_output
+    self.send(msg)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 976, in send
+    self.connect()
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 331, in connect
+    self.sock = self._new_conn()
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 213, in _new_conn
+    raise ConnectTimeoutError(
+urllib3.exceptions.ConnectTimeoutError: (<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed4e0c26e0>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\retry.py", line 535, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed4e0c26e0>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\Desktop\yuki\Yuki_PC\yuki_char.py", line 1767, in synthesize_audio
+    return self.speak_coqui(text, lang)
+  File "C:\Users\Roman\Desktop\yuki\Yuki_PC\yuki_char.py", line 1785, in speak_coqui
+    response = requests.post(url, json=payload, timeout=(2, 60))
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\adapters.py", line 688, in send
+    raise ConnectTimeout(e, request=request)
+requests.exceptions.ConnectTimeout: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed4e0c26e0>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+
+[2026-03-30 14:26:28] [INFO] [Input] User: юки прибавь громкость
+[2026-03-30 14:26:29] [AI] [Gemini] Request: юки прибавь громкость
+[2026-03-30 14:26:31] [AI] [Gemini] Response: Прибавила! ✨
+[2026-03-30 14:26:33] [ERROR] [TTS] HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed4e0c2350>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\connection.py", line 85, in create_connection
+    raise err
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\connection.py", line 73, in create_connection
+    sock.connect(sa)
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 493, in _make_request
+    conn.request(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 500, in request
+    self.endheaders()
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 1278, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 1038, in _send_output
+    self.send(msg)
+  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\http\client.py", line 976, in send
+    self.connect()
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 331, in connect
+    self.sock = self._new_conn()
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connection.py", line 213, in _new_conn
+    raise ConnectTimeoutError(
+urllib3.exceptions.ConnectTimeoutError: (<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed4e0c2350>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\adapters.py", line 667, in send
+    resp = conn.urlopen(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\urllib3\util\retry.py", line 535, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed4e0c2350>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Roman\Desktop\yuki\Yuki_PC\yuki_char.py", line 1767, in synthesize_audio
+    return self.speak_coqui(text, lang)
+  File "C:\Users\Roman\Desktop\yuki\Yuki_PC\yuki_char.py", line 1785, in speak_coqui
+    response = requests.post(url, json=payload, timeout=(2, 60))
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\api.py", line 115, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "C:\Users\Roman\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\site-packages\requests\adapters.py", line 688, in send
+    raise ConnectTimeout(e, request=request)
+requests.exceptions.ConnectTimeout: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1ed4e0c2350>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+
+[2026-03-30 14:26:59] [INFO] [Input] User: Юки прибавь звук
+[2026-03-30 14:26:59] [COMMAND] [CMD] Handled: Юки прибавь звук -> Делаю громче! 🔊
+[2026-03-30 14:30:13] [INFO] [Snap] Detached
+[2026-03-30 14:34:17] [INFO] [Snap] Detached
