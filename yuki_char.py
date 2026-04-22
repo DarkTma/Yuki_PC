@@ -20,6 +20,9 @@ import math
 import cv2
 import numpy as np
 import librosa
+import queue
+import uuid
+import random
 from PyQt5.QtGui import QImage
 try:
     import speech_recognition as sr
@@ -1731,8 +1734,14 @@ class SpeechThread(QThread):
 
 
 # --- Класс мозга (работает в фоне) ---
+# =======================================================
+# --- АСИНХРОННЫЙ КОНВЕЙЕР ГЕНЕРАЦИИ И ОЗВУЧКИ ---
+# =======================================================
+
 class YukiBrain(QThread):
-    reply_ready = pyqtSignal(str, str)
+    text_chunk_ready = pyqtSignal(str)
+    sentence_ready = pyqtSignal(str)
+    finished_generation = pyqtSignal()
     error_occurred = pyqtSignal(str)
 
     def __init__(self, prompt, language="ru"):
@@ -1743,32 +1752,87 @@ class YukiBrain(QThread):
 
     def run(self):
         try:
-            logger.log("AI", "Gemini", f"Request: {self.prompt[:80]}")
-            system_instruction = "Ты Юки, милая и умная ИИ-ассистентка. Отвечай кратко, дружелюбно и по делу."
+            logger.log("AI", "Gemini", "Начинаю запрос к нейросети...")
+            system_instruction = "Ты Юки, милая и умная ИИ-ассистентка."
             full_prompt = f"{system_instruction}\nПользователь: {self.prompt}"
-            response = self.model.generate_content(full_prompt)
-            ai_text = response.text.strip()
-            logger.log("AI", "Gemini", f"Response: {ai_text[:80]}")
-            # Для TTS убираем emoji — они ломают синтез
-            tts_text = strip_emoji(ai_text)
-            audio_path = self.synthesize_audio(tts_text, self.language)
-            # Отправляем текст в любом случае. Если аудио нет, передаем пустую строку.
-            self.reply_ready.emit(ai_text, audio_path if audio_path else "")
-        except Exception as e:
-            tb = traceback.format_exc()
-            logger.log("ERROR", "YukiBrain", f"{e}\n{tb}")
-            self.error_occurred.emit(f"Ошибка: {str(e)}")
 
-    def synthesize_audio(self, text, lang):
-        try:
-            if lang == "ja":
-                return self.speak_voicevox(text)
-            else:
-                return self.speak_coqui(text, lang)
+            response = self.model.generate_content(full_prompt, stream=True)
+
+            buffer = ""
+            chunk_count = 0
+            for chunk in response:
+                chunk_count += 1
+                text = chunk.text
+                if chunk_count == 1:
+                    logger.log("AI", "Gemini", "Получен первый кусок текста!")
+
+                self.text_chunk_ready.emit(text)
+                buffer += text
+
+                while True:
+                    match = re.search(r'(?<=[.!?\n;:])\s+', buffer)
+                    if match:
+                        sentence = buffer[:match.end()].strip()
+                        if sentence:
+                            logger.log("AI", "Pipeline", f"Предложение готово, кидаю в TTS: {sentence}")
+                            self.sentence_ready.emit(sentence)
+                        buffer = buffer[match.end():]
+                    else:
+                        break
+
+            if buffer.strip():
+                logger.log("AI", "Pipeline", f"Остаток текста в TTS: {buffer.strip()}")
+                self.sentence_ready.emit(buffer.strip())
+
+            logger.log("AI", "Gemini", "Генерация текста полностью завершена.")
+            self.finished_generation.emit()
+
         except Exception as e:
             tb = traceback.format_exc()
-            logger.log("ERROR", "TTS", f"{e}\n{tb}")
-            return None
+            logger.log("ERROR", "YukiBrain", f"Ошибка Gemini: {e}\n{tb}")
+            self.error_occurred.emit(f"Ошибка Gemini: {str(e)}")
+
+
+class TTSWorker(QThread):
+    audio_ready = pyqtSignal(str)
+    finished_all_tts = pyqtSignal()  # Новый сигнал!
+
+    def __init__(self, language="ru"):
+        super().__init__()
+        self.q = queue.Queue()
+        self.language = language
+        self.running = True
+        self.generation_done = False
+
+    def add_sentence(self, text):
+        self.q.put(text)
+
+    def set_generation_done(self):
+        """Вызывается, когда ИИ отдал весь текст"""
+        self.generation_done = True
+        self.q.put(None)
+
+    def run(self):
+        logger.log("INFO", "TTSWorker", "Поток озвучки запущен.")
+        while self.running:
+            text = self.q.get()
+
+            if text is None:
+                # Проверяем, пуста ли очередь
+                if self.generation_done and self.q.empty():
+                    logger.log("INFO", "TTSWorker", "Все тексты переведены в аудио.")
+                    break
+                continue
+
+            clean_text = strip_emoji(text)
+            if clean_text:
+                wav_path = self.speak_coqui(clean_text, self.language)
+                if wav_path:
+                    logger.log("INFO", "TTSWorker", f"Аудио готово: {wav_path}")
+                    self.audio_ready.emit(wav_path)
+
+        # Сообщаем плееру, что файлов больше не будет
+        self.finished_all_tts.emit()
 
     def speak_coqui(self, text, lang):
         url = "http://91.205.196.207:5002/api/tts"
@@ -1781,29 +1845,76 @@ class YukiBrain(QThread):
             speed = 0.9
 
         payload = {"text": text, "language": lang, "speaker_wav": voice_file, "speed": speed}
-        # timeout=(2, 60) означает: 2 сек на попытку подключения, 60 сек на саму генерацию
-        response = requests.post(url, json=payload, timeout=(2, 60))
-        response.raise_for_status()
+        try:
+            response = requests.post(url, json=payload, timeout=(2, 60))
+            response.raise_for_status()
 
-        temp_dir = tempfile.gettempdir()
-        file_path = os.path.join(temp_dir, "yuki_coqui.wav")
-        with open(file_path, "wb") as f:
-            f.write(response.content)
-        return file_path
+            unique_name = f"yuki_chunk_{uuid.uuid4().hex[:8]}.wav"
+            temp_dir = tempfile.gettempdir()
+            file_path = os.path.join(temp_dir, unique_name)
 
-    def speak_voicevox(self, text):
-        base_url = "http://91.205.196.207:50021"
-        speaker = "1"
-        query_res = requests.post(f"{base_url}/audio_query", params={"speaker": speaker, "text": text})
-        query_res.raise_for_status()
-        synth_res = requests.post(f"{base_url}/synthesis", params={"speaker": speaker}, json=query_res.json())
-        synth_res.raise_for_status()
+            with open(file_path, "wb") as f:
+                f.write(response.content)
+            return file_path
+        except Exception as e:
+            logger.log("ERROR", "TTS", f"Сервер TTS недоступен: {e}")
+            return None
 
-        temp_dir = tempfile.gettempdir()
-        file_path = os.path.join(temp_dir, "yuki_voicevox.wav")
-        with open(file_path, "wb") as f:
-            f.write(synth_res.content)
-        return file_path
+
+class AudioPipelinePlayer(QThread):
+    finished_all = pyqtSignal()
+
+    def __init__(self):
+        super().__init__()
+        self.q = queue.Queue()
+        self.running = True
+        self.tts_done = False
+
+    def add_audio(self, filepath):
+        self.q.put(filepath)
+
+    def set_tts_done(self):
+        """Вызывается, когда TTSWorker закончил генерировать аудио"""
+        self.tts_done = True
+        self.q.put(None)
+
+    def run(self):
+        logger.log("INFO", "AudioPlayer", "Плеер запущен.")
+
+        # Запускаем Pygame (он надежнее, чем winsound)
+        try:
+            if not pygame.mixer.get_init():
+                pygame.mixer.init()
+        except Exception as e:
+            logger.log("ERROR", "AudioPlayer", f"Ошибка инициализации pygame: {e}")
+
+        while self.running:
+            filepath = self.q.get()
+
+            if filepath is None:
+                if self.tts_done and self.q.empty():
+                    logger.log("INFO", "AudioPlayer", "Вся озвучка завершена.")
+                    break
+                continue
+
+            logger.log("INFO", "AudioPlayer", f"Воспроизвожу: {filepath}")
+
+            try:
+                sound = pygame.mixer.Sound(filepath)
+                length = sound.get_length()
+                sound.play()
+                # Спим столько же, сколько длится аудиофайл (+ микросекунды для плавности)
+                time.sleep(length + 0.1)
+            except Exception as e:
+                logger.log("ERROR", "AudioPlayer", f"Ошибка воспроизведения: {e}")
+
+            # Удаляем мусор
+            try:
+                os.remove(filepath)
+            except:
+                pass
+
+        self.finished_all.emit()
 
 
 class BeatDetectorThread(QThread):
@@ -1928,123 +2039,185 @@ class HolographicScreen(QWidget):
         super().__init__()
         self.setWindowFlags(Qt.ToolTip | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        
-        self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(15, 15, 15, 15)
-        
-        self.label = QLabel("", self)
-        self.label.setWordWrap(True)
-        self.label.setAlignment(Qt.AlignLeft | Qt.AlignTop) 
-        self.label.setMinimumWidth(250)
-        self.label.setMaximumWidth(550)
-        self.layout.addWidget(self.label)
-        
-        self.glow_effect = QGraphicsDropShadowEffect(self)
+
+        self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(25, 25, 25, 25)
+
+        self.container = QWidget(self)
+        self.container.setObjectName("holoContainer")
+
+        self.container_layout = QVBoxLayout(self.container)
+        self.container_layout.setContentsMargins(15, 15, 15, 15)
+
+        self.text_edit = QTextEdit(self.container)
+        self.text_edit.setObjectName("holoText")
+        self.text_edit.setReadOnly(True)
+        self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.text_edit.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        self.container_layout.addWidget(self.text_edit)
+        self.main_layout.addWidget(self.container)
+
+        self.glow_effect = QGraphicsDropShadowEffect(self.container)
         self.glow_effect.setBlurRadius(20)
         self.glow_effect.setOffset(0, 0)
-        self.setGraphicsEffect(self.glow_effect)
+        self.container.setGraphicsEffect(self.glow_effect)
 
-        # Таймер для печатной машинки
-        self.type_timer = QTimer(self)
-        self.type_timer.timeout.connect(self.type_next_char)
-        self.full_text = ""
-        self.current_index = 0
+        self.setFixedSize(340, 480)
 
-        # Таймер для анимации ожидания
+        # --- Переменные для Кибер-Анимации ---
+        self.pending_text = ""  # Очередь текста от ИИ
+        self.target_char = ""  # Буква, которую мы пытаемся "напечатать" сейчас
+        self.cycles_left = 0  # Сколько кадров буква будет "глючить"
+        self.has_flashing_char = False  # Есть ли сейчас временный глючный символ
+
+        self.decode_timer = QTimer(self)
+        self.decode_timer.timeout.connect(self._decode_step)
+
+        # Таймер для анимации "Думаю..."
         self.loading_timer = QTimer(self)
         self.loading_timer.timeout.connect(self.animate_loading)
         self.dot_count = 0
 
-        # Таймер для авто-скрытия (для команд без TTS)
         self.auto_hide_timer = QTimer(self)
         self.auto_hide_timer.setSingleShot(True)
         self.auto_hide_timer.timeout.connect(self.hide)
 
-    def show_loading(self, skin, x, y):
-        self.type_timer.stop()
-        self.auto_hide_timer.stop()
+    def append_text(self, new_text):
+        """Добавляет текст в скрытую очередь и запускает анимацию"""
+        self.loading_timer.stop()
 
-        if skin == 'default':
-            main_color = "#00ffff"
-            bg_color   = "rgba(0, 80, 120, 220)"   # тёмно-голубой
+        # Если на экране висит "Думаю...", чистим его
+        current_text = self.text_edit.toPlainText()
+        if "Думаю" in current_text and len(current_text) < 15:
+            self.text_edit.clear()
+            self.pending_text = ""
+            self.target_char = ""
+            self.has_flashing_char = False
+
+        # Добавляем новый кусок от Gemini в очередь
+        self.pending_text += new_text
+
+        # Если таймер анимации спит — будим его! (15мс = очень быстрое мерцание)
+        if not self.decode_timer.isActive():
+            self.decode_timer.start(23)
+
+    def _decode_step(self):
+        """Сердце кибер-анимации. Вызывается каждые 15 миллисекунд."""
+        # Запоминаем, читал ли пользователь текст
+        scrollbar = self.text_edit.verticalScrollBar()
+        is_at_bottom = scrollbar.value() == scrollbar.maximum()
+
+        cursor = self.text_edit.textCursor()
+        cursor.movePosition(QTextCursor.End)
+
+        # 1. Стираем предыдущий "глючный" символ, если он был
+        if self.has_flashing_char:
+            cursor.deletePreviousChar()
+            self.has_flashing_char = False
+
+        # 2. Если буква еще "в процессе взлома"
+        if self.cycles_left > 0:
+            glitch_chars = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ@#$%&*<>?01"
+            cursor.insertText(random.choice(glitch_chars))
+            self.has_flashing_char = True
+            self.cycles_left -= 1
+
+        # 3. "Взлом" завершен, печатаем настоящую букву
         else:
-            main_color = "#ff69b4"
-            bg_color   = "rgba(120, 0, 60, 220)"   # тёмно-розовый
+            if self.target_char:
+                cursor.insertText(self.target_char)
+                self.target_char = ""
 
-        self.setStyleSheet(f"""
-            QWidget {{ background-color: {bg_color}; border: 2px solid {main_color}; border-radius: 10px; }}
-            QLabel  {{ color: {main_color}; font-family: 'Courier New', monospace; font-size: 28px; font-weight: bold; border: none; background: transparent; }}
-        """)
-        self.glow_effect.setColor(QColor(main_color))
+            # Берем следующую букву из очереди
+            if self.pending_text:
+                self.target_char = self.pending_text[0]
+                self.pending_text = self.pending_text[1:]
 
-        self.setMinimumSize(0, 0)
-        self.setMaximumSize(16777215, 16777215)
-        
-        self.label.setText("Думаю")
-        self.adjustSize()
-        
+                # Пробелы и переносы строк не глючат, печатаем их сразу
+                if self.target_char in " \n\t":
+                    self.cycles_left = 0
+                else:
+                    self.cycles_left = 3  # Каждая буква глючит 2 кадра (30мс)
+            else:
+                # Очередь пуста, останавливаем анимацию
+                self.decode_timer.stop()
+
+        # Возвращаем скролл на место, если он был внизу
+        if is_at_bottom:
+            scrollbar.setValue(scrollbar.maximum())
+
+    def show_loading(self, skin, x, y):
+        self.decode_timer.stop()
+        self.auto_hide_timer.stop()
+        self._apply_style(skin)
+        self.text_edit.setText("Думаю")
         self.move(x, y)
         self.show()
-
         self.dot_count = 0
         self.loading_timer.start(400)
 
     def animate_loading(self):
         self.dot_count = (self.dot_count + 1) % 4
         dots = "." * self.dot_count
-        self.label.setText(f"Думаю{dots}")
+        self.text_edit.setText(f"Думаю{dots}")
 
     def show_message(self, text, skin, x, y, auto_hide_ms=0):
-        """
-        Показывает сообщение.
-        auto_hide_ms > 0 — автоматически скрыть через N миллисекунд (для команд без TTS).
-        """
         self.loading_timer.stop()
-        self.type_timer.stop()
+        self.decode_timer.stop()
         self.auto_hide_timer.stop()
 
-        if skin == 'default':
-            main_color = "#00ffff"
-            bg_color   = "rgba(0, 80, 120, 220)"   # тёмно-голубой
-        else:
-            main_color = "#ff69b4"
-            bg_color   = "rgba(120, 0, 60, 220)"   # тёмно-розовый
+        self._apply_style(skin)
+        self.pending_text = ""
+        self.target_char = ""
+        self.has_flashing_char = False
 
-        self.setStyleSheet(f"""
-            QWidget {{ background-color: {bg_color}; border: 2px solid {main_color}; border-radius: 10px; }}
-            QLabel  {{ color: {main_color}; font-family: 'Courier New', monospace; font-size: 28px; font-weight: bold; border: none; background: transparent; }}
-        """)
-        self.glow_effect.setColor(QColor(main_color))
-
-        self.setMinimumSize(0, 0)
-        self.setMaximumSize(16777215, 16777215)
-
-        self.label.setText(text)
-        self.adjustSize()
-        
-        target_width = self.width()
-        target_height = self.height()
-        self.setFixedSize(target_width, target_height)
-
-        self.full_text = text
-        self.label.setText("")
-        self.current_index = 0
+        # Короткие системные сообщения ("Делаю скриншот") просто печатаем целиком
+        self.text_edit.setText(text)
 
         self.move(x, y)
         self.show()
 
-        self.type_timer.start(35)
-
         if auto_hide_ms > 0:
             self.auto_hide_timer.start(auto_hide_ms)
 
-    def type_next_char(self):
-        if self.current_index < len(self.full_text):
-            current_text = self.label.text()
-            self.label.setText(current_text + self.full_text[self.current_index])
-            self.current_index += 1
+    def _apply_style(self, skin):
+        if skin == 'default':
+            main_color = "#00ffff"
+            bg_color = "rgba(0, 80, 120, 220)"
         else:
-            self.type_timer.stop()
+            main_color = "#ff69b4"
+            bg_color = "rgba(120, 0, 60, 220)"
+
+        self.glow_effect.setColor(QColor(main_color))
+
+        self.setStyleSheet(f"""
+            QWidget#holoContainer {{ 
+                background-color: {bg_color}; 
+                border: 2px solid {main_color}; 
+                border-radius: 10px; 
+            }}
+            QTextEdit#holoText {{
+                color: {main_color};
+                font-family: 'Courier New', monospace;
+                font-size: 22px;
+                font-weight: bold;
+                border: none;
+                background: transparent;
+            }}
+            QScrollBar:vertical {{
+                background: rgba(0, 0, 0, 50);
+                width: 8px;
+                border-radius: 4px;
+            }}
+            QScrollBar::handle:vertical {{
+                background: {main_color};
+                border-radius: 4px;
+            }}
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: none; }}
+        """)
+
 
 # --- Класс кругового меню ---
 class RadialMenu(QWidget):
@@ -2330,38 +2503,67 @@ class YukiAssistant(QWidget):
     _always_listen_signal = pyqtSignal(str)
 
     def _process_input(self, text: str, is_explicit: bool = True):
-        """Обрабатывает ввод. is_explicit=True если нажали кнопку (микрофон/чат)."""
-        screen_x = self.x() + self.width() + 10
-        screen_y = self.y() + 20
+        try:
+            screen_x = self.x() + self.width() + 10
+            screen_y = self.y() + 20
 
-        logger.log("INFO", "Input", f"User: {text}")
+            logger.log("INFO", "Input", f"User: {text}")
 
-        # Если работает фоновый микрофон и к Юки не обращались по имени — игнорируем,
-        # чтобы Gemini не реагировал на каждый звук в комнате.
-        if not is_explicit and not YukiCommands.is_yuki_command(text):
-            return
+            if not is_explicit and not YukiCommands.is_yuki_command(text):
+                return
 
-        # --- Проверяем команды Юки ---
-        custom_apps = getattr(self, 'custom_apps', {})
-        # Передаем флаг is_explicit в force_command
-        handled, response = YukiCommands.handle(text, custom_apps=custom_apps, force_command=is_explicit)
-        
-        if handled:
-            logger.log("COMMAND", "CMD", f"Handled: {text} -> {response}")
-            self.holo_screen.show_message(
-                response, self.current_skin,
-                screen_x, screen_y,
-                auto_hide_ms=4000
-            )
-            return
+            custom_apps = getattr(self, 'custom_apps', {})
+            handled, response = YukiCommands.handle(text, custom_apps=custom_apps, force_command=is_explicit)
 
-        # --- Если локальная команда не распознана — отдаём в ИИ (Gemini) ---
-        self.holo_screen.show_loading(self.current_skin, screen_x, screen_y)
+            if handled:
+                logger.log("COMMAND", "CMD", f"Handled: {text} -> {response}")
+                self.holo_screen.show_message(
+                    response, self.current_skin,
+                    screen_x, screen_y,
+                    auto_hide_ms=4000
+                )
+                return
 
-        self.brain = YukiBrain(prompt=text, language="ru")
-        self.brain.reply_ready.connect(self.on_yuki_reply)
-        self.brain.error_occurred.connect(self.on_yuki_error)
-        self.brain.start()
+            self.holo_screen.show_loading(self.current_skin, screen_x, screen_y)
+
+            # Создаем наших рабочих
+            self.brain = YukiBrain(prompt=text, language="ru")
+            self.tts_worker = TTSWorker(language="ru")
+            self.audio_player = AudioPipelinePlayer()
+
+            # 1. Текст -> на Экран
+            self.brain.text_chunk_ready.connect(self.holo_screen.append_text)
+
+            # 2. Текст -> в TTS
+            self.brain.sentence_ready.connect(self.tts_worker.add_sentence)
+
+            # 3. Готовые аудиофайлы -> в Плеер
+            self.tts_worker.audio_ready.connect(self.audio_player.add_audio)
+
+            # 4. ЦЕПОЧКА ЗАВЕРШЕНИЯ (Та самая правильная эстафета)
+            # ИИ закончил генерировать -> сообщает TTSWorker'у
+            self.brain.finished_generation.connect(self.tts_worker.set_generation_done)
+
+            # TTSWorker всё перевел в голос -> сообщает AudioPlayer'у
+            self.tts_worker.finished_all_tts.connect(self.audio_player.set_tts_done)
+
+            # Плеер проиграл все файлы -> прячет окно и завершает процесс
+            self.audio_player.finished_all.connect(self.holo_screen.hide)
+
+            self.brain.error_occurred.connect(self.on_yuki_error)
+
+            # Запускаем конвейер!
+            logger.log("INFO", "Pipeline", "Все воркеры созданы, запускаю...")
+            self.audio_player.start()
+            self.tts_worker.start()
+            self.brain.start()
+
+        except Exception as e:
+            # ЛОВУШКА: Если код сломается, мы увидим полный путь ошибки в логах
+            import traceback
+            tb = traceback.format_exc()
+            logger.log("ERROR", "CRASH", f"Тихий краш в конвейере:\n{tb}")
+            print(f"CRITICAL ERROR: {tb}")
 
     def on_yuki_error(self, error_msg):
         logger.log("ERROR", "YukiReply", error_msg)
