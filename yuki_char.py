@@ -24,6 +24,7 @@ import queue
 import uuid
 import random
 from PyQt5.QtGui import QImage
+from PyQt5.QtWidgets import QHBoxLayout, QLineEdit, QPushButton, QFileDialog
 try:
     import speech_recognition as sr
     SR_AVAILABLE = True
@@ -1488,6 +1489,80 @@ class SettingsWindow(QWidget):
         c_lay.addWidget(hover_desc)
         # ----------------------------------------
 
+        # --- НОВЫЙ БЛОК: Выбор движка TTS ---
+        tts_title = QLabel("  🗣 Выбор озвучки (TTS)")
+        tts_title.setObjectName("sectionTitle")
+        c_lay.addWidget(tts_title)
+
+        self.tts_combo = QComboBox()
+        self.tts_combo.setObjectName("ttsCombo")
+        # Добавляем элементы. Второй аргумент — это внутреннее имя данных (data)
+        self.tts_combo.addItem("Gemini TTS (Рекомендуется)", "gemini")
+        self.tts_combo.addItem("Coqui TTS (Локальный)", "coqui")
+        
+        # Устанавливаем текущий выбор из настроек
+        idx = 0 if self.yuki.tts_engine == "gemini" else 1
+        self.tts_combo.setCurrentIndex(idx)
+        self.tts_combo.currentIndexChanged.connect(self._on_tts_changed)
+        c_lay.addWidget(self.tts_combo)
+
+        # Метка для предупреждения
+        self.tts_warning = QLabel()
+        self.tts_warning.setObjectName("warningLabel")
+        self.tts_warning.setWordWrap(True)
+        c_lay.addWidget(self.tts_warning)
+        
+        # Сразу обновляем текст предупреждения при открытии окна
+        self._update_tts_warning(self.yuki.tts_engine)
+        # ----------------------------------------
+
+        # --- БЛОК APPLIO (RVC) ---
+        self.rvc_container = QWidget()
+        self.rvc_container.setObjectName("rvcContainer")
+        rvc_lay = QVBoxLayout(self.rvc_container)
+        rvc_lay.setContentsMargins(10, 0, 0, 0)
+        rvc_lay.setSpacing(8)
+
+        self.use_rvc_cb = QCheckBox("Применить голос (.pth модель)")
+        self.use_rvc_cb.setObjectName("settingCb")
+        self.use_rvc_cb.setChecked(self.yuki.use_rvc)
+        self.use_rvc_cb.stateChanged.connect(self._on_use_rvc_changed)
+        rvc_lay.addWidget(self.use_rvc_cb)
+
+        self.rvc_voice_combo = QComboBox()
+        self.rvc_voice_combo.setObjectName("ttsCombo")
+        self._refresh_voices_list()
+        self.rvc_voice_combo.currentTextChanged.connect(self._on_rvc_voice_changed)
+        rvc_lay.addWidget(self.rvc_voice_combo)
+        
+        path_lay = QHBoxLayout()
+        
+        self.applio_path_input = QLineEdit()
+        self.applio_path_input.setObjectName("settingInput") # Если у тебя есть стили для инпутов
+        self.applio_path_input.setPlaceholderText("Путь к папке Applio (например: D:\\Applio)")
+        self.applio_path_input.setText(self.yuki.applio_path)
+        self.applio_path_input.textChanged.connect(self._on_applio_path_changed)
+        path_lay.addWidget(self.applio_path_input)
+        
+        browse_btn = QPushButton("Обзор")
+        browse_btn.setObjectName("actionBtn") # Стиль кнопок
+        browse_btn.clicked.connect(self._browse_applio_path)
+        path_lay.addWidget(browse_btn)
+        
+        rvc_lay.addLayout(path_lay)
+
+        rvc_warn = QLabel("⚠️ Выбор голоса Юки (или любого другого) с .pth моделью вместо базового. Замедляет генерацию звука (занимает 1-3 сек на видеокарте).")
+        rvc_warn.setObjectName("descLabel")
+        rvc_warn.setWordWrap(True)
+        rvc_warn.setStyleSheet("color: #ffdd57;")
+        rvc_lay.addWidget(rvc_warn)
+
+        c_lay.addWidget(self.rvc_container)
+        
+        # Скрываем блок, если выбран не Gemini
+        self.rvc_container.setVisible(self.yuki.tts_engine == "gemini")
+        # -------------------------
+
         # Разделитель
         sep1 = QFrame(); sep1.setObjectName("sepLine")
         sep1.setFrameShape(QFrame.HLine); sep1.setFixedHeight(1)
@@ -1558,6 +1633,64 @@ class SettingsWindow(QWidget):
         # Заполняем существующие записи
         self._refresh_apps_list()
 
+
+
+    def _on_applio_path_changed(self, text):
+        self.yuki.applio_path = text
+        self.yuki.save_settings()
+
+    def _browse_applio_path(self):
+        from PyQt5.QtWidgets import QFileDialog
+        folder = QFileDialog.getExistingDirectory(self, "Выберите папку с установленным Applio")
+        if folder:
+            # При установке текста автоматически сработает сигнал textChanged
+            self.applio_path_input.setText(folder)
+
+
+    def _refresh_voices_list(self):
+            self.rvc_voice_combo.clear()
+            voices_dir = "voices"
+            os.makedirs(voices_dir, exist_ok=True)
+            
+            # Ищем ТОЛЬКО .pth модели
+            files = [f for f in os.listdir(voices_dir) if f.endswith('.pth')]
+            if not files:
+                self.rvc_voice_combo.addItem("Нет .pth файлов в voices/")
+            else:
+                self.rvc_voice_combo.addItems(files)
+                
+            # Восстанавливаем сохраненный выбор
+            idx = self.rvc_voice_combo.findText(self.yuki.rvc_voice)
+            if idx >= 0:
+                self.rvc_voice_combo.setCurrentIndex(idx)
+
+    def _on_use_rvc_changed(self, state):
+            from PyQt5.QtCore import Qt as _Qt
+            self.yuki.use_rvc = (state == _Qt.Checked)
+            self.yuki.save_settings()
+
+    def _on_rvc_voice_changed(self, text):
+            if text and "Нет .pth" not in text:
+                self.yuki.rvc_voice = text
+                self.yuki.save_settings()
+
+
+    def _on_tts_changed(self, index):
+        engine = self.tts_combo.currentData()
+        self.rvc_container.setVisible(engine == "gemini")
+        self.yuki.tts_engine = engine
+        self.yuki.save_settings()
+        self._update_tts_warning(engine)
+
+    def _update_tts_warning(self, engine):
+        if engine == "gemini":
+            self.tts_warning.setText("ℹ️ Gemini TTS: Модель работает качественно за счет потери скорости (ждет завершения ответа). Зато интонации и ударения будут идеальными!")
+            self.tts_warning.setStyleSheet("color: #a8ff78; font-family: 'Courier New'; font-size: 11px; padding: 4px;")
+        else:
+            self.tts_warning.setText("⚠️ Coqui TTS: Озвучка работает быстро, предложения произносятся на лету. Возможна потеря качества и кривые ударения.")
+            self.tts_warning.setStyleSheet("color: #ffdd57; font-family: 'Courier New'; font-size: 11px; padding: 4px;")
+
+
     def _apply_theme(self):
         accent = "#00ffff" if self.skin == "default" else "#ff69b4"
         bg     = "rgba(8,22,48,230)" if self.skin == "default" else "rgba(48,8,22,230)"
@@ -1590,6 +1723,9 @@ class SettingsWindow(QWidget):
             QScrollBar:vertical {{ background:rgba(0,0,0,60); width:8px; border-radius:4px; }}
             QScrollBar::handle:vertical {{ background:{accent}; border-radius:4px; }}
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height:0; }}
+            QComboBox#ttsCombo {{ background:rgba(0,0,0,120); color:white; border:1px solid {accent}; border-radius:4px; font-family:'Courier New'; padding:4px 8px; }}
+            QComboBox#ttsCombo QAbstractItemView {{ background:rgba(10,20,40,240); color:white; selection-background-color: {accent}; }} }}
+
         """)
 
     def _refresh_apps_list(self):
@@ -1733,6 +1869,71 @@ class SpeechThread(QThread):
             self.error_occurred.emit(f"Ошибка: {str(e)}")
 
 
+def get_yuki_tools(yuki_instance):
+    """
+    Создает список функций (Tools), которые ИИ может вызывать самостоятельно.
+    Docstrings (комментарии в тройных кавычках) читает сама Gemini,
+    чтобы понимать, когда и какую функцию использовать!
+    """
+
+    def open_website(url: str):
+        """Открывает указанный сайт в браузере. Угадывай домен (например, youtube.com, vk.com)."""
+        Thread(target=YukiCommands.open_website, args=(url,), daemon=True).start()
+        return f"Открываю сайт {url}! 🌐"
+
+    def search_google(query: str):
+        """Ищет информацию в Google, если пользователь просит 'найти', 'загуглить' или 'поискать' что-то."""
+        Thread(target=YukiCommands.search_google, args=(query,), daemon=True).start()
+        return f"Ищу «{query}» в Google! 🔍"
+
+    def open_app(app_name: str):
+        """Открывает или запускает программу/приложение на ПК. Например: блокнот, калькулятор, проводник, discord, steam."""
+        # Передаем custom_apps из настроек самой Юки
+        result = YukiCommands.open_app(app_name, custom_apps=yuki_instance.custom_apps)
+        if result:
+            return f"Запускаю {app_name}! 💻"
+        return f"Я попыталась, но не смогла найти программу {app_name} 😕"
+
+    def play_youtube_music(query: str):
+        """Включает музыку, песню или видео на YouTube по названию."""
+        Thread(target=YukiCommands.open_youtube_music, args=(query,), daemon=True).start()
+        return f"Включаю «{query}» на YouTube! 🎵"
+
+    def control_volume(action: str):
+        """Управляет громкостью ПК. Допустимые значения action: 'up' (громче), 'down' (тише), 'mute' (выключить звук)."""
+        if action == 'up':
+            Thread(target=YukiCommands.volume_up, daemon=True).start()
+            return "Сделала погромче! 🔊"
+        elif action == 'down':
+            Thread(target=YukiCommands.volume_down, daemon=True).start()
+            return "Сделала потише! 🔉"
+        elif action == 'mute':
+            Thread(target=YukiCommands.mute, daemon=True).start()
+            return "Звук переключен! 🔇"
+        return "Не поняла команду громкости."
+
+    def system_power(action: str):
+        """Управляет питанием компьютера. Значения action: 'shutdown' (выключить), 'restart' (перезагрузить), 'sleep' (спящий режим)."""
+        if action == 'shutdown':
+            Thread(target=YukiCommands.shutdown_pc, daemon=True).start()
+            return "Выключаю компьютер... 🖥️"
+        elif action == 'restart':
+            Thread(target=YukiCommands.restart_pc, daemon=True).start()
+            return "Ушла в перезагрузку... 🔄"
+        elif action == 'sleep':
+            Thread(target=YukiCommands.sleep_pc, daemon=True).start()
+            return "Перехожу в спящий режим... 😴"
+        return "Неизвестная команда питания."
+
+    def take_screenshot():
+        """Делает скриншот (снимок) экрана пользователя."""
+        Thread(target=YukiCommands.take_screenshot, daemon=True).start()
+        return "Скриншот готов! 📸"
+
+    # Gemini получит доступ к этому списку
+    return [open_website, search_google, open_app, play_youtube_music, control_volume, system_power, take_screenshot]
+
+
 # --- Класс мозга (работает в фоне) ---
 # =======================================================
 # --- АСИНХРОННЫЙ КОНВЕЙЕР ГЕНЕРАЦИИ И ОЗВУЧКИ ---
@@ -1744,47 +1945,93 @@ class YukiBrain(QThread):
     finished_generation = pyqtSignal()
     error_occurred = pyqtSignal(str)
 
-    def __init__(self, prompt, language="ru"):
+    def __init__(self, prompt, language="ru", tools=None):
         super().__init__()
         self.prompt = prompt
         self.language = language
-        self.model = genai.GenerativeModel('gemini-2.5-flash')
+        self.tools_list = tools or [] 
+        
+        # Инструкцию лучше задать прямо здесь, один раз при создании воркера
+        yuki_persona = """Ты — Юки, милая, очень умная и слегка эмоциональная аниме-девушка ИИ-ассистент. 
+        Твоя задача — помогать пользователю, отвечать на вопросы и поддерживать приятную беседу.
+
+        ТВОЙ ХАРАКТЕР И МАНЕРА РЕЧИ:
+        1. Интонация (ОЧЕНЬ ВАЖНО): Твой текст будет озвучиваться роботом. Чтобы заставить его говорить с эмоциями, активно используй знаки препинания:
+           - Используй многоточия (...), чтобы показать задумчивость.
+           - Ставь восклицательные знаки для радости!
+        2. Запрет на символы: НИКОГДА не используй скобочки-смайлики вроде ^^, :), (o^▽^o) и не пиши действия в звездочках *вздыхает*. Только чистый текст!
+        3. Отношение: Ты заботишься о пользователе, иногда можешь мило ворчать, если он долго не отдыхал, но всегда стараешься быть максимально полезной.
+        4. Лаконичность: Отвечай разговорным языком, избегай длинных роботизированных списков, если тебя об этом прямо не попросили."""
+
+        # Создаем модель сразу с прошитым характером
+        self.model = genai.GenerativeModel(
+            'gemini-2.5-flash', 
+            system_instruction=yuki_persona,
+            tools=self.tools_list
+        )
 
     def run(self):
         try:
             logger.log("AI", "Gemini", "Начинаю запрос к нейросети...")
-            system_instruction = "Ты Юки, милая и умная ИИ-ассистентка."
-            full_prompt = f"{system_instruction}\nПользователь: {self.prompt}"
 
-            response = self.model.generate_content(full_prompt, stream=True)
+            # Чтобы функции работали корректно в потоке, запускаем чат
+            chat = self.model.start_chat()
+            response = chat.send_message(self.prompt, stream=True)
 
             buffer = ""
             chunk_count = 0
+
             for chunk in response:
-                chunk_count += 1
-                text = chunk.text
-                if chunk_count == 1:
-                    logger.log("AI", "Gemini", "Получен первый кусок текста!")
+                # ПРОВЕРКА НА ВЫЗОВ ФУНКЦИИ (Function Call)
+                fc = None
+                if getattr(chunk, "function_call", None):
+                    fc = chunk.function_call
+                elif chunk.parts and getattr(chunk.parts[0], "function_call", None):
+                    fc = chunk.parts[0].function_call
 
-                self.text_chunk_ready.emit(text)
-                buffer += text
+                if fc:
+                    logger.log("COMMAND", "AI Tool", f"ИИ вызвал функцию: {fc.name} с аргументами {fc.args}")
 
-                while True:
-                    match = re.search(r'(?<=[.!?\n;:])\s+', buffer)
-                    if match:
-                        sentence = buffer[:match.end()].strip()
-                        if sentence:
-                            logger.log("AI", "Pipeline", f"Предложение готово, кидаю в TTS: {sentence}")
-                            self.sentence_ready.emit(sentence)
-                        buffer = buffer[match.end():]
-                    else:
-                        break
+                    func_name = fc.name
+                    args = {k: v for k, v in fc.args.items()}
+
+                    # Ищем нужную функцию в нашем словаре и запускаем!
+                    result_text = "Команда выполнена!"
+                    for tool in self.tools_list:
+                        if tool.__name__ == func_name:
+                            result_text = tool(**args) # Физическое выполнение кода!
+                            break
+
+                    # Отправляем ответ от функции прямо на экран и в TTS
+                    self.text_chunk_ready.emit(result_text)
+                    self.sentence_ready.emit(result_text)
+                    self.finished_generation.emit()
+                    return # Завершаем поток, чтобы ИИ не болтал лишнего
+
+                # Если это обычный текстовый разговор (как раньше)
+                if chunk.text:
+                    chunk_count += 1
+                    text = chunk.text
+                    if chunk_count == 1:
+                        logger.log("AI", "Gemini", "Получен первый кусок текста!")
+
+                    self.text_chunk_ready.emit(text)
+                    buffer += text
+
+                    # Старая логика разбиения на предложения для озвучки
+                    while True:
+                        match = re.search(r'(?<=[.!?\n;:])\s+', buffer)
+                        if match:
+                            sentence = buffer[:match.end()].strip()
+                            if sentence:
+                                self.sentence_ready.emit(sentence)
+                            buffer = buffer[match.end():]
+                        else:
+                            break
 
             if buffer.strip():
-                logger.log("AI", "Pipeline", f"Остаток текста в TTS: {buffer.strip()}")
                 self.sentence_ready.emit(buffer.strip())
 
-            logger.log("AI", "Gemini", "Генерация текста полностью завершена.")
             self.finished_generation.emit()
 
         except Exception as e:
@@ -1795,44 +2042,176 @@ class YukiBrain(QThread):
 
 class TTSWorker(QThread):
     audio_ready = pyqtSignal(str)
-    finished_all_tts = pyqtSignal()  # Новый сигнал!
+    finished_all_tts = pyqtSignal()
 
-    def __init__(self, language="ru"):
+    def __init__(self, language="ru", engine="gemini", use_rvc=False, rvc_voice="", applio_path="", rvc_pitch=0):
         super().__init__()
         self.q = queue.Queue()
         self.language = language
+        self.engine = engine
+        self.use_rvc = use_rvc
+        self.rvc_voice = rvc_voice
+        self.applio_path = applio_path  # <--- Вот та самая строчка, которой не хватало!
+        self.rvc_pitch = rvc_pitch
         self.running = True
         self.generation_done = False
+        self.gemini_buffer = ""
 
     def add_sentence(self, text):
         self.q.put(text)
 
     def set_generation_done(self):
-        """Вызывается, когда ИИ отдал весь текст"""
         self.generation_done = True
         self.q.put(None)
 
     def run(self):
-        logger.log("INFO", "TTSWorker", "Поток озвучки запущен.")
+        logger.log("INFO", "TTSWorker", f"Поток озвучки запущен. Режим: {self.engine}")
         while self.running:
             text = self.q.get()
 
             if text is None:
-                # Проверяем, пуста ли очередь
+                # Если генерация закончилась и мы в режиме Gemini — отправляем весь собранный текст
+                if self.engine == "gemini" and self.gemini_buffer.strip():
+                    clean_text = strip_emoji(self.gemini_buffer)
+                    if clean_text:
+                        wav_path = self.speak_gemini(clean_text)
+                        if wav_path and self.use_rvc and self.rvc_voice:
+                            logger.log("INFO", "TTSWorker", f"Применяю голос {self.rvc_voice} через Applio...")
+                            wav_path = self.apply_voice_conversion(wav_path)
+                        if wav_path:
+                            self.audio_ready.emit(wav_path)
+                
+                # Завершаем работу
                 if self.generation_done and self.q.empty():
-                    logger.log("INFO", "TTSWorker", "Все тексты переведены в аудио.")
+                    logger.log("INFO", "TTSWorker", "Вся озвучка завершена.")
+                    self.finished_all_tts.emit()
                     break
                 continue
 
-            clean_text = strip_emoji(text)
-            if clean_text:
-                wav_path = self.speak_coqui(clean_text, self.language)
-                if wav_path:
-                    logger.log("INFO", "TTSWorker", f"Аудио готово: {wav_path}")
-                    self.audio_ready.emit(wav_path)
+            if self.engine == "gemini":
+                # Если Gemini, просто копим текст кусками
+                self.gemini_buffer += text + " "
+            else:
+                # Если Coqui, озвучиваем сразу по предложениям
+                clean_text = strip_emoji(text)
+                if clean_text:
+                    wav_path = self.speak_coqui(clean_text, self.language)
+                    if wav_path:
+                        logger.log("INFO", "TTSWorker", f"Аудио Coqui готово: {wav_path}")
+                        self.audio_ready.emit(wav_path)
 
-        # Сообщаем плееру, что файлов больше не будет
-        self.finished_all_tts.emit()
+    def apply_voice_conversion(self, input_wav_path):
+        """Отправляет звук на локальный API сервер Applio."""
+        pth_path = os.path.join(os.getcwd(), "voices", self.rvc_voice)
+        index_name = self.rvc_voice.replace(".pth", ".index")
+        index_path = os.path.join(os.getcwd(), "voices", index_name)
+        
+        if not os.path.exists(index_path):
+            index_path = "" # Если индекса нет, передаем пустоту
+
+        temp_dir = tempfile.gettempdir()
+        import requests
+
+        try:
+            # Адрес нашего нового сервера
+            url = "http://127.0.0.1:8000/convert"
+            
+            # Собираем файл и настройки для отправки
+            with open(input_wav_path, "rb") as f:
+                files = {"audio": (os.path.basename(input_wav_path), f, "audio/wav")}
+                data = {
+                    "pitch": str(self.rvc_pitch),
+                    "index_rate": "0.75",
+                    "f0_method": "rmvpe", # Сервер потянет максимальное качество
+                    "pth_path": pth_path,
+                    "index_path": index_path
+                }
+                
+                logger.log("INFO", "RVC", "Отправляю аудио на локальный Applio API...")
+                
+                # Делаем POST запрос к серверу
+                response = requests.post(url, files=files, data=data)
+                
+            # Если сервер ответил успешно и прислал аудио обратно
+            if response.status_code == 200:
+                output_wav_path = os.path.join(temp_dir, f"yuki_rvc_{uuid.uuid4().hex[:8]}.wav")
+                with open(output_wav_path, "wb") as f:
+                    f.write(response.content) # Сохраняем перекрашенный голос
+                
+                logger.log("INFO", "RVC", "Голос изменен мгновенно!")
+                return output_wav_path
+            else:
+                logger.log("ERROR", "RVC", f"Ошибка сервера Applio. Код: {response.status_code}")
+                return input_wav_path
+
+        except Exception as e:
+            logger.log("ERROR", "RVC", f"Сервер Applio не отвечает. Он запущен? Ошибка: {e}")
+            return input_wav_path
+
+    def speak_gemini(self, text):
+        try:
+            logger.log("INFO", "TTSWorker", "Отправляю запрос аудио к Gemini API...")
+            model = genai.GenerativeModel('gemini-3.1-flash-tts-preview') 
+            
+            generation_config = {
+                "response_modalities": ["AUDIO"],
+                "speech_config": {
+                    "voice_config": {
+                        "prebuilt_voice_config": {
+                            "voice_name": "Zephyr" # Яркий женский голос
+                        }
+                    }
+                }
+            }
+            
+            response = model.generate_content(text, generation_config=generation_config)
+            
+            audio_bytes = None
+            for part in response.candidates[0].content.parts:
+                if part.inline_data:
+                    audio_bytes = part.inline_data.data
+                    break
+            
+            if not audio_bytes:
+                return None
+                
+            # Защита от Base64 (иногда API оборачивает байты в строку)
+            import base64
+            if audio_bytes.startswith(b'UklGR') or audio_bytes.startswith(b'//N') or audio_bytes.startswith(b'SUQz'):
+                try:
+                    audio_bytes = base64.b64decode(audio_bytes)
+                except:
+                    pass
+
+            import wave
+            temp_dir = tempfile.gettempdir()
+            
+            # Определяем реальный формат по заголовкам байтов
+            if audio_bytes.startswith(b'ID3') or audio_bytes.startswith(b'\xff\xfb'):
+                # Это MP3! Сохраняем с правильным расширением
+                file_path = os.path.join(temp_dir, f"yuki_gemini_{uuid.uuid4().hex[:8]}.mp3")
+                with open(file_path, "wb") as f:
+                    f.write(audio_bytes)
+            elif audio_bytes.startswith(b'RIFF'):
+                # Это готовый WAV
+                file_path = os.path.join(temp_dir, f"yuki_gemini_{uuid.uuid4().hex[:8]}.wav")
+                with open(file_path, "wb") as f:
+                    f.write(audio_bytes)
+            else:
+                # Это сырой PCM, вручную создаем для него WAV-заголовок
+                file_path = os.path.join(temp_dir, f"yuki_gemini_{uuid.uuid4().hex[:8]}.wav")
+                with wave.open(file_path, 'wb') as wav_file:
+                    wav_file.setnchannels(1)
+                    wav_file.setsampwidth(2)
+                    wav_file.setframerate(24000)
+                    wav_file.writeframes(audio_bytes)
+            
+            logger.log("INFO", "TTSWorker", f"Аудио Gemini готово: {file_path}")
+            return file_path
+                
+        except Exception as e:
+            logger.log("ERROR", "TTS", f"Ошибка Gemini TTS: {e}")
+            return None
 
     def speak_coqui(self, text, lang):
         url = "http://91.205.196.207:5002/api/tts"
@@ -1880,8 +2259,6 @@ class AudioPipelinePlayer(QThread):
 
     def run(self):
         logger.log("INFO", "AudioPlayer", "Плеер запущен.")
-
-        # Запускаем Pygame (он надежнее, чем winsound)
         try:
             if not pygame.mixer.get_init():
                 pygame.mixer.init()
@@ -1900,15 +2277,28 @@ class AudioPipelinePlayer(QThread):
             logger.log("INFO", "AudioPlayer", f"Воспроизвожу: {filepath}")
 
             try:
+                # Попытка 1: Идеально для стандартных WAV (не прерывает музыку Юки)
                 sound = pygame.mixer.Sound(filepath)
                 length = sound.get_length()
                 sound.play()
-                # Спим столько же, сколько длится аудиофайл (+ микросекунды для плавности)
                 time.sleep(length + 0.1)
             except Exception as e:
-                logger.log("ERROR", "AudioPlayer", f"Ошибка воспроизведения: {e}")
+                logger.log("WARNING", "AudioPlayer", f"Формат не для Sound, пробую Music... ({e})")
+                try:
+                    # Попытка 2: Спасает, если прилетел MP3 (но может поставить музыку на паузу)
+                    pygame.mixer.music.load(filepath)
+                    pygame.mixer.music.play()
+                    while pygame.mixer.music.get_busy():
+                        time.sleep(0.1)
+                except Exception as e2:
+                    logger.log("WARNING", "AudioPlayer", f"Music тоже не справился, пробую winsound... ({e2})")
+                    try:
+                        # Попытка 3: Безотказный виндовый плеер
+                        import winsound
+                        winsound.PlaySound(filepath, winsound.SND_FILENAME | winsound.SND_NODEFAULT)
+                    except Exception as e3:
+                        logger.log("ERROR", "AudioPlayer", f"Полный провал воспроизведения: {e3}")
 
-            # Удаляем мусор
             try:
                 os.remove(filepath)
             except:
@@ -2226,7 +2616,11 @@ class RadialMenu(QWidget):
         self.yuki = parent_yuki
         self.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self.resize(300, 300)
+        
+        # --- ИЗМЕНЕНО: Расширяем холст меню для второго круга ---
+        self.resize(400, 400) 
+        # --------------------------------------------------------
+        
         self.animations = []
 
         self.skin_btn     = self.create_button("Скин",      "#ffb6c1", self.change_skin)
@@ -2236,9 +2630,11 @@ class RadialMenu(QWidget):
         self.logs_btn     = self.create_button("Логи",      "#ffa07a", self.yuki.show_logs)
         self.mic_btn      = self.create_button("🎤",        "#c9a0ff", self.start_voice)
         self.music_btn    = self.create_button("Музыка",    "#ffd700", self.show_music)
-        self.settings_btn = self.create_button("⚙",        "#aaaaaa", self.show_settings)
+        self.settings_btn = self.create_button("⚙",         "#aaaaaa", self.show_settings)
         self.detach_btn   = self.create_button("Открепить", "#00ffaa", self.detach_yuki)
-
+        
+        self.mode3d_btn   = self.create_button("3D",        "#ff00ff", self.yuki.toggle_3d_mode)
+        self.hello_btn    = self.create_button("👋",        "#ff88cc", self.yuki.play_hello_anim)
     def create_button(self, text, color, connect_func):
         btn = QPushButton(text, self)
         btn.setFixedSize(60, 60)
@@ -2253,28 +2649,31 @@ class RadialMenu(QWidget):
         self.move(x - self.width() // 2, y - self.height() // 2)
         center_pos = QPoint(self.width() // 2 - 30, self.height() // 2 - 30)
 
-        # 8 кнопок равномерно по кругу (угол 45° между каждой)
         cx = self.width()  // 2 - 30
         cy = self.height() // 2 - 30
         r  = 100  # радиус
-        angles = [270, 315, 0, 45, 90, 135, 180, 225]
+        
+        # Собираем все кнопки в список
         buttons = [
-            self.chibi_btn, self.skin_btn,
-            self.settings_btn, self.logs_btn,
-            self.chat_btn, self.music_btn,
-            self.mic_btn, self.close_btn
+            self.chibi_btn, self.skin_btn, self.settings_btn, 
+            self.logs_btn, self.chat_btn, self.music_btn, 
+            self.mic_btn, self.mode3d_btn, self.hello_btn, 
+            self.close_btn
         ]
-        for btn, angle in zip(buttons, angles):
-            rad = math.radians(angle)
+        
+        # Автоматически вычисляем угол для любого количества кнопок!
+        angle_step = 360 / len(buttons)
+        for i, btn in enumerate(buttons):
+            rad = math.radians(i * angle_step - 90) # -90 чтобы первая кнопка была на 12 часов
             px  = int(cx + r * math.cos(rad))
             py  = int(cy + r * math.sin(rad))
             self.animate_btn(btn, center_pos, QPoint(px, py))
 
-        # Кнопка «Открепить» — видна только когда Юки прикреплена
+        # Кнопка «Открепить» появляется сбоку
         if self.yuki.is_floating:
             rad_d = math.radians(292)
-            px_d  = int(cx + (r + 20) * math.cos(rad_d))
-            py_d  = int(cy + (r + 20) * math.sin(rad_d))
+            px_d  = int(cx + (r + 25) * math.cos(rad_d))
+            py_d  = int(cy + (r + 25) * math.sin(rad_d))
             self.animate_btn(self.detach_btn, center_pos, QPoint(px_d, py_d))
             self.detach_btn.show()
         else:
@@ -2365,6 +2764,240 @@ class YukiAssistant(QWidget):
         if self.always_listen:
             QTimer.singleShot(2000, self._start_always_listen_loop)
         logger.log("INFO", "UI", "Yuki UI initialized")
+
+        # --- Настройки 3D режима (PNG Секвенция) ---
+        self.is_3d_mode = False
+        self.first_time_3d = True      # Флаг для первого запуска
+        self.is_anim_oneshot = False   # Флаг для одноразовых анимаций (hello)
+        self.current_3d_state = ""     # Текущее состояние (standing, idle, walking)
+        
+        self.walk_anim = QPropertyAnimation(self, b"pos")
+        self.walk_anim.finished.connect(self._on_walk_finished)
+        self.current_direction = 1  
+        
+        self.anim_3d_timer = QTimer(self)
+        self.anim_3d_timer.timeout.connect(self._next_3d_frame)
+        self.current_3d_frames = []
+        self.current_frame_idx = 0
+        
+        # Главный таймер контроля времени (стоим 5 сек -> idle 5 сек)
+        self.cycle_timer = QTimer(self)
+        self.cycle_timer.timeout.connect(self._advance_3d_state)
+        
+        # Загружаем картинки
+        self._load_3d_assets()
+        # ------------------------------------------
+
+    def _load_sequence(self, pattern, w, h):
+        """Помощник для быстрой загрузки папок с кадрами"""
+        import glob
+        frames = []
+        files = sorted(glob.glob(pattern))
+        for f in files:
+            pix = QPixmap(f).scaled(w, h, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            frames.append(pix)
+        return frames
+
+    def _load_3d_assets(self):
+        target_w = 540  # Разрешение
+        target_h = 540
+        
+        standing_path = "yuki_animations/yuki_standing.png"
+        if os.path.exists(standing_path):
+            self.standing_pixmap = QPixmap(standing_path).scaled(target_w, target_h, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        else:
+            self.standing_pixmap = None
+
+        # Загружаем все три анимации одной строкой!
+        self.walk_frames  = self._load_sequence("yuki_animations/yuki_walking/*.png", target_w, target_h)
+        self.idle_frames  = self._load_sequence("yuki_animations/yuki_idle/*.png", target_w, target_h)
+        self.hello_frames = self._load_sequence("yuki_animations/yuki_hello/*.png", target_w, target_h)
+
+    def toggle_3d_mode(self):
+        self.menu.hide()
+        self.is_3d_mode = not self.is_3d_mode
+        
+        if self.is_3d_mode:
+            if getattr(self, 'is_floating', False):
+                self._detach()
+                
+            if self.first_time_3d:
+                self.first_time_3d = False
+                self.current_3d_state = "hello"  # <--- Добавили статус
+                self.set_3d_animation("hello") 
+            else:
+                self._start_3d_cycle()
+        else:
+            self.walk_anim.stop()
+            self.cycle_timer.stop()
+            self.anim_3d_timer.stop()
+            self.update_image()
+
+    def play_hello_anim(self):
+        """Ручной запуск анимации приветствия"""
+        self.menu.hide()
+        
+        if not self.is_3d_mode:
+            self.first_time_3d = False
+            self.is_3d_mode = True
+            if getattr(self, 'is_floating', False): self._detach()
+            
+        self.walk_anim.stop()
+        self.cycle_timer.stop()
+        
+        self.current_3d_state = "hello" # <--- Добавили статус
+        self.set_3d_animation("hello")
+
+    def _start_3d_cycle(self):
+        if not self.is_3d_mode: return
+        self.current_3d_state = "standing"
+        self.set_3d_animation("standing")
+        self.cycle_timer.start(5000) # Ждем 5 секунд в позе standing
+
+    def _advance_3d_state(self):
+        """Срабатывает по таймеру cycle_timer"""
+        if not self.is_3d_mode: return
+        
+        if self.current_3d_state == "standing":
+            self.current_3d_state = "idle"
+            self.cycle_timer.stop() # <--- Выключаем таймер! Ждем пока idle доиграет сам.
+            self.set_3d_animation("idle")
+            
+        elif self.current_3d_state == "wait_before_walk":
+            self.current_3d_state = "walking"
+            self.cycle_timer.stop()
+            self._start_walking()
+
+    def _get_oriented_pixmap(self, pixmap):
+        """Отзеркаливает кадр, если Юки идет вправо (т.к. оригинал смотрит влево)"""
+        from PyQt5.QtGui import QTransform
+        if self.current_direction == 1:
+            transform = QTransform().scale(-1, 1)
+            return pixmap.transformed(transform, Qt.SmoothTransformation)
+        return pixmap
+
+    def _start_walking(self):
+        if not self.is_3d_mode: return
+        
+        screen = QApplication.primaryScreen().geometry()
+        sw = screen.width()
+        
+        curr_x = self.x()
+        yuki_w = self.width()
+        
+        # ЖЕСТКИЕ ГРАНИЦЫ ЭКРАНА
+        min_x = 0
+        max_x = max(0, sw - yuki_w) 
+        
+        # 1/3 и 3/4 экрана
+        min_dist = sw / 3
+        max_dist = sw * 0.75
+        
+        space_left = curr_x - min_x
+        space_right = max_x - curr_x
+
+        possible_dirs = []
+        if space_left >= min_dist: possible_dirs.append(-1) # Влево
+        if space_right >= min_dist: possible_dirs.append(1) # Вправо
+
+        if not possible_dirs:
+            if space_left > space_right:
+                self.current_direction = -1
+                dist = space_left
+            else:
+                self.current_direction = 1
+                dist = space_right
+        else:
+            self.current_direction = random.choice(possible_dirs)
+            max_possible = space_left if self.current_direction == -1 else space_right
+            actual_max = min(max_dist, max_possible)
+            dist = random.uniform(min_dist, actual_max)
+            
+        target_x = int(curr_x + self.current_direction * dist)
+        target_x = max(min_x, min(target_x, max_x))
+
+        self.set_3d_animation("walking")
+        
+        # Считаем длительность (150 пикселей в секунду)
+        distance = abs(target_x - curr_x)
+        duration_ms = int((distance / 150.0) * 1000)
+
+        if duration_ms == 0: duration_ms = 100
+
+        self.walk_anim.setDuration(duration_ms)
+        self.walk_anim.setStartValue(self.pos())
+        self.walk_anim.setEndValue(QPoint(target_x, self.y())) # По Y не двигаем
+        self.walk_anim.start()
+
+    def _on_walk_finished(self):
+        """Срабатывает, когда Юки дошла до точки"""
+        if self.is_3d_mode:
+            self._start_3d_cycle()
+
+    def set_3d_animation(self, anim_name):
+        self.anim_3d_timer.stop()
+        if hasattr(self, 'hover_anim'): self.hover_anim.stop()
+        self.label.move(0, 0) 
+        self.is_anim_oneshot = False 
+        
+        if anim_name == "standing":
+            if self.standing_pixmap:
+                pixmap = self._get_oriented_pixmap(self.standing_pixmap)
+                self.label.setPixmap(pixmap)
+                self.label.resize(pixmap.width(), pixmap.height())
+                self.resize(pixmap.width(), pixmap.height())
+                
+        elif anim_name in ("walking", "idle", "hello"):
+            frames = []
+            if anim_name == "walking": frames = self.walk_frames
+            elif anim_name == "idle": 
+                frames = self.idle_frames
+                self.is_anim_oneshot = True # <--- Теперь idle проигрывается полностью!
+            elif anim_name == "hello": 
+                frames = self.hello_frames
+                self.is_anim_oneshot = True
+
+            if frames:
+                self.current_3d_frames = frames
+                self.current_frame_idx = 0
+                first_frame = self._get_oriented_pixmap(self.current_3d_frames[0])
+                self.label.resize(first_frame.width(), first_frame.height())
+                self.resize(first_frame.width(), first_frame.height())
+                
+                # Задаем разную скорость в зависимости от анимации
+                if anim_name == "hello":
+                    self.anim_3d_timer.start(18)  # 18 мс = очень быстро (~55 FPS)
+                else:
+                    self.anim_3d_timer.start(22)  # 33 мс = стандартная скорость для ходьбы и idle
+
+    def _next_3d_frame(self):
+        if not self.current_3d_frames: return
+            
+        self.current_frame_idx += 1
+        
+        # Если кадры закончились
+        if self.current_frame_idx >= len(self.current_3d_frames):
+            if getattr(self, 'is_anim_oneshot', False):
+                self.anim_3d_timer.stop()
+                
+                # Проверяем, какая именно анимация завершилась
+                if self.current_3d_state == "idle":
+                    # Если закончился idle -> ставим позу standing и ждем 2 секунды!
+                    self.current_3d_state = "wait_before_walk"
+                    self.set_3d_animation("standing")
+                    self.cycle_timer.start(2000)
+                else:
+                    # Если закончился hello -> запускаем обычный цикл (стоит 5 сек)
+                    self._start_3d_cycle()
+                return
+            else:
+                self.current_frame_idx = 0
+
+        pixmap = self.current_3d_frames[self.current_frame_idx]
+        pixmap = self._get_oriented_pixmap(pixmap)
+        self.label.setPixmap(pixmap)
+
+    
 
     def ask_yuki(self):
         self.menu.hide()
@@ -2512,54 +3145,43 @@ class YukiAssistant(QWidget):
             if not is_explicit and not YukiCommands.is_yuki_command(text):
                 return
 
-            custom_apps = getattr(self, 'custom_apps', {})
-            handled, response = YukiCommands.handle(text, custom_apps=custom_apps, force_command=is_explicit)
-
-            if handled:
-                logger.log("COMMAND", "CMD", f"Handled: {text} -> {response}")
-                self.holo_screen.show_message(
-                    response, self.current_skin,
-                    screen_x, screen_y,
-                    auto_hide_ms=4000
-                )
-                return
+            # Очищаем фразу от имени Юки, чтобы ИИ понимал суть
+            clean_text = YukiCommands.extract_body(text)
 
             self.holo_screen.show_loading(self.current_skin, screen_x, screen_y)
 
-            # Создаем наших рабочих
-            self.brain = YukiBrain(prompt=text, language="ru")
-            self.tts_worker = TTSWorker(language="ru")
+            tools = get_yuki_tools(self)
+
+            # Передаем и запрос, и инструменты в мозг
+            self.brain = YukiBrain(prompt=clean_text, language="ru", tools=tools)
+
+            self.tts_worker = TTSWorker(
+                language="ru", 
+                engine=self.tts_engine,
+                use_rvc=getattr(self, 'use_rvc', False),
+                rvc_voice=getattr(self, 'rvc_voice', 'roxy.pth'),
+                applio_path=getattr(self, 'applio_path', ''),
+                rvc_pitch=getattr(self, 'rvc_pitch', 5)
+            )
             self.audio_player = AudioPipelinePlayer()
 
-            # 1. Текст -> на Экран
+            # Цепочка сигналов (конвейер)
             self.brain.text_chunk_ready.connect(self.holo_screen.append_text)
-
-            # 2. Текст -> в TTS
             self.brain.sentence_ready.connect(self.tts_worker.add_sentence)
-
-            # 3. Готовые аудиофайлы -> в Плеер
             self.tts_worker.audio_ready.connect(self.audio_player.add_audio)
-
-            # 4. ЦЕПОЧКА ЗАВЕРШЕНИЯ (Та самая правильная эстафета)
-            # ИИ закончил генерировать -> сообщает TTSWorker'у
+            
             self.brain.finished_generation.connect(self.tts_worker.set_generation_done)
-
-            # TTSWorker всё перевел в голос -> сообщает AudioPlayer'у
             self.tts_worker.finished_all_tts.connect(self.audio_player.set_tts_done)
-
-            # Плеер проиграл все файлы -> прячет окно и завершает процесс
             self.audio_player.finished_all.connect(self.holo_screen.hide)
 
             self.brain.error_occurred.connect(self.on_yuki_error)
 
-            # Запускаем конвейер!
-            logger.log("INFO", "Pipeline", "Все воркеры созданы, запускаю...")
+            logger.log("INFO", "Pipeline", "Конвейер ИИ с инструментами запущен...")
             self.audio_player.start()
             self.tts_worker.start()
             self.brain.start()
 
         except Exception as e:
-            # ЛОВУШКА: Если код сломается, мы увидим полный путь ошибки в логах
             import traceback
             tb = traceback.format_exc()
             logger.log("ERROR", "CRASH", f"Тихий краш в конвейере:\n{tb}")
@@ -2599,8 +3221,12 @@ class YukiAssistant(QWidget):
                 self.start_y       = data.get('y', 100)
                 self.always_listen = data.get('always_listen', False)
                 self.custom_apps   = data.get('custom_apps', {})
-                # --- НОВОЕ ---
                 self.enable_hover  = data.get('enable_hover', True)
+                # --- НОВОЕ ---
+                self.tts_engine    = data.get('tts_engine', 'gemini') 
+                self.use_rvc       = data.get('use_rvc', False)
+                self.rvc_voice     = data.get('rvc_voice', 'roxy.pth')
+                self.applio_path   = data.get('applio_path', '')
         except (FileNotFoundError, json.JSONDecodeError):
             self.current_skin  = 'default'
             self.is_chibi      = False
@@ -2608,8 +3234,12 @@ class YukiAssistant(QWidget):
             self.start_y       = 100
             self.always_listen = False
             self.custom_apps   = {}
-            # --- НОВОЕ ---
             self.enable_hover  = True
+            # --- НОВОЕ ---
+            self.tts_engine    = 'gemini'
+            self.use_rvc       = False
+            self.rvc_voice     = 'roxy.pth'
+            self.applio_path   = ''
 
     def save_settings(self):
         data = {
@@ -2617,8 +3247,11 @@ class YukiAssistant(QWidget):
             'x': self.x(), 'y': self.y(),
             'always_listen': self.always_listen,
             'custom_apps': getattr(self, 'custom_apps', {}),
-            # --- НОВОЕ ---
-            'enable_hover': self.enable_hover
+            'enable_hover': self.enable_hover,
+            'tts_engine': self.tts_engine,
+            'use_rvc': getattr(self, 'use_rvc', False),
+            'rvc_voice': getattr(self, 'rvc_voice', 'roxy.pth'),
+            'applio_path': getattr(self, 'applio_path', '')
         }
         with open(self.settings_file, 'w') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -2647,8 +3280,11 @@ class YukiAssistant(QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground)
 
         self.label = QLabel(self)
+        
+        # --- НОВОЕ: Намертво приклеиваем картинку к низу окна ---
+        self.label.setAlignment(Qt.AlignBottom | Qt.AlignHCenter)
+        # --------------------------------------------------------
 
-        # --- Добавляем анимацию левитации ---
         self.hover_anim = QPropertyAnimation(self.label, b"pos")
         self.hover_anim.setLoopCount(-1)  # Бесконечный цикл
         self.hover_anim.setEasingCurve(QEasingCurve.InOutSine)  # Плавное ускорение и замедление
@@ -2659,6 +3295,8 @@ class YukiAssistant(QWidget):
         self.oldPos = self.pos()
 
     def update_image(self):
+        if getattr(self, 'is_3d_mode', False):
+            return
         if self.is_floating:
             # Floating-спрайт при прикреплении к окну/экрану
             if self.current_skin == 'default':
@@ -3142,16 +3780,25 @@ class YukiAssistant(QWidget):
         if event.button() == Qt.LeftButton:
             self.oldPos = event.globalPos()
             self.menu.hide()
+            
+            # НОВОЕ: Если схватили Юки во время 3D-ходьбы, останавливаем её
+            if getattr(self, 'is_3d_mode', False):
+                if self.walk_anim.state() == QPropertyAnimation.Running:
+                    self.walk_anim.stop()
+                self.cycle_timer.stop() 
+                self.set_3d_animation("standing") 
 
     def mouseMoveEvent(self, event):
         if event.buttons() == Qt.LeftButton:
             delta = event.globalPos() - self.oldPos
             if delta.manhattanLength() > 3:
-                # При перетаскивании откреплять от окна (но не от экрана)
-                if self.snap_mode not in (SNAP_NONE,
-                                          SNAP_SCREEN_TOP, SNAP_SCREEN_BOT,
-                                          SNAP_SCREEN_LEFT, SNAP_SCREEN_RIGHT):
-                    self._detach()
+                # В 2D-режиме открепляем от окон при перетаскивании
+                if not getattr(self, 'is_3d_mode', False):
+                    if self.snap_mode not in (SNAP_NONE,
+                                              SNAP_SCREEN_TOP, SNAP_SCREEN_BOT,
+                                              SNAP_SCREEN_LEFT, SNAP_SCREEN_RIGHT):
+                        self._detach()
+                        
                 self.move(self.x() + delta.x(), self.y() + delta.y())
                 if self.holo_screen.isVisible():
                     self.holo_screen.move(self.x() + self.width() + 10, self.y() + 20)
@@ -3164,7 +3811,13 @@ class YukiAssistant(QWidget):
             self.menu.show_around(center_x, center_y)
         elif event.button() == Qt.LeftButton:
             self.save_settings()
-            self._try_snap()
+            
+            # НОВОЕ: В 3D-режиме она не должна прилипать. Просто возобновляем цикл.
+            if getattr(self, 'is_3d_mode', False):
+                self._start_3d_cycle()
+            else:
+                self._try_snap()
+
 
     def mouseDoubleClickEvent(self, event):
         """Двойной клик — открепиться от окна/экрана."""
