@@ -3546,3 +3546,550 @@ TypeError: YukiBrain.__init__() got an unexpected keyword argument 'tools'
 [2026-06-22 19:45:31] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x16811719db0>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
 [2026-06-22 19:45:31] [INFO] [TTSWorker] Вся озвучка завершена.
 [2026-06-22 19:45:31] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-22 21:49:56] [INFO] [STARTUP] Yuki started
+[2026-06-22 21:49:57] [INFO] [UI] Yuki UI initialized
+[2026-06-22 21:50:10] [INFO] [Input] User: привет Юки
+[2026-06-22 21:50:10] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-22 21:50:10] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-22 21:50:10] [INFO] [TTSWorker] Поток озвучки запущен. Режим: coqui
+[2026-06-22 21:50:10] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-22 21:50:11] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-22 21:50:13] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1be5d39b7f0>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+[2026-06-22 21:50:15] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1be5d39b1f0>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+[2026-06-22 21:50:17] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1be5d3e08b0>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+[2026-06-22 21:50:17] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-22 21:50:17] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-22 21:54:09] [INFO] [Snap] Detached
+[2026-06-22 21:59:13] [INFO] [Snap] Detached
+[2026-06-22 21:59:56] [INFO] [Input] User: привет юки
+[2026-06-22 21:59:56] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-22 21:59:56] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-22 21:59:56] [INFO] [TTSWorker] Поток озвучки запущен. Режим: coqui
+[2026-06-22 21:59:56] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-22 21:59:58] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-22 22:00:00] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1be5d32d630>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+[2026-06-22 22:00:02] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1be5d3e0a60>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+[2026-06-22 22:00:04] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1be5d3e07c0>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+[2026-06-22 22:00:06] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x1be5d3e1fc0>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+[2026-06-22 22:00:06] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-22 22:00:06] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-22 22:02:02] [INFO] [STARTUP] Yuki started
+[2026-06-22 22:02:03] [INFO] [UI] Yuki UI initialized
+[2026-06-22 22:02:17] [INFO] [Input] User: юки ты как
+[2026-06-22 22:02:17] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-22 22:02:17] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-22 22:02:17] [INFO] [TTSWorker] Поток озвучки запущен. Режим: coqui
+[2026-06-22 22:02:17] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-22 22:02:19] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-22 22:02:21] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x244a629b910>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+[2026-06-22 22:02:23] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x244a62e08b0>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+[2026-06-22 22:02:25] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x244a62e1060>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+[2026-06-22 22:02:27] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x244a62e1810>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+[2026-06-22 22:02:29] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.196.207', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.196.207', port=5002) at 0x244a62e2050>, 'Connection to 91.205.196.207 timed out. (connect timeout=2)'))
+[2026-06-22 22:02:29] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-22 22:02:29] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-22 22:04:02] [INFO] [STARTUP] Yuki started
+[2026-06-22 22:04:03] [INFO] [UI] Yuki UI initialized
+[2026-06-22 22:04:14] [INFO] [Input] User: привет ты как
+[2026-06-22 22:04:15] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-22 22:04:15] [INFO] [TTSWorker] Поток озвучки запущен. Режим: coqui
+[2026-06-22 22:04:15] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-22 22:04:15] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-22 22:04:16] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-22 22:04:23] [INFO] [TTSWorker] Аудио Coqui готово: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_de83485b.wav
+[2026-06-22 22:04:23] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_de83485b.wav
+[2026-06-22 22:04:25] [INFO] [TTSWorker] Аудио Coqui готово: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_5dc7922d.wav
+[2026-06-22 22:04:25] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_5dc7922d.wav
+[2026-06-22 22:04:27] [INFO] [TTSWorker] Аудио Coqui готово: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_309831e0.wav
+[2026-06-22 22:04:28] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_309831e0.wav
+[2026-06-22 22:04:29] [INFO] [TTSWorker] Аудио Coqui готово: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_1846278c.wav
+[2026-06-22 22:04:29] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-22 22:04:31] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_1846278c.wav
+[2026-06-22 22:04:35] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-22 22:05:33] [INFO] [STARTUP] Yuki started
+[2026-06-22 22:05:34] [INFO] [UI] Yuki UI initialized
+[2026-06-22 22:06:14] [INFO] [Input] User: привет юки ты как
+[2026-06-22 22:06:15] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-22 22:06:15] [INFO] [TTSWorker] Поток озвучки запущен. Режим: coqui
+[2026-06-22 22:06:15] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-22 22:06:15] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-22 22:06:16] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-22 22:06:18] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.197.59', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.197.59', port=5002) at 0x27b1a17abc0>, 'Connection to 91.205.197.59 timed out. (connect timeout=2)'))
+[2026-06-22 22:06:20] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.197.59', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.197.59', port=5002) at 0x27b1a17b760>, 'Connection to 91.205.197.59 timed out. (connect timeout=2)'))
+[2026-06-22 22:06:22] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.197.59', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.197.59', port=5002) at 0x27b1a1c48b0>, 'Connection to 91.205.197.59 timed out. (connect timeout=2)'))
+[2026-06-22 22:06:24] [ERROR] [TTS] Сервер TTS недоступен: HTTPConnectionPool(host='91.205.197.59', port=5002): Max retries exceeded with url: /api/tts (Caused by ConnectTimeoutError(<HTTPConnection(host='91.205.197.59', port=5002) at 0x27b1a1c5060>, 'Connection to 91.205.197.59 timed out. (connect timeout=2)'))
+[2026-06-22 22:06:24] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-22 22:06:24] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-23 15:04:08] [INFO] [STARTUP] Yuki started
+[2026-06-23 15:04:09] [INFO] [UI] Yuki UI initialized
+[2026-06-23 15:04:53] [INFO] [STARTUP] Yuki started
+[2026-06-23 15:04:54] [INFO] [UI] Yuki UI initialized
+[2026-06-23 15:05:55] [INFO] [Snap] Detached
+[2026-06-23 15:06:18] [INFO] [Input] User: приветик сестричка ты как?
+[2026-06-23 15:06:18] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-23 15:06:18] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-23 15:06:18] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-23 15:06:18] [INFO] [TTSWorker] Поток озвучки запущен. Режим: gemini
+[2026-06-23 15:06:19] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-23 15:06:20] [INFO] [TTSWorker] Отправляю запрос аудио к Gemini API...
+[2026-06-23 15:06:26] [INFO] [TTSWorker] Аудио Gemini готово: C:\Users\Dark\AppData\Local\Temp\yuki_gemini_15868f91.wav
+[2026-06-23 15:06:26] [INFO] [TTSWorker] Применяю голос roxy.pth через Applio...
+[2026-06-23 15:06:26] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 15:07:57] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 15:07:57] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-23 15:07:57] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_1fa2f853.wav
+[2026-06-23 15:08:06] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-23 15:09:11] [INFO] [Input] User: юки сделай скрин
+[2026-06-23 15:09:11] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-23 15:09:11] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-23 15:09:11] [INFO] [TTSWorker] Поток озвучки запущен. Режим: coqui
+[2026-06-23 15:09:11] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-23 15:09:12] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-23 15:09:12] [ERROR] [TTS] Сервер TTS недоступен: 404 Client Error: Not Found for url: http://100.117.206.40/api/tts
+[2026-06-23 15:09:12] [ERROR] [TTS] Сервер TTS недоступен: 404 Client Error: Not Found for url: http://100.117.206.40/api/tts
+[2026-06-23 15:09:12] [ERROR] [TTS] Сервер TTS недоступен: 404 Client Error: Not Found for url: http://100.117.206.40/api/tts
+[2026-06-23 15:09:12] [ERROR] [TTS] Сервер TTS недоступен: 404 Client Error: Not Found for url: http://100.117.206.40/api/tts
+[2026-06-23 15:09:12] [ERROR] [TTS] Сервер TTS недоступен: 404 Client Error: Not Found for url: http://100.117.206.40/api/tts
+[2026-06-23 15:09:12] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-23 15:09:12] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-23 15:13:25] [INFO] [STARTUP] Yuki started
+[2026-06-23 15:13:26] [INFO] [UI] Yuki UI initialized
+[2026-06-23 15:14:03] [INFO] [Input] User: привет юки ты как
+[2026-06-23 15:14:03] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-23 15:14:03] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-23 15:14:03] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-23 15:14:03] [INFO] [TTSWorker] Поток озвучки запущен. Режим: coqui
+[2026-06-23 15:14:05] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-23 15:14:06] [INFO] [TTSWorker] Аудио Coqui готово: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_f1b53163.wav
+[2026-06-23 15:14:06] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_f1b53163.wav
+[2026-06-23 15:14:09] [INFO] [TTSWorker] Аудио Coqui готово: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_3fe20884.wav
+[2026-06-23 15:14:09] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_3fe20884.wav
+[2026-06-23 15:14:13] [INFO] [TTSWorker] Аудио Coqui готово: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_7ccf2ef1.wav
+[2026-06-23 15:14:13] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_7ccf2ef1.wav
+[2026-06-23 15:14:14] [INFO] [TTSWorker] Аудио Coqui готово: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_b13d36b5.wav
+[2026-06-23 15:14:14] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-23 15:14:18] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_b13d36b5.wav
+[2026-06-23 15:14:20] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-23 15:27:34] [INFO] [Snap] Detached
+[2026-06-23 15:34:05] [INFO] [STARTUP] Yuki started
+[2026-06-23 15:34:05] [INFO] [UI] Yuki UI initialized
+[2026-06-23 15:38:02] [INFO] [Input] User: привет Юки , ты как?
+[2026-06-23 15:38:02] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-23 15:38:02] [INFO] [TTSWorker] Поток озвучки запущен. Режим: gemini
+[2026-06-23 15:38:02] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-23 15:38:02] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-23 15:38:03] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-23 15:38:03] [INFO] [TTSWorker] Текст разбит на 3 частей для параллельной обработки.
+[2026-06-23 15:38:03] [INFO] [TTSWorker] Кусок 0 -> Модель: gemini-3.1-flash-tts-preview
+[2026-06-23 15:38:03] [INFO] [TTSWorker] Кусок 1 -> Модель: gemini-3.1-flash-tts-preview
+[2026-06-23 15:38:03] [INFO] [TTSWorker] Кусок 2 -> Модель: gemini-3.1-flash-tts-preview
+[2026-06-23 15:38:05] [INFO] [Snap] Detached
+[2026-06-23 15:38:06] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 15:38:06] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 15:38:07] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 15:38:27] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 15:38:27] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_21233836.wav
+[2026-06-23 15:38:27] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 15:38:27] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 15:38:27] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-23 15:38:28] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_3f9c0d4f.wav
+[2026-06-23 15:38:31] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_6e582302.wav
+[2026-06-23 15:38:35] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-23 15:44:30] [INFO] [STARTUP] Yuki started
+[2026-06-23 15:44:31] [INFO] [UI] Yuki UI initialized
+[2026-06-23 15:44:53] [INFO] [Input] User: привет Юки , ты как?
+[2026-06-23 15:44:53] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-23 15:44:53] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-23 15:44:53] [INFO] [TTSWorker] Поток озвучки запущен. Режим: gemini
+[2026-06-23 15:44:53] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-23 15:44:55] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-23 15:44:55] [INFO] [TTSWorker] Текст разбит на 4 частей.
+[2026-06-23 15:44:55] [INFO] [TTSWorker] Кусок 0 -> Модель: gemini-3.1-flash-tts-preview
+[2026-06-23 15:44:55] [INFO] [TTSWorker] Кусок 1 -> Модель: gemini-3.1-flash-tts-preview
+[2026-06-23 15:44:55] [INFO] [TTSWorker] Кусок 2 -> Модель: gemini-3.1-flash-tts-preview
+[2026-06-23 15:44:55] [INFO] [TTSWorker] Кусок 3 -> Модель: gemini-3.1-flash-tts-preview
+[2026-06-23 15:44:57] [INFO] [TTSWorker] Крашу кусок 0 через Applio...
+[2026-06-23 15:44:57] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 15:45:07] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 15:45:07] [INFO] [TTSWorker] Крашу кусок 1 через Applio...
+[2026-06-23 15:45:07] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_5da055e5.wav
+[2026-06-23 15:45:07] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 15:45:19] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 15:45:19] [INFO] [TTSWorker] Крашу кусок 2 через Applio...
+[2026-06-23 15:45:19] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_20e1a30b.wav
+[2026-06-23 15:45:19] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 15:45:22] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 15:45:22] [INFO] [TTSWorker] Крашу кусок 3 через Applio...
+[2026-06-23 15:45:22] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 15:45:23] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_6b8bbeff.wav
+[2026-06-23 15:45:25] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 15:45:25] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-23 15:45:27] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_b4f42b8a.wav
+[2026-06-23 15:45:31] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-23 15:46:49] [INFO] [Input] User: юки продеманстрируй мой сайт  smilesystems.am
+[2026-06-23 15:46:49] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-23 15:46:49] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-23 15:46:49] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-23 15:46:49] [INFO] [TTSWorker] Поток озвучки запущен. Режим: gemini
+[2026-06-23 15:46:50] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-23 15:46:50] [COMMAND] [AI Tool] ИИ вызвал функцию: open_website с аргументами <proto.marshal.collections.maps.MapComposite object at 0x0000027D71B24F40>
+[2026-06-23 15:46:50] [INFO] [TTSWorker] Текст разбит на 3 частей.
+[2026-06-23 15:46:50] [INFO] [TTSWorker] Кусок 0 -> Модель: gemini-3.1-flash-tts-preview
+[2026-06-23 15:46:50] [INFO] [TTSWorker] Кусок 1 -> Модель: gemini-3.1-flash-tts-preview
+[2026-06-23 15:46:50] [INFO] [TTSWorker] Кусок 2 -> Модель: gemini-3.1-flash-tts-preview
+[2026-06-23 15:46:52] [INFO] [TTSWorker] Крашу кусок 0 через Applio...
+[2026-06-23 15:46:52] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 15:46:58] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 15:46:58] [INFO] [TTSWorker] Крашу кусок 1 через Applio...
+[2026-06-23 15:46:58] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_8072814d.wav
+[2026-06-23 15:46:58] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 15:47:11] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 15:47:11] [INFO] [TTSWorker] Крашу кусок 2 через Applio...
+[2026-06-23 15:47:11] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_d8247b70.wav
+[2026-06-23 15:47:11] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 15:47:14] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 15:47:14] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_f1a52516.wav
+[2026-06-23 15:47:14] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-23 15:47:18] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-23 15:56:58] [INFO] [STARTUP] Yuki started
+[2026-06-23 15:56:59] [INFO] [UI] Yuki UI initialized
+[2026-06-23 15:57:20] [INFO] [Input] User: привет сестричка , как ты там?
+[2026-06-23 15:57:20] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-23 15:57:20] [INFO] [TTSWorker] Поток озвучки запущен. Режим: gemini
+[2026-06-23 15:57:20] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-23 15:57:20] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-23 15:57:21] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-23 15:57:21] [INFO] [TTSWorker] Текст разбит на 4 частей.
+[2026-06-23 15:57:21] [INFO] [TTSWorker] Кусок 0 -> Модель: gemini-3.1-flash-tts-preview
+[2026-06-23 15:57:21] [INFO] [TTSWorker] Кусок 1 -> Модель: gemini-3.1-flash-tts-preview
+[2026-06-23 15:57:21] [INFO] [TTSWorker] Кусок 2 -> Модель: gemini-3.1-flash-tts-preview
+[2026-06-23 15:57:21] [INFO] [TTSWorker] Кусок 3 -> Модель: gemini-3.1-flash-tts-preview
+[2026-06-23 15:57:24] [INFO] [TTSWorker] Крашу кусок 0 через Applio...
+[2026-06-23 15:57:24] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 15:57:26] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 15:57:26] [INFO] [TTSWorker] Крашу кусок 1 через Applio...
+[2026-06-23 15:57:26] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_6009eba3.wav
+[2026-06-23 15:57:26] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 15:57:34] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 15:57:34] [INFO] [TTSWorker] Крашу кусок 2 через Applio...
+[2026-06-23 15:57:34] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_03028c5a.wav
+[2026-06-23 15:57:34] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 15:57:44] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 15:57:44] [INFO] [TTSWorker] Крашу кусок 3 через Applio...
+[2026-06-23 15:57:44] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_d6890567.wav
+[2026-06-23 15:57:44] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 15:57:47] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 15:57:47] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-23 15:57:47] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_3e10d07b.wav
+[2026-06-23 15:57:50] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-23 16:02:37] [INFO] [STARTUP] Yuki started
+[2026-06-23 16:02:38] [INFO] [UI] Yuki UI initialized
+[2026-06-23 16:02:53] [INFO] [Input] User: привет Юки , как ты там?
+[2026-06-23 16:02:53] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-23 16:02:53] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-23 16:02:53] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-23 16:02:53] [INFO] [TTSWorker] Поток озвучки запущен. Режим: gemini
+[2026-06-23 16:02:55] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-23 16:02:55] [INFO] [TTSWorker] Текст разбит на 2 частей.
+[2026-06-23 16:02:55] [INFO] [TTSWorker] Кусок 0 -> Модель gemini-3.1-flash-tts-preview (Символов: 112)
+[2026-06-23 16:02:55] [INFO] [TTSWorker] Кусок 1 -> Модель gemini-3.1-flash-tts-preview (Символов: 30)
+[2026-06-23 16:03:01] [INFO] [TTSWorker] Крашу кусок 0 через Applio...
+[2026-06-23 16:03:01] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 16:03:04] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 16:03:04] [INFO] [TTSWorker] Крашу кусок 1 через Applio...
+[2026-06-23 16:03:04] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_784b418c.wav
+[2026-06-23 16:03:04] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 16:03:11] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 16:03:11] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-23 16:03:12] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_c9d0d193.wav
+[2026-06-23 16:03:15] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-23 16:03:39] [INFO] [Input] User: спасибо , у меня все хорошо , чем посоветуеш занятся?
+[2026-06-23 16:03:39] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-23 16:03:39] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-23 16:03:39] [INFO] [TTSWorker] Поток озвучки запущен. Режим: gemini
+[2026-06-23 16:03:39] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-23 16:03:41] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-23 16:03:41] [INFO] [TTSWorker] Текст разбит на 2 частей.
+[2026-06-23 16:03:41] [INFO] [TTSWorker] Кусок 0 -> Модель gemini-3.1-flash-tts-preview (Символов: 105)
+[2026-06-23 16:03:41] [INFO] [TTSWorker] Кусок 1 -> Модель gemini-3.1-flash-tts-preview (Символов: 72)
+[2026-06-23 16:03:50] [INFO] [TTSWorker] Крашу кусок 0 через Applio...
+[2026-06-23 16:03:50] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 16:04:03] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 16:04:03] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_05d2d8b6.wav
+[2026-06-23 16:04:03] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 16:04:07] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 16:04:07] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-23 16:04:12] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_aa98a385.wav
+[2026-06-23 16:04:17] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-23 16:07:10] [INFO] [STARTUP] Yuki started
+[2026-06-23 16:07:11] [INFO] [UI] Yuki UI initialized
+[2026-06-23 16:07:24] [INFO] [Input] User: привет Юки , ты как?
+[2026-06-23 16:07:24] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-23 16:07:24] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-23 16:07:24] [INFO] [TTSWorker] Поток озвучки запущен.
+[2026-06-23 16:07:24] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-23 16:07:25] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-23 16:07:25] [INFO] [TTSWorker] Текст разбит на 1 частей. Начинаю параллельную загрузку...
+[2026-06-23 16:07:25] [INFO] [TTSWorker] Кусок #0 (символов: 127) начал генерацию.
+[2026-06-23 16:07:32] [INFO] [TTSWorker] Кусок #0 готов! Путь: yuki_gemini_e741fa65.wav, Размер: 457004 байт
+[2026-06-23 16:07:32] [INFO] [Applio] --- НАЧАЛО покраски куска #0 ---
+[2026-06-23 16:07:32] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 16:07:36] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 16:07:36] [INFO] [Applio] --- КУСОК #0 ГОТОВ за 4.07 сек ---
+[2026-06-23 16:07:36] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-23 16:07:36] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_adbaa319.wav
+[2026-06-23 16:07:45] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-23 16:09:45] [INFO] [STARTUP] Yuki started
+[2026-06-23 16:09:46] [INFO] [UI] Yuki UI initialized
+[2026-06-23 16:09:59] [INFO] [Input] User: привет Юки ты как?
+[2026-06-23 16:09:59] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-23 16:09:59] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-23 16:09:59] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-23 16:09:59] [INFO] [TTSWorker] Поток озвучки запущен.
+[2026-06-23 16:10:00] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-23 16:10:00] [INFO] [TTSWorker] Текст разбит на 1 частей. Начинаю параллельную загрузку...
+[2026-06-23 16:10:00] [INFO] [TTSWorker] Кусок #0 (символов: 97) начал генерацию.
+[2026-06-23 16:10:06] [INFO] [TTSWorker] Кусок #0 готов! Путь: yuki_gemini_ef3921a2.wav, Размер: 397484 байт
+[2026-06-23 16:10:06] [INFO] [Applio] --- НАЧАЛО покраски куска #0 ---
+[2026-06-23 16:10:06] [INFO] [RVC] Отправляю аудио на локальный Applio API...
+[2026-06-23 16:10:15] [INFO] [RVC] Голос изменен мгновенно!
+[2026-06-23 16:10:15] [INFO] [Applio] --- КУСОК #0 ГОТОВ за 9.49 сек ---
+[2026-06-23 16:10:15] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-23 16:10:15] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_rvc_2361b910.wav
+[2026-06-23 16:10:24] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-24 16:30:57] [INFO] [STARTUP] Yuki started
+[2026-06-24 16:30:58] [INFO] [UI] Yuki UI initialized
+[2026-06-24 16:31:14] [INFO] [Snap] Detached
+[2026-06-24 16:31:54] [INFO] [Input] User: милашка сделай скриншот экрана пожалуйста
+[2026-06-24 16:31:55] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-24 16:31:55] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-24 16:31:55] [INFO] [TTSWorker] Поток озвучки запущен.
+[2026-06-24 16:31:55] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-24 16:31:56] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-24 16:31:56] [COMMAND] [AI Tool] ИИ вызвал функцию: take_screenshot с аргументами <proto.marshal.collections.maps.MapComposite object at 0x000001A4609F6410>
+[2026-06-24 16:32:04] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_eb9994b9.wav
+[2026-06-24 16:32:06] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-24 16:32:08] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_a36feaac.wav
+[2026-06-24 16:32:09] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_e2044906.wav
+[2026-06-24 16:32:11] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-24 16:32:46] [INFO] [Snap] Snapped to screen edge, mode=6
+[2026-06-24 16:32:55] [INFO] [Snap] Detached
+[2026-06-24 16:32:57] [INFO] [Snap] Snapped to screen edge, mode=6
+[2026-06-24 16:32:58] [INFO] [Snap] Detached
+[2026-06-24 16:32:59] [INFO] [Snap] Detached
+[2026-06-24 16:40:44] [INFO] [Snap] Snapped to window hwnd=330602, mode=2
+[2026-06-24 16:40:45] [INFO] [Snap] Detached
+[2026-06-24 16:40:45] [INFO] [Snap] Snapped to window hwnd=330602, mode=2
+[2026-06-24 16:40:46] [INFO] [Snap] Detached
+[2026-06-24 16:40:46] [INFO] [Snap] Detached
+[2026-06-24 16:40:47] [INFO] [Snap] Detached
+[2026-06-24 16:40:48] [INFO] [Snap] Detached
+[2026-06-24 16:41:08] [INFO] [Input] User: милашка , а можеш пожалуйста включить стим?
+[2026-06-24 16:41:08] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-24 16:41:08] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-24 16:41:08] [INFO] [TTSWorker] Поток озвучки запущен.
+[2026-06-24 16:41:08] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-24 16:41:11] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-24 16:41:11] [COMMAND] [AI Tool] ИИ вызвал функцию: open_app с аргументами <proto.marshal.collections.maps.MapComposite object at 0x000001A4609F6050>
+[2026-06-24 16:41:12] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_953ea3a1.wav
+[2026-06-24 16:41:14] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_55390e1e.wav
+[2026-06-24 16:41:16] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-24 16:41:17] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_7dd7f5b0.wav
+[2026-06-24 16:41:19] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-24 16:41:59] [INFO] [Input] User: а дискорд можеш открыть?
+[2026-06-24 16:41:59] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-24 16:41:59] [INFO] [TTSWorker] Поток озвучки запущен.
+[2026-06-24 16:41:59] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-24 16:41:59] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-24 16:42:00] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-24 16:42:00] [COMMAND] [AI Tool] ИИ вызвал функцию: open_app с аргументами <proto.marshal.collections.maps.MapComposite object at 0x000001A4609B04C0>
+[2026-06-24 16:42:01] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_85135538.wav
+[2026-06-24 16:42:04] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_0da8e49e.wav
+[2026-06-24 16:42:04] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-24 16:42:06] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_fa2438ff.wav
+[2026-06-24 16:42:08] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-24 16:42:35] [INFO] [Input] User: какая ты молодчинка
+[2026-06-24 16:42:35] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-24 16:42:35] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-24 16:42:35] [INFO] [TTSWorker] Поток озвучки запущен.
+[2026-06-24 16:42:35] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-24 16:42:37] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-24 16:42:38] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_1f1c83b4.wav
+[2026-06-24 16:42:40] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_6c5b5ba5.wav
+[2026-06-24 16:42:41] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-24 16:42:43] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_dd695fed.wav
+[2026-06-24 16:42:45] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-24 16:42:58] [INFO] [Snap] Snapped to screen edge, mode=5
+[2026-06-24 16:43:03] [INFO] [Snap] Detached
+[2026-06-24 16:43:15] [INFO] [Voice] Always-listen: True
+[2026-06-24 16:43:29] [COMMAND] [AlwaysListen] Heard: милашка сделай скриншот
+[2026-06-24 16:43:29] [INFO] [Input] User: милашка сделай скриншот
+[2026-06-24 16:43:36] [COMMAND] [AlwaysListen] Heard: О'кей сделать
+[2026-06-24 16:43:36] [INFO] [Input] User: О'кей сделать
+[2026-06-24 16:43:47] [COMMAND] [AlwaysListen] Heard: Юки Привет
+[2026-06-24 16:43:47] [INFO] [Input] User: Юки Привет
+[2026-06-24 16:43:47] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-24 16:43:47] [INFO] [TTSWorker] Поток озвучки запущен.
+[2026-06-24 16:43:47] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-24 16:43:47] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-24 16:43:48] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-24 16:43:49] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_06a3a31a.wav
+[2026-06-24 16:43:51] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_242da81c.wav
+[2026-06-24 16:43:53] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_0bc7ed00.wav
+[2026-06-24 16:43:54] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-24 16:43:56] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_9de58841.wav
+[2026-06-24 16:43:59] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-24 16:44:00] [COMMAND] [AlwaysListen] Heard: Чем могу быть полезна
+[2026-06-24 16:44:00] [INFO] [Input] User: Чем могу быть полезна
+[2026-06-24 16:44:04] [COMMAND] [AlwaysListen] Heard: сделай пожалуйста скриншот
+[2026-06-24 16:44:04] [INFO] [Input] User: сделай пожалуйста скриншот
+[2026-06-24 16:44:11] [COMMAND] [AlwaysListen] Heard: Юки сделай пожалуйста скриншот
+[2026-06-24 16:44:11] [INFO] [Input] User: Юки сделай пожалуйста скриншот
+[2026-06-24 16:44:11] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-24 16:44:11] [INFO] [TTSWorker] Поток озвучки запущен.
+[2026-06-24 16:44:11] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-24 16:44:11] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-24 16:44:12] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-24 16:44:12] [COMMAND] [AI Tool] ИИ вызвал функцию: take_screenshot с аргументами <proto.marshal.collections.maps.MapComposite object at 0x000001A4610786D0>
+[2026-06-24 16:44:13] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_59d337c6.wav
+[2026-06-24 16:44:15] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_6bad764c.wav
+[2026-06-24 16:44:16] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-24 16:44:17] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_0de5fb82.wav
+[2026-06-24 16:44:19] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-24 16:44:31] [COMMAND] [AlwaysListen] Heard: Прибавь пожалуйста
+[2026-06-24 16:44:31] [INFO] [Input] User: Прибавь пожалуйста
+[2026-06-24 16:44:40] [COMMAND] [AlwaysListen] Heard: йоки Прибавь пожалуйста
+[2026-06-24 16:44:40] [INFO] [Input] User: йоки Прибавь пожалуйста
+[2026-06-24 16:44:49] [COMMAND] [AlwaysListen] Heard: Юки прибавь
+[2026-06-24 16:44:49] [INFO] [Input] User: Юки прибавь
+[2026-06-24 16:44:49] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-24 16:44:49] [INFO] [TTSWorker] Поток озвучки запущен.
+[2026-06-24 16:44:49] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-24 16:44:49] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-24 16:44:50] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-24 16:44:50] [COMMAND] [AI Tool] ИИ вызвал функцию: control_volume с аргументами <proto.marshal.collections.maps.MapComposite object at 0x000001A461078460>
+[2026-06-24 16:44:52] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_2c05ee77.wav
+[2026-06-24 16:44:54] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_eeb243a6.wav
+[2026-06-24 16:44:54] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-24 16:44:56] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_0f450827.wav
+[2026-06-24 16:44:59] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-24 16:45:02] [COMMAND] [AlwaysListen] Heard: Сделай погромче
+[2026-06-24 16:45:02] [INFO] [Input] User: Сделай погромче
+[2026-06-24 16:45:05] [COMMAND] [AlwaysListen] Heard: Спасибо
+[2026-06-24 16:45:05] [INFO] [Input] User: Спасибо
+[2026-06-24 16:45:15] [COMMAND] [AlwaysListen] Heard: тёлки А расскажи принцип пабл со
+[2026-06-24 16:45:15] [INFO] [Input] User: тёлки А расскажи принцип пабл со
+[2026-06-24 16:45:22] [INFO] [Voice] Always-listen: False
+[2026-06-24 16:45:26] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-06-24 16:45:27] [INFO] [Voice] Listening...
+[2026-06-24 16:45:30] [INFO] [Voice] Recognizing...
+[2026-06-24 16:45:31] [COMMAND] [Voice] Recognized: Расскажи принцип Пабло
+[2026-06-24 16:45:31] [COMMAND] [AlwaysListen] Heard: тюки Расскажи принцип Пабло
+[2026-06-24 16:45:32] [INFO] [Input] User: тюки Расскажи принцип Пабло
+[2026-06-24 16:45:32] [INFO] [Input] User: Расскажи принцип Пабло
+[2026-06-24 16:45:32] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-24 16:45:32] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-24 16:45:32] [INFO] [TTSWorker] Поток озвучки запущен.
+[2026-06-24 16:45:32] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-24 16:45:33] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-24 16:45:33] [COMMAND] [AI Tool] ИИ вызвал функцию: search_google с аргументами <proto.marshal.collections.maps.MapComposite object at 0x000001A461079090>
+[2026-06-24 16:45:34] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_47fdc126.wav
+[2026-06-24 16:45:36] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_4be513c5.wav
+[2026-06-24 16:45:42] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_d372ad2b.wav
+[2026-06-24 16:45:45] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-24 16:45:49] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_2b14f0eb.wav
+[2026-06-24 16:45:50] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_996e7f1f.wav
+[2026-06-24 16:45:53] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-24 16:46:13] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-06-24 16:46:13] [INFO] [Voice] Listening...
+[2026-06-24 16:46:17] [INFO] [Voice] Recognizing...
+[2026-06-24 16:46:18] [COMMAND] [Voice] Recognized: расскажите в
+[2026-06-24 16:46:19] [INFO] [Input] User: расскажите в
+[2026-06-24 16:46:19] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-24 16:46:19] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-24 16:46:19] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-24 16:46:19] [INFO] [TTSWorker] Поток озвучки запущен.
+[2026-06-24 16:46:20] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-24 16:46:21] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_83cf247a.wav
+[2026-06-24 16:46:23] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_c809ed64.wav
+[2026-06-24 16:46:24] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_aa34fe3e.wav
+[2026-06-24 16:46:26] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-24 16:46:27] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_f7d2943d.wav
+[2026-06-24 16:46:31] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-24 16:46:36] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-06-24 16:46:37] [INFO] [Voice] Listening...
+[2026-06-24 16:46:40] [INFO] [Voice] Recognizing...
+[2026-06-24 16:46:41] [COMMAND] [Voice] Recognized: Расскажи о Бабе сорт тенге в програм
+[2026-06-24 16:46:42] [INFO] [Input] User: Расскажи о Бабе сорт тенге в програм
+[2026-06-24 16:46:42] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-24 16:46:42] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-24 16:46:42] [INFO] [TTSWorker] Поток озвучки запущен.
+[2026-06-24 16:46:42] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-24 16:46:43] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-24 16:46:45] [COMMAND] [AI Tool] ИИ вызвал функцию: search_google с аргументами <proto.marshal.collections.maps.MapComposite object at 0x000001A461078670>
+[2026-06-24 16:46:45] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_a0afc3c4.wav
+[2026-06-24 16:46:48] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_d83b0013.wav
+[2026-06-24 16:46:51] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_faba81f6.wav
+[2026-06-24 16:46:55] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_2f286ca1.wav
+[2026-06-24 16:46:58] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_043a374d.wav
+[2026-06-24 16:47:02] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_afea6c53.wav
+[2026-06-24 16:47:02] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-24 16:47:05] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_f952c27e.wav
+[2026-06-24 16:47:08] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_f2be1de3.wav
+[2026-06-24 16:47:12] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-24 16:47:16] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-06-24 16:47:17] [INFO] [Voice] Listening...
+[2026-06-24 16:47:22] [INFO] [Voice] Recognizing...
+[2026-06-24 16:47:23] [COMMAND] [Voice] Recognized: Расскажи лучший принцип сортировки в програм
+[2026-06-24 16:47:23] [INFO] [Input] User: Расскажи лучший принцип сортировки в програм
+[2026-06-24 16:47:23] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-24 16:47:23] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-24 16:47:23] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-24 16:47:23] [INFO] [TTSWorker] Поток озвучки запущен.
+[2026-06-24 16:47:25] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-24 16:47:27] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_dab1a0aa.wav
+[2026-06-24 16:47:30] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_c2318cdd.wav
+[2026-06-24 16:47:35] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_6d7c1963.wav
+[2026-06-24 16:47:38] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_7b990526.wav
+[2026-06-24 16:47:46] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_883886cc.wav
+[2026-06-24 16:47:48] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_f555458b.wav
+[2026-06-24 16:47:50] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_19042fdc.wav
+[2026-06-24 16:48:00] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_28158ae3.wav
+[2026-06-24 16:48:04] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_a1d04f5b.wav
+[2026-06-24 16:48:09] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_102e68c0.wav
+[2026-06-24 16:48:12] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_b38fc3d7.wav
+[2026-06-24 16:48:20] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_cce26970.wav
+[2026-06-24 16:48:23] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_d8d36643.wav
+[2026-06-24 16:48:25] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_fa0223f7.wav
+[2026-06-24 16:48:27] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-24 16:48:35] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_14cd558d.wav
+[2026-06-24 16:48:46] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_06f79c35.wav
+[2026-06-24 16:48:51] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_cf9cb9e4.wav
+[2026-06-24 16:48:55] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_e7c7e0f2.wav
+[2026-06-24 16:48:57] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-24 16:49:04] [INFO] [Voice] Microphone opened, adjusting for noise...
+[2026-06-24 16:49:04] [INFO] [Voice] Listening...
+[2026-06-24 16:49:12] [INFO] [Voice] Recognizing...
+[2026-06-24 16:49:14] [COMMAND] [Voice] Recognized: а вот ты сказала принцип быстрой сортировки можешь поподробнее рассказать о нём Как именно в нём сортируются
+[2026-06-24 16:49:14] [INFO] [Input] User: а вот ты сказала принцип быстрой сортировки можешь поподробнее рассказать о нём Как именно в нём сортируются
+[2026-06-24 16:49:14] [INFO] [Pipeline] Конвейер ИИ с инструментами запущен...
+[2026-06-24 16:49:14] [INFO] [AudioPlayer] Плеер запущен.
+[2026-06-24 16:49:14] [INFO] [TTSWorker] Поток озвучки запущен.
+[2026-06-24 16:49:14] [AI] [Gemini] Начинаю запрос к нейросети...
+[2026-06-24 16:49:16] [AI] [Gemini] Получен первый кусок текста!
+[2026-06-24 16:49:18] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_ea236f0c.wav
+[2026-06-24 16:49:21] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_c87ab7e2.wav
+[2026-06-24 16:49:24] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_8098c5cb.wav
+[2026-06-24 16:49:31] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_d9a2c363.wav
+[2026-06-24 16:49:33] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_5364a55e.wav
+[2026-06-24 16:49:39] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_6cee3274.wav
+[2026-06-24 16:49:50] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_f9810c53.wav
+[2026-06-24 16:49:54] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_1eb99ea2.wav
+[2026-06-24 16:49:56] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_eb19cc78.wav
+[2026-06-24 16:49:59] [INFO] [TTSWorker] Вся озвучка завершена.
+[2026-06-24 16:50:04] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_6b8a206d.wav
+[2026-06-24 16:50:06] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_9ace3318.wav
+[2026-06-24 16:50:11] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_c57c1054.wav
+[2026-06-24 16:50:14] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_f5d27610.wav
+[2026-06-24 16:50:16] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_96f0ab12.wav
+[2026-06-24 16:50:19] [INFO] [AudioPlayer] Вся озвучка завершена.

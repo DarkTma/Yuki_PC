@@ -23,6 +23,11 @@ import librosa
 import queue
 import uuid
 import random
+import time
+from collections import deque
+import concurrent.futures
+import re
+import math
 from PyQt5.QtGui import QImage
 from PyQt5.QtWidgets import QHBoxLayout, QLineEdit, QPushButton, QFileDialog
 try:
@@ -2040,6 +2045,36 @@ class YukiBrain(QThread):
             self.error_occurred.emit(f"Ошибка Gemini: {str(e)}")
 
 
+class GeminiRateLimiter:
+    def __init__(self):
+        # Храним время запросов для RPM и счетчик для RPD
+        self.limits = {
+            'gemini-3.1-flash-tts-preview': {'rpm': deque(), 'rpd': 0},
+            'gemini-2.5-flash-tts':         {'rpm': deque(), 'rpd': 0},
+            'gemini-2.5-pro-tts':           {'rpm': deque(), 'rpd': 0}
+        }
+        self.MAX_RPM = 10
+        self.MAX_RPD = 100
+
+    def get_best_model(self):
+        now = time.time()
+        for model_name, data in self.limits.items():
+            # Удаляем запросы, которые были сделаны больше 60 секунд назад
+            while data['rpm'] and now - data['rpm'][0] > 60:
+                data['rpm'].popleft()
+            
+            # Если лимиты позволяют, берем эту модель
+            if len(data['rpm']) < self.MAX_RPM and data['rpd'] < self.MAX_RPD:
+                data['rpm'].append(now)
+                data['rpd'] += 1
+                return model_name
+                
+        return None # Если вдруг вообще все лимиты исчерпаны
+
+# Создаем ОДИН глобальный инстанс лимитера на всю программу
+gemini_limiter = GeminiRateLimiter()
+
+
 class TTSWorker(QThread):
     audio_ready = pyqtSignal(str)
     finished_all_tts = pyqtSignal()
@@ -2051,7 +2086,7 @@ class TTSWorker(QThread):
         self.engine = engine
         self.use_rvc = use_rvc
         self.rvc_voice = rvc_voice
-        self.applio_path = applio_path  # <--- Вот та самая строчка, которой не хватало!
+        self.applio_path = applio_path
         self.rvc_pitch = rvc_pitch
         self.running = True
         self.generation_done = False
@@ -2064,24 +2099,100 @@ class TTSWorker(QThread):
         self.generation_done = True
         self.q.put(None)
 
+    def split_into_chunks(self, text):
+        """Умная разбивка текста с защитой от микро-кусков."""
+        sentences = re.split(r'(?<=[.!?\n;:])\s+', text.strip())
+        sentences = [s for s in sentences if s.strip()]
+
+        if not sentences:
+            return []
+
+        total_length = sum(len(s) for s in sentences)
+
+        # Определяем максимальное число потоков
+        max_chunks = 4 if total_length <= 600 else 7
+
+        # Целевая длина куска (минимум 80 символов, чтобы не было кусков только из "Привет.")
+        target_len = max(80, total_length // max_chunks)
+
+        chunks = []
+        current_chunk = []
+        current_length = 0
+
+        for sentence in sentences:
+            current_chunk.append(sentence)
+            current_length += len(sentence)
+
+            # Закрываем кусок, если набрали нужный вес И есть куда разбивать дальше
+            if current_length >= target_len and len(chunks) < max_chunks - 1:
+                chunks.append(" ".join(current_chunk))
+                current_chunk = []
+                current_length = 0
+
+        # Закидываем остатки текста в последний кусок
+        if current_chunk:
+            chunks.append(" ".join(current_chunk))
+
+        return chunks
+
+    def process_single_chunk(self, index, text_chunk):
+        """Параллельная генерация (Gemini)."""
+        model_name = gemini_limiter.get_best_model()
+        if not model_name:
+            logger.log("ERROR", "TTSWorker", "Лимиты Gemini исчерпаны!")
+            return index, None
+
+        # ЛОГ: Какой именно кусок и сколько символов
+        logger.log("INFO", "TTSWorker", f"Кусок #{index} (символов: {len(text_chunk)}) начал генерацию.")
+        wav_path = self.speak_gemini(text_chunk, model_name)
+        
+        # ЛОГ: Успешно ли пришел файл
+        if wav_path:
+            file_size = os.path.getsize(wav_path)
+            logger.log("INFO", "TTSWorker", f"Кусок #{index} готов! Путь: {os.path.basename(wav_path)}, Размер: {file_size} байт")
+        
+        return index, wav_path
+
     def run(self):
-        logger.log("INFO", "TTSWorker", f"Поток озвучки запущен. Режим: {self.engine}")
+        logger.log("INFO", "TTSWorker", "Поток озвучки запущен.")
         while self.running:
             text = self.q.get()
 
             if text is None:
-                # Если генерация закончилась и мы в режиме Gemini — отправляем весь собранный текст
                 if self.engine == "gemini" and self.gemini_buffer.strip():
                     clean_text = strip_emoji(self.gemini_buffer)
-                    if clean_text:
-                        wav_path = self.speak_gemini(clean_text)
-                        if wav_path and self.use_rvc and self.rvc_voice:
-                            logger.log("INFO", "TTSWorker", f"Применяю голос {self.rvc_voice} через Applio...")
-                            wav_path = self.apply_voice_conversion(wav_path)
-                        if wav_path:
-                            self.audio_ready.emit(wav_path)
-                
-                # Завершаем работу
+                    chunks = self.split_into_chunks(clean_text)
+                    logger.log("INFO", "TTSWorker", f"Текст разбит на {len(chunks)} частей. Начинаю параллельную загрузку...")
+                    
+                    results = {}
+                    next_to_emit = 0
+                    
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=7) as executor:
+                        futures = {executor.submit(self.process_single_chunk, i, chunk): i for i, chunk in enumerate(chunks)}
+                        
+                        for future in concurrent.futures.as_completed(futures):
+                            idx, wav_path = future.result()
+                            results[idx] = wav_path
+                            
+                            while next_to_emit in results:
+                                path_to_play = results[next_to_emit]
+                                
+                                if path_to_play:
+                                    if self.use_rvc and self.rvc_voice:
+                                        # ЛОГ: Время начала покраски
+                                        start_time = time.time()
+                                        logger.log("INFO", "Applio", f"--- НАЧАЛО покраски куска #{next_to_emit} ---")
+                                        
+                                        path_to_play = self.apply_voice_conversion(path_to_play)
+                                        
+                                        # ЛОГ: Сколько секунд ушло на конкретный кусок
+                                        elapsed = time.time() - start_time
+                                        logger.log("INFO", "Applio", f"--- КУСОК #{next_to_emit} ГОТОВ за {elapsed:.2f} сек ---")
+                                        
+                                    self.audio_ready.emit(path_to_play)
+                                        
+                                next_to_emit += 1
+
                 if self.generation_done and self.q.empty():
                     logger.log("INFO", "TTSWorker", "Вся озвучка завершена.")
                     self.finished_all_tts.emit()
@@ -2089,15 +2200,12 @@ class TTSWorker(QThread):
                 continue
 
             if self.engine == "gemini":
-                # Если Gemini, просто копим текст кусками
                 self.gemini_buffer += text + " "
             else:
-                # Если Coqui, озвучиваем сразу по предложениям
                 clean_text = strip_emoji(text)
                 if clean_text:
                     wav_path = self.speak_coqui(clean_text, self.language)
                     if wav_path:
-                        logger.log("INFO", "TTSWorker", f"Аудио Coqui готово: {wav_path}")
                         self.audio_ready.emit(wav_path)
 
     def apply_voice_conversion(self, input_wav_path):
@@ -2114,7 +2222,7 @@ class TTSWorker(QThread):
 
         try:
             # Адрес нашего нового сервера
-            url = "http://127.0.0.1:8000/convert"
+            url = "http://100.117.206.40:8000/convert"
             
             # Собираем файл и настройки для отправки
             with open(input_wav_path, "rb") as f:
@@ -2148,17 +2256,16 @@ class TTSWorker(QThread):
             logger.log("ERROR", "RVC", f"Сервер Applio не отвечает. Он запущен? Ошибка: {e}")
             return input_wav_path
 
-    def speak_gemini(self, text):
+    def speak_gemini(self, text, model_name):
         try:
-            logger.log("INFO", "TTSWorker", "Отправляю запрос аудио к Gemini API...")
-            model = genai.GenerativeModel('gemini-3.1-flash-tts-preview') 
+            model = genai.GenerativeModel(model_name) 
             
             generation_config = {
                 "response_modalities": ["AUDIO"],
                 "speech_config": {
                     "voice_config": {
                         "prebuilt_voice_config": {
-                            "voice_name": "Zephyr" # Яркий женский голос
+                            "voice_name": "Zephyr"
                         }
                     }
                 }
@@ -2175,7 +2282,6 @@ class TTSWorker(QThread):
             if not audio_bytes:
                 return None
                 
-            # Защита от Base64 (иногда API оборачивает байты в строку)
             import base64
             if audio_bytes.startswith(b'UklGR') or audio_bytes.startswith(b'//N') or audio_bytes.startswith(b'SUQz'):
                 try:
@@ -2186,19 +2292,15 @@ class TTSWorker(QThread):
             import wave
             temp_dir = tempfile.gettempdir()
             
-            # Определяем реальный формат по заголовкам байтов
             if audio_bytes.startswith(b'ID3') or audio_bytes.startswith(b'\xff\xfb'):
-                # Это MP3! Сохраняем с правильным расширением
                 file_path = os.path.join(temp_dir, f"yuki_gemini_{uuid.uuid4().hex[:8]}.mp3")
                 with open(file_path, "wb") as f:
                     f.write(audio_bytes)
             elif audio_bytes.startswith(b'RIFF'):
-                # Это готовый WAV
                 file_path = os.path.join(temp_dir, f"yuki_gemini_{uuid.uuid4().hex[:8]}.wav")
                 with open(file_path, "wb") as f:
                     f.write(audio_bytes)
             else:
-                # Это сырой PCM, вручную создаем для него WAV-заголовок
                 file_path = os.path.join(temp_dir, f"yuki_gemini_{uuid.uuid4().hex[:8]}.wav")
                 with wave.open(file_path, 'wb') as wav_file:
                     wav_file.setnchannels(1)
@@ -2206,15 +2308,15 @@ class TTSWorker(QThread):
                     wav_file.setframerate(24000)
                     wav_file.writeframes(audio_bytes)
             
-            logger.log("INFO", "TTSWorker", f"Аудио Gemini готово: {file_path}")
             return file_path
                 
         except Exception as e:
-            logger.log("ERROR", "TTS", f"Ошибка Gemini TTS: {e}")
+            logger.log("ERROR", "TTS", f"Ошибка {model_name} TTS: {e}")
             return None
 
     def speak_coqui(self, text, lang):
-        url = "http://91.205.196.207:5002/api/tts"
+        # url = "http://91.205.196.207:5002/api/tts"
+        url = "http://100.117.206.40:5002/api/tts"
         voice_file = "voices/roxy.wav"
         speed = 1.1
         if lang == "en":
@@ -3161,7 +3263,7 @@ class YukiAssistant(QWidget):
                 use_rvc=getattr(self, 'use_rvc', False),
                 rvc_voice=getattr(self, 'rvc_voice', 'roxy.pth'),
                 applio_path=getattr(self, 'applio_path', ''),
-                rvc_pitch=getattr(self, 'rvc_pitch', 5)
+                rvc_pitch=getattr(self, 'rvc_pitch', 3)
             )
             self.audio_player = AudioPipelinePlayer()
 
