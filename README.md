@@ -8,7 +8,7 @@
 
 <br>
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-111111?style=for-the-badge&logo=python&logoColor=8A2BE2)
+![Python](https://img.shields.io/badge/Python-Auto%20Install-111111?style=for-the-badge&logo=python&logoColor=8A2BE2)
 ![Platform](https://img.shields.io/badge/Platform-Windows-111111?style=for-the-badge&logo=windows&logoColor=0078D6)
 ![UI](https://img.shields.io/badge/UI-PyQt5-111111?style=for-the-badge&logo=qt&logoColor=41CD52)
 ![AI](https://img.shields.io/badge/AI-Gemini_2.5_Flash-111111?style=for-the-badge&logo=google&logoColor=FFD700)
@@ -51,7 +51,7 @@
 
 Проект собран с использованием мощного стека:
 
-* **Python 3.10+**
+* **Python 3.10+** (Устанавливается автоматически)
 * **PyQt5** — создание графического интерфейса
 * **Google Gemini API** — ядро интеллекта и генерация ответов
 * **SpeechRecognition + PyAudio** — распознавание голоса
@@ -67,7 +67,7 @@
 ```bash
 Yuki_PC/
 ├── yuki_char.py              # основной файл приложения
-├── start.bat                 # скрипт для быстрого запуска на Windows
+├── start.bat                 # скрипт для автоматической установки и запуска
 ├── requirements.txt          # зависимости проекта
 ├── yuki_settings.json        # пользовательские настройки
 ├── yuki.log                  # лог-файл
@@ -90,7 +90,9 @@ Yuki_PC/
 
 ## 🚀 Установка и запуск
 
-**1. Клонируй репозиторий:**
+Благодаря умному скрипту запуска, установка стала максимально простой и автоматизированной!
+
+**1. Скачай проект:**
 
 ```bash
 git clone [https://github.com/DarkTma/Yuki_PC.git](https://github.com/DarkTma/Yuki_PC.git)
@@ -98,19 +100,9 @@ cd Yuki_PC
 
 ```
 
-**2. Установи Python:**
-Рекомендуется **Python 3.10+** под Windows. [Скачать можно здесь](https://www.python.org/downloads/).
+*(Или просто скачай архив с проектом кнопкой `Code` -> `Download ZIP` и распакуй его).*
 
-> **Важно:** Во время установки обязательно поставь галочку **"Add Python to PATH"**.
-
-**3. Установи зависимости:**
-
-```bash
-pip install -r requirements.txt
-
-```
-
-**4. Настрой API-ключ:**
+**2. Настрой API-ключ:**
 В корне проекта создай файл `.env` и добавь туда свой ключ от Gemini (получить его можно в [Google AI Studio](https://aistudio.google.com)):
 
 ```env
@@ -118,20 +110,21 @@ GEMINI_API_KEY=your_api_key_here
 
 ```
 
-**5. Запуск:**
-Самый удобный способ через bat-файл:
+**3. Автоматическая установка и запуск:**
+Просто запусти файл:
 
 ```bash
 start.bat
 
 ```
 
-Или напрямую через Python:
+Скрипт сделает **всё сам**:
 
-```bash
-python yuki_char.py
+* Скачает и установит нужную версию Python (если её нет в системе).
+* Автоматически подтянет и установит все необходимые библиотеки из `requirements.txt`.
+* Запустит Юки!
 
-```
+*(Для ручного запуска, если у тебя уже всё настроено, можно использовать `python yuki_char.py`)*
 
 ---
 
@@ -171,7 +164,7 @@ python yuki_char.py
 
 * Проект ориентирован исключительно на **Windows**.
 * Для работы интеллекта **обязателен** активный Gemini API key.
-* Для работы микрофона требуются системные библиотеки (зависят от `SpeechRecognition` и `PyAudio`).
+* Для работы микрофона требуются системные библиотеки (устанавливаются автоматически, но могут зависеть от настроек ОС).
 * Скорость и качество синтеза речи (TTS) зависят от выбранного режима генерации.
 
 ---
