@@ -28,6 +28,7 @@ from collections import deque
 import concurrent.futures
 import re
 import math
+from PIL import ImageGrab
 from PyQt5.QtGui import QImage
 from PyQt5.QtWidgets import QHBoxLayout, QLineEdit, QPushButton, QFileDialog
 try:
@@ -311,19 +312,25 @@ class YukiLogger:
         """level: INFO | WARNING | ERROR | COMMAND | AI"""
         now = datetime.datetime.now().strftime("%H:%M:%S")
         entry = {"time": now, "level": level, "source": source, "message": message}
+        
+        # Добавляем в память
         self.entries.append(entry)
         if len(self.entries) > self.MAX_ENTRIES:
             self.entries.pop(0)
 
-        # Пишем в файл
-        try:
-            with open(self.LOG_FILE, "a", encoding="utf-8") as f:
-                date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                f.write(f"[{date}] [{level}] [{source}] {message}\n")
-        except Exception:
-            pass
+        # 1. Принудительно форматируем строку перед записью
+        log_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_line = f"[{log_date}] [{level}] [{source}] {message}\n"
 
-        # Уведомляем слушателей (LogWindow)
+        # 2. Пишем в файл с явным указанием UTF-8
+        try:
+            with open(self.LOG_FILE, "a", encoding="utf-8", errors="replace") as f:
+                f.write(log_line)
+        except Exception as e:
+            # Если не удалось записать, хотя бы выведем в консоль
+            print(f"Logger Error: {e}")
+
+        # Уведомляем слушателей
         for cb in self._listeners:
             try:
                 cb(entry)
@@ -1589,6 +1596,28 @@ class SettingsWindow(QWidget):
         sep1.setFrameShape(QFrame.HLine); sep1.setFixedHeight(1)
         c_lay.addWidget(sep1)
 
+
+        # --- БЛОК: Зрение Юки ---
+        vision_title = QLabel("  👁️ Зрение Юки")
+        vision_title.setObjectName("sectionTitle")
+        c_lay.addWidget(vision_title)
+
+        self.vision_req_cb = QCheckBox("Анализировать экран при каждом моем запросе")
+        self.vision_req_cb.setObjectName("settingCb")
+        self.vision_req_cb.setChecked(getattr(self.yuki, 'screen_on_request', False))
+        self.vision_req_cb.stateChanged.connect(self._on_vision_req_changed)
+        c_lay.addWidget(self.vision_req_cb)
+
+        self.vision_watch_cb = QCheckBox("Самостоятельно наблюдать за экраном (каждые 10 сек)")
+        self.vision_watch_cb.setObjectName("settingCb")
+        self.vision_watch_cb.setChecked(getattr(self.yuki, 'screen_watch_continuous', False))
+        self.vision_watch_cb.stateChanged.connect(self._on_vision_watch_changed)
+        c_lay.addWidget(self.vision_watch_cb)
+
+        vision_desc = QLabel("  Позволяет Юки комментировать то, что происходит у тебя на ПК.")
+        vision_desc.setObjectName("descLabel")
+        c_lay.addWidget(vision_desc)
+
         # --- Секция: Свои приложения ---
         apps_title = QLabel("  📂  Custom App Paths")
         apps_title.setObjectName("sectionTitle")
@@ -1598,6 +1627,7 @@ class SettingsWindow(QWidget):
         apps_desc.setObjectName("descLabel")
         apps_desc.setWordWrap(True)
         c_lay.addWidget(apps_desc)
+
 
         # Таблица: список существующих записей
         self.apps_list_widget = QWidget()
@@ -1663,6 +1693,16 @@ class SettingsWindow(QWidget):
         # чтобы она не путалась, почему секунду назад была милой, а теперь яндере:
         self.yuki.chat_history.clear()
 
+    def _on_vision_req_changed(self, state):
+        from PyQt5.QtCore import Qt as _Qt
+        self.yuki.screen_on_request = (state == _Qt.Checked)
+        self.yuki.save_settings()
+
+    def _on_vision_watch_changed(self, state):
+        from PyQt5.QtCore import Qt as _Qt
+        self.yuki.screen_watch_continuous = (state == _Qt.Checked)
+        self.yuki.save_settings()
+        self.yuki.toggle_screen_watcher()
 
     def _on_applio_path_changed(self, text):
         self.yuki.applio_path = text
@@ -1975,12 +2015,13 @@ class YukiBrain(QThread):
     error_occurred = pyqtSignal(str)
     full_response_ready = pyqtSignal(str, str)
 
-    def __init__(self, prompt, language="ru", tools=None, history=None, persona="Милая"):
+    def __init__(self, prompt, language="ru", tools=None, history=None, persona="Милая", image=None):
         super().__init__()
         self.prompt = prompt
         self.language = language
         self.tools_list = tools or [] 
         self.history = history or []
+        self.image = image
 
         # --- БАЗЫ ХАРАКТЕРОВ ---
         personas = {
@@ -2015,7 +2056,15 @@ class YukiBrain(QThread):
 
             # Запускаем чат, ПЕРЕДАВАЯ ЕМУ ИСТОРИЮ
             chat = self.model.start_chat(history=self.history)
-            response = chat.send_message(self.prompt, stream=True)
+
+            if self.image:
+                request_content = [self.prompt, self.image]
+                logger.log("AI", "Gemini", "Отправляю текст + скриншот")
+            else:
+                request_content = self.prompt
+                logger.log("AI", "Gemini", "Отправляю только текст")
+
+            response = chat.send_message(request_content, stream=True)
 
             buffer = ""
             full_response = "" # Собираем весь текст для памяти
@@ -2896,6 +2945,8 @@ class YukiAssistant(QWidget):
         self.snapped_hwnd   = None
         self.window_tracker = None
         self.is_floating    = False
+        self.screen_on_request = False
+        self.screen_watch_continuous = False
 
         self.load_settings()
         self.menu         = RadialMenu(self)
@@ -2936,6 +2987,11 @@ class YukiAssistant(QWidget):
         # Главный таймер контроля времени (стоим 5 сек -> idle 5 сек)
         self.cycle_timer = QTimer(self)
         self.cycle_timer.timeout.connect(self._advance_3d_state)
+
+        self.screen_watch_timer = QTimer(self)
+        self.screen_watch_timer.timeout.connect(self._watch_screen_tick)
+        if getattr(self, 'screen_watch_continuous', False):
+            self.screen_watch_timer.start(10000) # 10 секунд
         
         # Загружаем картинки
         self._load_3d_assets()
@@ -2966,6 +3022,59 @@ class YukiAssistant(QWidget):
         self.idle_frames  = self._load_sequence("yuki_animations/yuki_idle/*.png", target_w, target_h)
         self.hello_frames = self._load_sequence("yuki_animations/yuki_hello/*.png", target_w, target_h)
 
+    def toggle_screen_watcher(self):
+        if getattr(self, 'screen_watch_continuous', False):
+            self.screen_watch_timer.start(10000)
+            logger.log("INFO", "Vision", "Фоновое наблюдение включено.")
+        else:
+            self.screen_watch_timer.stop()
+            logger.log("INFO", "Vision", "Фоновое наблюдение выключено.")
+
+    def _watch_screen_tick(self):
+        # Не отвлекаем Юки, если она уже думает или говорит
+        if (hasattr(self, 'brain') and self.brain.isRunning()) or self.holo_screen.isVisible():
+            return
+        if hasattr(self, 'audio_player') and self.audio_player.isRunning():
+            return
+
+        # Запускаем фоновый поток анализа
+        self.watcher_thread = ScreenWatcherThread(self.chat_history, self.persona_mode)
+        self.watcher_thread.reaction_ready.connect(self._play_autonomous_reaction)
+        self.watcher_thread.start()
+
+    def _play_autonomous_reaction(self, text):
+        """Воспроизводит внезапную реплику Юки без запроса пользователя."""
+        screen_x = self.x() + self.width() + 10
+        screen_y = self.y() + 20
+        self.holo_screen.show_message("Ого...", self.current_skin, screen_x, screen_y)
+        
+        # Сохраняем её мысль в историю
+        self.chat_history.append({"role": "model", "parts": [text]})
+        if len(self.chat_history) > 10:
+            self.chat_history = self.chat_history[-10:]
+
+        # Запускаем конвейер озвучки и текста напрямую
+        self.tts_worker = TTSWorker(
+            language="ru", 
+            engine=self.tts_engine,
+            use_rvc=getattr(self, 'use_rvc', False),
+            rvc_voice=getattr(self, 'rvc_voice', 'roxy.pth'),
+            applio_path=getattr(self, 'applio_path', ''),
+            rvc_pitch=getattr(self, 'rvc_pitch', 3)
+        )
+        self.audio_player = AudioPipelinePlayer()
+
+        self.tts_worker.audio_ready.connect(self.audio_player.add_audio)
+        self.tts_worker.finished_all_tts.connect(self.audio_player.set_tts_done)
+        self.audio_player.finished_all.connect(self.holo_screen.hide)
+
+        # Передаем готовый текст в элементы
+        self.holo_screen.append_text(text)
+        self.tts_worker.add_sentence(text)
+        self.tts_worker.set_generation_done()
+
+        self.audio_player.start()
+        self.tts_worker.start()
 
     def _save_to_history(self, user_text, yuki_text):
         """Сохраняет последние сообщения в формате, понятном Gemini API."""
@@ -3305,6 +3414,12 @@ class YukiAssistant(QWidget):
     _always_listen_signal = pyqtSignal(str)
 
     def _process_input(self, text: str, is_explicit: bool = True):
+        # ОСТАНОВКА СТАРЫХ ПОТОКОВ (чтобы не было конфликтов сигналов)
+        if hasattr(self, 'brain') and self.brain.isRunning():
+            self.brain.quit()
+        if hasattr(self, 'tts_worker') and self.tts_worker.isRunning():
+            self.tts_worker.quit()
+            
         try:
             screen_x = self.x() + self.width() + 10
             screen_y = self.y() + 20
@@ -3314,25 +3429,32 @@ class YukiAssistant(QWidget):
             if not is_explicit and not YukiCommands.is_yuki_command(text):
                 return
 
-            # Очищаем фразу от имени Юки, чтобы ИИ понимал суть
+            tools = get_yuki_tools(self)
             clean_text = YukiCommands.extract_body(text)
+
+            screen_img = None
+            if getattr(self, 'screen_on_request', False):
+                try:
+                    screen_img = ImageGrab.grab()
+                    screen_img.thumbnail((1024, 1024))
+                    logger.log("INFO", "Vision", f"Скриншот успешно захвачен: {screen_img.size}")
+                except Exception as e:
+                    logger.log("ERROR", "Vision", f"Не удалось сделать скриншот: {e}")
+            else:
+                logger.log("INFO", "Vision", "Захват при запросе отключен в настройках.")
 
             self.holo_screen.show_loading(self.current_skin, screen_x, screen_y)
 
-            tools = get_yuki_tools(self)
-
-            # Передаем и запрос, и инструменты, и память в мозг
+            # 1. СНАЧАЛА создаем объекты-работники
             self.brain = YukiBrain(
                 prompt=clean_text, 
                 language="ru", 
                 tools=tools,
-                history=self.chat_history, # <-- Наша память
-                persona=self.persona_mode  # <-- Выбранный характер
+                history=self.chat_history, 
+                persona=self.persona_mode,
+                image=screen_img
             )
             
-            # Подключаем сигнал сохранения памяти!
-            self.brain.full_response_ready.connect(self._save_to_history)
-
             self.tts_worker = TTSWorker(
                 language="ru", 
                 engine=self.tts_engine,
@@ -3343,18 +3465,19 @@ class YukiAssistant(QWidget):
             )
             self.audio_player = AudioPipelinePlayer()
 
-            # Цепочка сигналов (конвейер)
+            # 2. ТЕПЕРЬ безопасно подключаем сигналы
+            self.brain.full_response_ready.connect(self._save_to_history)
             self.brain.text_chunk_ready.connect(self.holo_screen.append_text)
             self.brain.sentence_ready.connect(self.tts_worker.add_sentence)
-            self.tts_worker.audio_ready.connect(self.audio_player.add_audio)
-            
             self.brain.finished_generation.connect(self.tts_worker.set_generation_done)
+            self.brain.error_occurred.connect(self.on_yuki_error)
+
+            self.tts_worker.audio_ready.connect(self.audio_player.add_audio)
             self.tts_worker.finished_all_tts.connect(self.audio_player.set_tts_done)
             self.audio_player.finished_all.connect(self.holo_screen.hide)
 
-            self.brain.error_occurred.connect(self.on_yuki_error)
-
-            logger.log("INFO", "Pipeline", "Конвейер ИИ с инструментами запущен...")
+            # 3. Запускаем
+            logger.log("INFO", "Pipeline", "Конвейер ИИ запущен...")
             self.audio_player.start()
             self.tts_worker.start()
             self.brain.start()
@@ -3406,6 +3529,8 @@ class YukiAssistant(QWidget):
                 self.rvc_voice     = data.get('rvc_voice', 'roxy.pth')
                 self.applio_path   = data.get('applio_path', '')
                 self.persona_mode  = data.get('persona_mode', 'Милая')
+                self.screen_on_request = data.get('screen_on_request', False)
+                self.screen_watch_continuous = data.get('screen_watch_continuous', False)
         except (FileNotFoundError, json.JSONDecodeError):
             self.current_skin  = 'default'
             self.is_chibi      = False
@@ -3431,7 +3556,9 @@ class YukiAssistant(QWidget):
             'use_rvc': getattr(self, 'use_rvc', False),
             'rvc_voice': getattr(self, 'rvc_voice', 'roxy.pth'),
             'applio_path': getattr(self, 'applio_path', ''),
-            'persona_mode': getattr(self, 'persona_mode', 'Милая')
+            'persona_mode': getattr(self, 'persona_mode', 'Милая'),
+            'screen_on_request': getattr(self, 'screen_on_request', False),
+            'screen_watch_continuous': getattr(self, 'screen_watch_continuous', False),
         }
         with open(self.settings_file, 'w') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
@@ -4003,6 +4130,60 @@ class YukiAssistant(QWidget):
         """Двойной клик — открепиться от окна/экрана."""
         if event.button() == Qt.LeftButton and self.is_floating:
             self._detach()
+
+
+# =======================================================
+# --- ПОТОК САМОСТОЯТЕЛЬНОГО НАБЛЮДЕНИЯ ЗА ЭКРАНОМ ---
+# =======================================================
+class ScreenWatcherThread(QThread):
+    reaction_ready = pyqtSignal(str)
+
+    def __init__(self, history, persona):
+        super().__init__()
+        self.history = history
+        self.persona = persona
+
+    def run(self):
+        try:
+            # Делаем скриншот и немного сжимаем его для скорости
+            img = ImageGrab.grab()
+            img.thumbnail((1024, 1024))
+
+            # Собираем контекст из последних сообщений, чтобы она понимала суть беседы
+            context = "Последний диалог:\n"
+            for msg in self.history[-2:]:
+                context += f"{msg['role']}: {msg['parts'][0]}\n"
+
+            prompt = (
+                f"{context}\n\n"
+                "Посмотри на этот скриншот моего экрана. "
+                "Если там происходит что-то интересное, смешное, или ты видишь игру, аниме, код, который стоит прокомментировать — скажи это от своего лица (до 2 предложений). "
+                "Если на экране нет ничего примечательного (обычный рабочий стол, поиск гугла, статичный текст) — верни РОВНО одно слово: SILENCE. "
+                "Обязательно отыгрывай свой характер!"
+            )
+
+            personas = {
+                "Милая": "Ты — Юки, милая и веселая подружка.",
+                "Серьезная": "Ты — Юки, прагматичная помощница.",
+                "Учебная": "Ты — Юки, строгий ментор.",
+                "Яндере": "Ты — Юки, безумно влюбленная яндере.",
+                "Грубая": "Ты — Юки, дерзкая и токсичная девчонка."
+            }
+            base_persona = personas.get(self.persona, personas["Милая"])
+            system_instruction = f"{base_persona} Ты живой человек (аниме-девушка). Избегай смайлов и действий в звездочках."
+
+            model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=system_instruction)
+            
+            # Отправляем промпт вместе с картинкой
+            response = model.generate_content([prompt, img])
+            text = response.text.strip()
+
+            if "SILENCE" not in text.upper():
+                logger.log("AI", "Watcher", f"Юки решила сказать: {text}")
+                self.reaction_ready.emit(text)
+
+        except Exception as e:
+            logger.log("ERROR", "Watcher", f"Ошибка анализа экрана: {e}")
 
 
 if __name__ == '__main__':

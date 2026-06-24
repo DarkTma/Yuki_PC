@@ -36,7 +36,7 @@ echo  [OK] pip found.
 
 :: --- Marker file: if exists - libraries already installed ---
 set MARKER=.yuki_installed
-set MARKER_VER=5
+set MARKER_VER=6
 
 :: Check marker version (re-install if outdated)
 if exist %MARKER% (

@@ -1,8 +1,8 @@
 {
   "skin": "default",
   "chibi": false,
-  "x": 1779,
-  "y": 439,
+  "x": 1226,
+  "y": 782,
   "always_listen": false,
   "custom_apps": {
     "steam": "D:\\steam\\steam.exe",
@@ -14,5 +14,7 @@
   "use_rvc": true,
   "rvc_voice": "roxy.pth",
   "applio_path": "E:/DARK WOLF GAMES/applio",
-  "persona_mode": "Яндере"
+  "persona_mode": "Милая",
+  "screen_on_request": true,
+  "screen_watch_continuous": false
 }
