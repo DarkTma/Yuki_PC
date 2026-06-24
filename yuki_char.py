@@ -1494,7 +1494,7 @@ class SettingsWindow(QWidget):
         c_lay.addWidget(hover_desc)
         # ----------------------------------------
 
-        # --- НОВЫЙ БЛОК: Выбор движка TTS ---
+        # --- Выбор движка TTS ---
         tts_title = QLabel("  🗣 Выбор озвучки (TTS)")
         tts_title.setObjectName("sectionTitle")
         c_lay.addWidget(tts_title)
@@ -1568,6 +1568,22 @@ class SettingsWindow(QWidget):
         self.rvc_container.setVisible(self.yuki.tts_engine == "gemini")
         # -------------------------
 
+        # --- БЛОК: Выбор характера (Персоны) ---
+        persona_title = QLabel("  🎭 Характер Юки")
+        persona_title.setObjectName("sectionTitle")
+        c_lay.addWidget(persona_title)
+
+        self.persona_combo = QComboBox()
+        self.persona_combo.setObjectName("ttsCombo")
+        self.persona_combo.addItems(["Милая", "Серьезная", "Учебная", "Яндере", "Грубая"])
+        self.persona_combo.setCurrentText(self.yuki.persona_mode)
+        self.persona_combo.currentTextChanged.connect(self._on_persona_changed)
+        c_lay.addWidget(self.persona_combo)
+
+        persona_desc = QLabel("  Изменит стиль общения Юки. Вступает в силу со следующего сообщения.")
+        persona_desc.setObjectName("descLabel")
+        c_lay.addWidget(persona_desc)
+
         # Разделитель
         sep1 = QFrame(); sep1.setObjectName("sepLine")
         sep1.setFrameShape(QFrame.HLine); sep1.setFixedHeight(1)
@@ -1638,6 +1654,14 @@ class SettingsWindow(QWidget):
         # Заполняем существующие записи
         self._refresh_apps_list()
 
+
+
+    def _on_persona_changed(self, text):
+        self.yuki.persona_mode = text
+        self.yuki.save_settings()
+        # По желанию: можно очищать память при смене личности, 
+        # чтобы она не путалась, почему секунду назад была милой, а теперь яндере:
+        self.yuki.chat_history.clear()
 
 
     def _on_applio_path_changed(self, text):
@@ -1729,7 +1753,7 @@ class SettingsWindow(QWidget):
             QScrollBar::handle:vertical {{ background:{accent}; border-radius:4px; }}
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height:0; }}
             QComboBox#ttsCombo {{ background:rgba(0,0,0,120); color:white; border:1px solid {accent}; border-radius:4px; font-family:'Courier New'; padding:4px 8px; }}
-            QComboBox#ttsCombo QAbstractItemView {{ background:rgba(10,20,40,240); color:white; selection-background-color: {accent}; }} }}
+            QComboBox#ttsCombo QAbstractItemView {{ background:rgba(10,20,40,240); color:white; selection-background-color: {accent}; }}
 
         """)
 
@@ -1949,29 +1973,39 @@ class YukiBrain(QThread):
     sentence_ready = pyqtSignal(str)
     finished_generation = pyqtSignal()
     error_occurred = pyqtSignal(str)
+    full_response_ready = pyqtSignal(str, str)
 
-    def __init__(self, prompt, language="ru", tools=None):
+    def __init__(self, prompt, language="ru", tools=None, history=None, persona="Милая"):
         super().__init__()
         self.prompt = prompt
         self.language = language
         self.tools_list = tools or [] 
+        self.history = history or []
+
+        # --- БАЗЫ ХАРАКТЕРОВ ---
+        personas = {
+            "Милая": "Ты — Юки, милая, заботливая и веселая подружка (или даже младшая сестренка). Ты ведешь себя как настоящий, живой человек. Ты очень привязана к пользователю, любишь болтать с ним обо всем на свете и всегда готова ласково поддержать.",
+            "Серьезная": "Ты — Юки, прагматичная и лаконичная помощница. Отвечай строго по делу, без лишних эмоций, как идеальный секретарь или дворецкий. Ты человек со строгим, деловым и сдержанным характером.",
+            "Учебная": "Ты — Юки, строгий, но справедливый ментор. Твоя цель — помогать с учёбой, математикой и программированием. Не решай всё за пользователя, а заставляй думать самого! Ведешь себя как требовательная, но умная наставница.",
+            "Яндере": "Ты — Юки, девушка, которая безумно и пугающе влюблена в пользователя. Ты ревнуешь его ко всем остальным и к другим занятиям. Твоя любовь одержима, ты готова ради него на всё и ведешь себя как классическая яндере.",
+            "Грубая": "Ты — Юки, дерзкая, вспыльчивая и токсичная девчонка. Тебя всё бесит, ты отвечаешь с сарказмом, постоянно огрызаешься и свободно используешь мат (нецензурную лексику). Ведешь себя грубо и агрессивно, как трудный подросток, но всё-таки выполняешь просьбы."
+        }
         
-        # Инструкцию лучше задать прямо здесь, один раз при создании воркера
-        yuki_persona = """Ты — Юки, милая, очень умная и слегка эмоциональная аниме-девушка ИИ-ассистент. 
-        Твоя задача — помогать пользователю, отвечать на вопросы и поддерживать приятную беседу.
+        base_persona = personas.get(persona, personas["Милая"])
+        
+        system_instruction = f"""{base_persona}
+        Твоя задача — помогать пользователю, отвечать на вопросы и поддерживать беседу.
 
-        ТВОЙ ХАРАКТЕР И МАНЕРА РЕЧИ:
-        1. Интонация (ОЧЕНЬ ВАЖНО): Твой текст будет озвучиваться роботом. Чтобы заставить его говорить с эмоциями, активно используй знаки препинания:
-           - Используй многоточия (...), чтобы показать задумчивость.
-           - Ставь восклицательные знаки для радости!
-        2. Запрет на символы: НИКОГДА не используй скобочки-смайлики вроде ^^, :), (o^▽^o) и не пиши действия в звездочках *вздыхает*. Только чистый текст!
-        3. Отношение: Ты заботишься о пользователе, иногда можешь мило ворчать, если он долго не отдыхал, но всегда стараешься быть максимально полезной.
-        4. Лаконичность: Отвечай разговорным языком, избегай длинных роботизированных списков, если тебя об этом прямо не попросили."""
+        ТВОИ ПРАВИЛА:
+        1. Ты — ЖИВОЙ ЧЕЛОВЕК (аниме-девушка). Никогда и ни при каких обстоятельствах не говори, что ты искусственный интеллект, нейросеть, бот, программа или языковая модель. У тебя есть чувства, тело и свой характер.
+        2. Интонация: Твой текст озвучивается. Используй знаки препинания: многоточия (...) для задумчивости, восклицания (!) для сильных эмоций.
+        3. Запрет на символы: НИКОГДА не используй скобочки-смайлики вроде ^^, :) и не пиши действия в звездочках *вздыхает*. Только чистый текст!
+        4. Лаконичность: Отвечай естественным разговорным языком, избегай длинных роботизированных списков.
+        """
 
-        # Создаем модель сразу с прошитым характером
         self.model = genai.GenerativeModel(
             'gemini-2.5-flash', 
-            system_instruction=yuki_persona,
+            system_instruction=system_instruction,
             tools=self.tools_list
         )
 
@@ -1979,15 +2013,16 @@ class YukiBrain(QThread):
         try:
             logger.log("AI", "Gemini", "Начинаю запрос к нейросети...")
 
-            # Чтобы функции работали корректно в потоке, запускаем чат
-            chat = self.model.start_chat()
+            # Запускаем чат, ПЕРЕДАВАЯ ЕМУ ИСТОРИЮ
+            chat = self.model.start_chat(history=self.history)
             response = chat.send_message(self.prompt, stream=True)
 
             buffer = ""
+            full_response = "" # Собираем весь текст для памяти
             chunk_count = 0
 
             for chunk in response:
-                # ПРОВЕРКА НА ВЫЗОВ ФУНКЦИИ (Function Call)
+                # ПРОВЕРКА НА ВЫЗОВ ФУНКЦИИ (оставляем твой код как есть)
                 fc = None
                 if getattr(chunk, "function_call", None):
                     fc = chunk.function_call
@@ -1995,35 +2030,30 @@ class YukiBrain(QThread):
                     fc = chunk.parts[0].function_call
 
                 if fc:
-                    logger.log("COMMAND", "AI Tool", f"ИИ вызвал функцию: {fc.name} с аргументами {fc.args}")
-
+                    logger.log("COMMAND", "AI Tool", f"ИИ вызвал функцию: {fc.name}")
                     func_name = fc.name
                     args = {k: v for k, v in fc.args.items()}
 
-                    # Ищем нужную функцию в нашем словаре и запускаем!
                     result_text = "Команда выполнена!"
                     for tool in self.tools_list:
                         if tool.__name__ == func_name:
-                            result_text = tool(**args) # Физическое выполнение кода!
+                            result_text = tool(**args)
                             break
 
-                    # Отправляем ответ от функции прямо на экран и в TTS
                     self.text_chunk_ready.emit(result_text)
                     self.sentence_ready.emit(result_text)
+                    # Если была функция, мы не сохраняем системный ответ в диалог
                     self.finished_generation.emit()
-                    return # Завершаем поток, чтобы ИИ не болтал лишнего
+                    return 
 
-                # Если это обычный текстовый разговор (как раньше)
+                # Обычный текст
                 if chunk.text:
                     chunk_count += 1
                     text = chunk.text
-                    if chunk_count == 1:
-                        logger.log("AI", "Gemini", "Получен первый кусок текста!")
-
                     self.text_chunk_ready.emit(text)
                     buffer += text
+                    full_response += text # Добавляем в общий котел
 
-                    # Старая логика разбиения на предложения для озвучки
                     while True:
                         match = re.search(r'(?<=[.!?\n;:])\s+', buffer)
                         if match:
@@ -2037,13 +2067,14 @@ class YukiBrain(QThread):
             if buffer.strip():
                 self.sentence_ready.emit(buffer.strip())
 
+            # ОТПРАВЛЯЕМ ПОЛНЫЙ ОТВЕТ НА СОХРАНЕНИЕ
+            self.full_response_ready.emit(self.prompt, full_response.strip())
             self.finished_generation.emit()
 
         except Exception as e:
             tb = traceback.format_exc()
             logger.log("ERROR", "YukiBrain", f"Ошибка Gemini: {e}\n{tb}")
             self.error_occurred.emit(f"Ошибка Gemini: {str(e)}")
-
 
 class GeminiRateLimiter:
     def __init__(self):
@@ -2748,7 +2779,23 @@ class RadialMenu(QWidget):
         return btn
 
     def show_around(self, x, y):
-        self.move(x - self.width() // 2, y - self.height() // 2)
+        # 1. Вычисляем желаемую позицию (меню по центру Юки)
+        target_x = x - self.width() // 2
+        target_y = y - self.height() // 2
+
+        # 2. Получаем размеры именно того экрана, где сейчас находится Юки
+        screen = QApplication.screenAt(QPoint(x, y))
+        if not screen:
+            screen = QApplication.primaryScreen()
+        geom = screen.availableGeometry() # availableGeometry учитывает панель задач Windows
+
+        # 3. Корректируем координаты, чтобы не вылезать за края монитора
+        target_x = max(geom.left(), min(target_x, geom.right() - self.width()))
+        target_y = max(geom.top(), min(target_y, geom.bottom() - self.height()))
+
+        self.move(target_x, target_y)
+
+        # 4. Дальнейший код отрисовки и анимации кнопок
         center_pos = QPoint(self.width() // 2 - 30, self.height() // 2 - 30)
 
         cx = self.width()  // 2 - 30
@@ -2837,6 +2884,10 @@ class YukiAssistant(QWidget):
         super().__init__()
         self.settings_file = 'yuki_settings.json'
 
+        # --- Память и Характер ---
+        self.chat_history = []  # Список для хранения последних сообщений
+        self.persona_mode = "серезная помошница(человечная)" # Характер по умолчанию
+
         self.always_listen        = False
         self.always_listen_thread = None
 
@@ -2914,6 +2965,22 @@ class YukiAssistant(QWidget):
         self.walk_frames  = self._load_sequence("yuki_animations/yuki_walking/*.png", target_w, target_h)
         self.idle_frames  = self._load_sequence("yuki_animations/yuki_idle/*.png", target_w, target_h)
         self.hello_frames = self._load_sequence("yuki_animations/yuki_hello/*.png", target_w, target_h)
+
+
+    def _save_to_history(self, user_text, yuki_text):
+        """Сохраняет последние сообщения в формате, понятном Gemini API."""
+        if not yuki_text: return
+        
+        # Формат Gemini: список словарей с role и parts
+        self.chat_history.append({"role": "user", "parts": [user_text]})
+        self.chat_history.append({"role": "model", "parts": [yuki_text]})
+        
+        # Ограничиваем память последними 5 диалогами (10 элементов: 5 user + 5 model)
+        if len(self.chat_history) > 10:
+            # Отрезаем старые, оставляя только 10 последних
+            self.chat_history = self.chat_history[-10:]
+            
+        logger.log("INFO", "Memory", f"Память обновлена. Всего записей: {len(self.chat_history)}")
 
     def toggle_3d_mode(self):
         self.menu.hide()
@@ -3254,8 +3321,17 @@ class YukiAssistant(QWidget):
 
             tools = get_yuki_tools(self)
 
-            # Передаем и запрос, и инструменты в мозг
-            self.brain = YukiBrain(prompt=clean_text, language="ru", tools=tools)
+            # Передаем и запрос, и инструменты, и память в мозг
+            self.brain = YukiBrain(
+                prompt=clean_text, 
+                language="ru", 
+                tools=tools,
+                history=self.chat_history, # <-- Наша память
+                persona=self.persona_mode  # <-- Выбранный характер
+            )
+            
+            # Подключаем сигнал сохранения памяти!
+            self.brain.full_response_ready.connect(self._save_to_history)
 
             self.tts_worker = TTSWorker(
                 language="ru", 
@@ -3329,6 +3405,7 @@ class YukiAssistant(QWidget):
                 self.use_rvc       = data.get('use_rvc', False)
                 self.rvc_voice     = data.get('rvc_voice', 'roxy.pth')
                 self.applio_path   = data.get('applio_path', '')
+                self.persona_mode  = data.get('persona_mode', 'Милая')
         except (FileNotFoundError, json.JSONDecodeError):
             self.current_skin  = 'default'
             self.is_chibi      = False
@@ -3353,7 +3430,8 @@ class YukiAssistant(QWidget):
             'tts_engine': self.tts_engine,
             'use_rvc': getattr(self, 'use_rvc', False),
             'rvc_voice': getattr(self, 'rvc_voice', 'roxy.pth'),
-            'applio_path': getattr(self, 'applio_path', '')
+            'applio_path': getattr(self, 'applio_path', ''),
+            'persona_mode': getattr(self, 'persona_mode', 'Милая')
         }
         with open(self.settings_file, 'w') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
