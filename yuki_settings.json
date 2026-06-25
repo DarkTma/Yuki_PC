@@ -1,8 +1,8 @@
 {
   "skin": "default",
   "chibi": false,
-  "x": 1226,
-  "y": 782,
+  "x": 1828,
+  "y": 582,
   "always_listen": false,
   "custom_apps": {
     "steam": "D:\\steam\\steam.exe",
@@ -10,7 +10,7 @@
     "андроид студио": "C:\\Program Files\\Android\\Android Studio\\bin\\studio64.exe"
   },
   "enable_hover": true,
-  "tts_engine": "gemini",
+  "tts_engine": "coqui",
   "use_rvc": true,
   "rvc_voice": "roxy.pth",
   "applio_path": "E:/DARK WOLF GAMES/applio",

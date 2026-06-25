@@ -28,6 +28,7 @@ from collections import deque
 import concurrent.futures
 import re
 import math
+from threading import Lock
 from PIL import ImageGrab
 from PyQt5.QtGui import QImage
 from PyQt5.QtWidgets import QHBoxLayout, QLineEdit, QPushButton, QFileDialog
@@ -44,6 +45,7 @@ try:
 except Exception:
     PYGAME_AVAILABLE = False
 
+tts_lock = Lock()
 
 def strip_emoji(text: str) -> str:
     """Убирает emoji и спец-символы перед TTS озвучкой."""
@@ -2289,52 +2291,49 @@ class TTSWorker(QThread):
                         self.audio_ready.emit(wav_path)
 
     def apply_voice_conversion(self, input_wav_path):
-        """Отправляет звук на локальный API сервер Applio."""
-        pth_path = os.path.join(os.getcwd(), "voices", self.rvc_voice)
-        index_name = self.rvc_voice.replace(".pth", ".index")
-        index_path = os.path.join(os.getcwd(), "voices", index_name)
+    """Отправляет звук на API сервер Applio."""
+    # Берем имя модели голоса
+    pth_name = self.rvc_voice
+    
+    # Формируем путь, который сервер сможет разрешить относительно своей папки.
+    # Если папка voices лежит в корне сервера на ПК, то "voices/имя_модели.pth" — идеальный вариант.
+    pth_path = os.path.join("voices", pth_name)
+
+    temp_dir = tempfile.gettempdir()
+    import requests
+
+    try:
+        # Если запускаете этот код на самом ПК, можно использовать "http://127.0.0.1:8000/convert"
+        url = "http://100.117.206.40:8000/convert"
         
-        if not os.path.exists(index_path):
-            index_path = "" # Если индекса нет, передаем пустоту
-
-        temp_dir = tempfile.gettempdir()
-        import requests
-
-        try:
-            # Адрес нашего нового сервера
-            url = "http://100.117.206.40:8000/convert"
+        with open(input_wav_path, "rb") as f:
+            files = {"audio": (os.path.basename(input_wav_path), f, "audio/wav")}
+            data = {
+                "pitch": str(self.rvc_pitch),
+                "index_rate": "0.0",  # Индекса нет, жестко отключаем его влияние
+                "f0_method": "rmvpe", # Оставляем лучшее качество для ПК
+                "pth_path": pth_path,
+                "index_path": ""      # Передаем пустоту, так как файла .index нет
+            }
             
-            # Собираем файл и настройки для отправки
-            with open(input_wav_path, "rb") as f:
-                files = {"audio": (os.path.basename(input_wav_path), f, "audio/wav")}
-                data = {
-                    "pitch": str(self.rvc_pitch),
-                    "index_rate": "0.75",
-                    "f0_method": "rmvpe", # Сервер потянет максимальное качество
-                    "pth_path": pth_path,
-                    "index_path": index_path
-                }
-                
-                logger.log("INFO", "RVC", "Отправляю аудио на локальный Applio API...")
-                
-                # Делаем POST запрос к серверу
-                response = requests.post(url, files=files, data=data)
-                
-            # Если сервер ответил успешно и прислал аудио обратно
-            if response.status_code == 200:
-                output_wav_path = os.path.join(temp_dir, f"yuki_rvc_{uuid.uuid4().hex[:8]}.wav")
-                with open(output_wav_path, "wb") as f:
-                    f.write(response.content) # Сохраняем перекрашенный голос
-                
-                logger.log("INFO", "RVC", "Голос изменен мгновенно!")
-                return output_wav_path
-            else:
-                logger.log("ERROR", "RVC", f"Ошибка сервера Applio. Код: {response.status_code}")
-                return input_wav_path
-
-        except Exception as e:
-            logger.log("ERROR", "RVC", f"Сервер Applio не отвечает. Он запущен? Ошибка: {e}")
+            logger.log("INFO", "RVC", "Отправляю аудио на сервер Applio...")
+            response = requests.post(url, files=files, data=data)
+            
+        if response.status_code == 200:
+            output_wav_path = os.path.join(temp_dir, f"yuki_rvc_{uuid.uuid4().hex[:8]}.wav")
+            with open(output_wav_path, "wb") as f:
+                f.write(response.content)
+            
+            logger.log("INFO", "RVC", "Голос изменен успешно!")
+            return output_wav_path
+        else:
+            # Читаем response.text, чтобы увидеть, какую именно ошибку выплюнул yuki_server.py
+            logger.log("ERROR", "RVC", f"Ошибка сервера Applio. Код: {response.status_code}. Ответ: {response.text}")
             return input_wav_path
+
+    except Exception as e:
+        logger.log("ERROR", "RVC", f"Сервер Applio не отвечает. Ошибка: {e}")
+        return input_wav_path
 
     def speak_gemini(self, text, model_name):
         try:
@@ -2395,31 +2394,35 @@ class TTSWorker(QThread):
             return None
 
     def speak_coqui(self, text, lang):
-        # url = "http://91.205.196.207:5002/api/tts"
-        url = "http://100.117.206.40:5002/api/tts"
-        voice_file = "voices/roxy.wav"
-        speed = 1.1
-        if lang == "en":
-            voice_file = "voices/raiden.wav"
-        elif lang == "fr":
-            voice_file = "voices/french.wav"
-            speed = 0.9
+        with tts_lock:  # Блокирует одновременные вызовы
+            try:
+                # url = "http://91.205.196.207:5002/api/tts"
+                url = "http://100.117.206.40:5002/api/tts"
+                voice_file = "voices/roxy.wav"
+                speed = 1.1
+                if lang == "en":
+                    voice_file = "voices/raiden.wav"
+                elif lang == "fr":
+                    voice_file = "voices/french.wav"
+                    speed = 0.9
 
-        payload = {"text": text, "language": lang, "speaker_wav": voice_file, "speed": speed}
-        try:
-            response = requests.post(url, json=payload, timeout=(2, 60))
-            response.raise_for_status()
+                payload = {"text": text, "language": lang, "speaker_wav": voice_file, "speed": speed}
+                try:
+                    response = requests.post(url, json=payload, timeout=(2, 60))
+                    response.raise_for_status()
 
-            unique_name = f"yuki_chunk_{uuid.uuid4().hex[:8]}.wav"
-            temp_dir = tempfile.gettempdir()
-            file_path = os.path.join(temp_dir, unique_name)
+                    unique_name = f"yuki_chunk_{uuid.uuid4().hex[:8]}.wav"
+                    temp_dir = tempfile.gettempdir()
+                    file_path = os.path.join(temp_dir, unique_name)
 
-            with open(file_path, "wb") as f:
-                f.write(response.content)
-            return file_path
-        except Exception as e:
-            logger.log("ERROR", "TTS", f"Сервер TTS недоступен: {e}")
-            return None
+                    with open(file_path, "wb") as f:
+                        f.write(response.content)
+                    return file_path
+                except Exception as e:
+                    logger.log("ERROR", "TTS", f"Сервер TTS недоступен: {e}")
+                    return None
+            except Exception as e:
+                logger.log("ERROR", "TTS", f"Ошибка: {e}")
 
 
 class AudioPipelinePlayer(QThread):
@@ -3419,7 +3422,7 @@ class YukiAssistant(QWidget):
             self.brain.quit()
         if hasattr(self, 'tts_worker') and self.tts_worker.isRunning():
             self.tts_worker.quit()
-            
+
         try:
             screen_x = self.x() + self.width() + 10
             screen_y = self.y() + 20
@@ -4142,49 +4145,63 @@ class ScreenWatcherThread(QThread):
         super().__init__()
         self.history = history
         self.persona = persona
+        self._running = True  # <--- НЕ ЗАБУДЬ ЭТУ СТРОКУ В ИНИЦИАЛИЗАЦИИ
 
     def run(self):
-        try:
-            # Делаем скриншот и немного сжимаем его для скорости
-            img = ImageGrab.grab()
-            img.thumbnail((1024, 1024))
+        last_img_hash = None
+        
+        while self._running:
+            try:
+                # 1. Делаем скриншот
+                img = ImageGrab.grab()
+                img.thumbnail((1024, 1024))
+                
+                # 2. Оптимизация через хеш
+                img_array = np.array(img)
+                current_hash = hash(img_array.tobytes())
+                
+                if current_hash == last_img_hash:
+                    self.msleep(5000) 
+                    continue
+                
+                last_img_hash = current_hash
 
-            # Собираем контекст из последних сообщений, чтобы она понимала суть беседы
-            context = "Последний диалог:\n"
-            for msg in self.history[-2:]:
-                context += f"{msg['role']}: {msg['parts'][0]}\n"
+                # 3. Вся логика запроса ДОЛЖНА БЫТЬ ВНУТРИ TRY (сдвинута вправо)
+                context = "Последний диалог:\n"
+                for msg in self.history[-2:]:
+                    context += f"{msg['role']}: {msg['parts'][0]}\n"
 
-            prompt = (
-                f"{context}\n\n"
-                "Посмотри на этот скриншот моего экрана. "
-                "Если там происходит что-то интересное, смешное, или ты видишь игру, аниме, код, который стоит прокомментировать — скажи это от своего лица (до 2 предложений). "
-                "Если на экране нет ничего примечательного (обычный рабочий стол, поиск гугла, статичный текст) — верни РОВНО одно слово: SILENCE. "
-                "Обязательно отыгрывай свой характер!"
-            )
+                prompt = (
+                    f"{context}\n\n"
+                    "Посмотри на этот скриншот моего экрана. "
+                    "Если там происходит что-то интересное, смешное, или ты видишь игру, аниме, код, который стоит прокомментировать — скажи это от своего лица (до 2 предложений). "
+                    "Если на экране нет ничего примечательного или изменившевося с предыдушего раза (обычный рабочий стол, поиск гугла, статичный текст) — верни РОВНО одно слово: SILENCE. "
+                    "Обязательно отыгрывай свой характер!"
+                )
+                personas = {
+                    "Милая": "Ты — Юки, милая, заботливая и веселая подружка (или даже младшая сестренка). Ты ведешь себя как настоящий, живой человек. Ты очень привязана к пользователю, любишь болтать с ним обо всем на свете и всегда готова ласково поддержать.",
+                    "Серьезная": "Ты — Юки, прагматичная и лаконичная помощница. Отвечай строго по делу, без лишних эмоций, как идеальный секретарь или дворецкий. Ты человек со строгим, деловым и сдержанным характером.",
+                    "Учебная": "Ты — Юки, строгий, но справедливый ментор. Твоя цель — помогать с учёбой, математикой и программированием. Не решай всё за пользователя, а заставляй думать самого! Ведешь себя как требовательная, но умная наставница.",
+                    "Яндере": "Ты — Юки, девушка, которая безумно и пугающе влюблена в пользователя. Ты ревнуешь его ко всем остальным и к другим занятиям. Твоя любовь одержима, ты готова ради него на всё и ведешь себя как классическая яндере.",
+                    "Грубая": "Ты — Юки, дерзкая, вспыльчивая и токсичная девчонка. Тебя всё бесит, ты отвечаешь с сарказмом, постоянно огрызаешься и свободно используешь мат (нецензурную лексику). Ведешь себя грубо и агрессивно, как трудный подросток, но всё-таки выполняешь просьбы."
+                }
+                base_persona = personas.get(self.persona, personas["Милая"])
+                system_instruction = f"{base_persona} Ты живой человек (аниме-девушка). Избегай смайлов и действий в звездочках."
 
-            personas = {
-                "Милая": "Ты — Юки, милая и веселая подружка.",
-                "Серьезная": "Ты — Юки, прагматичная помощница.",
-                "Учебная": "Ты — Юки, строгий ментор.",
-                "Яндере": "Ты — Юки, безумно влюбленная яндере.",
-                "Грубая": "Ты — Юки, дерзкая и токсичная девчонка."
-            }
-            base_persona = personas.get(self.persona, personas["Милая"])
-            system_instruction = f"{base_persona} Ты живой человек (аниме-девушка). Избегай смайлов и действий в звездочках."
+                model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=system_instruction)
+                
+                response = model.generate_content([prompt, img])
+                text = response.text.strip()
 
-            model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=system_instruction)
-            
-            # Отправляем промпт вместе с картинкой
-            response = model.generate_content([prompt, img])
-            text = response.text.strip()
+                if "SILENCE" not in text.upper():
+                    self.reaction_ready.emit(text)
 
-            if "SILENCE" not in text.upper():
-                logger.log("AI", "Watcher", f"Юки решила сказать: {text}")
-                self.reaction_ready.emit(text)
+            except Exception as e:
+                # Если где-то внутри try произошла ошибка, она поймается здесь
+                logger.log("ERROR", "Watcher", f"Ошибка анализа экрана: {e}")
 
-        except Exception as e:
-            logger.log("ERROR", "Watcher", f"Ошибка анализа экрана: {e}")
-
+            # 4. Пауза 15 секунд в конце цикла
+            self.msleep(30000)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
