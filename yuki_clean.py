@@ -49,7 +49,6 @@ tts_lock = Lock()
 
 def strip_emoji(text: str) -> str:
     """Убирает emoji и спец-символы перед TTS озвучкой."""
-    # Диапазоны Unicode emoji
     emoji_pattern = re.compile(
         "[\U0001F600-\U0001F64F"   # emoticons
         "\U0001F300-\U0001F5FF"   # symbols & pictographs
@@ -65,7 +64,6 @@ def strip_emoji(text: str) -> str:
         "]+", flags=re.UNICODE
     )
     text = emoji_pattern.sub('', text)
-    # Лишние пробелы после удаления
     text = re.sub(r'  +', ' ', text).strip()
     return text
 from dotenv import load_dotenv
@@ -73,11 +71,9 @@ import google.generativeai as genai
 
 
 
-# Скрываем предупреждение от Google, чтобы оно не мусорило в консоли
 warnings.filterwarnings("ignore", category=FutureWarning)
 import google.generativeai as genai
 
-# Насильно заставляем Windows искать плагины там, где нужно
 try:
     paths = site.getsitepackages()
 except AttributeError:
@@ -88,7 +84,6 @@ for p in paths:
         os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = qt_path
         break
 
-# --- Импорты PyQt5 ---
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton,
                              QSystemTrayIcon, QMenu, QAction, QVBoxLayout,
                              QGraphicsDropShadowEffect, QDialog, QHBoxLayout,
@@ -97,57 +92,37 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QPushButton,
 from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, QThread, pyqtSignal, QUrl, QTimer, QRect
 from PyQt5.QtGui import QPixmap, QIcon, QColor, QFont, QTextCursor
 
-# --- НАСТРОЙКА GEMINI ---
 load_dotenv()  # загружает переменные из .env файла
 
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 
-# ---------------------------------------------------------------------------
-# --- Win32 хелперы для snap-прикрепления -----------------------------------
-# ---------------------------------------------------------------------------
 
 
-##<<<<<<< HEAD
-#*====
-    #"""
-    #Возвращает (hwnd, (left, top, right, bottom)) окна верхнего уровня
-    #под текущим положением курсора мыши (исключая само окно Юки).
-# Если подходящего окна нет — возвращает (None, None).
-# """
-##> af108d012f0ab1e3539344f6b46ed043d96da75b
 def get_window_rect_under_cursor(exclude_hwnd=None):
     try:
         user32 = ctypes.windll.user32
         pt = ctypes.wintypes.POINT()
         user32.GetCursorPos(ctypes.byref(pt))
-### HEAD
 
-        # Находим окно именно под курсором
         hwnd = user32.WindowFromPoint(pt)
         if not hwnd:
             return None, None
 
-        # Поднимаемся к самому верхнему окну (Root)
         root = user32.GetAncestor(hwnd, 2)  # GA_ROOT
 
-        # Если мы попали в саму Юки (курсор был над ней)
         if exclude_hwnd and root == exclude_hwnd:
-            # Ищем первое видимое окно ПОД ней (по Z-порядку)
             GW_HWNDNEXT = 2
             next_hwnd = user32.GetWindow(root, GW_HWNDNEXT)
             found = False
 
             while next_hwnd:
-                # Окно должно быть видимым и не свернутым
                 if user32.IsWindowVisible(next_hwnd) and not user32.IsIconic(next_hwnd):
-                    # Игнорируем рабочий стол и системные прозрачные панели (например, панель задач)
                     buff = ctypes.create_unicode_buffer(256)
                     user32.GetClassNameW(next_hwnd, buff, 256)
                     cname = buff.value
 
                     if cname not in ("WorkerW", "Progman", "Shell_TrayWnd", "PopupHost"):
-                        # Проверяем, находится ли курсор внутри границ этого окна
                         rect = ctypes.wintypes.RECT()
                         user32.GetWindowRect(next_hwnd, ctypes.byref(rect))
                         if rect.left <= pt.x <= rect.right and rect.top <= pt.y <= rect.bottom:
@@ -155,18 +130,14 @@ def get_window_rect_under_cursor(exclude_hwnd=None):
                             found = True
                             break
 
-                # Переходим к следующему окну слоем ниже
                 next_hwnd = user32.GetWindow(next_hwnd, GW_HWNDNEXT)
 
-            # Если под Юки только рабочий стол
             if not found:
                 return None, None
 
-        # Дополнительная проверка на свернутость и видимость финального окна
         if not user32.IsWindowVisible(root) or user32.IsIconic(root):
             return None, None
 
-        # Получаем реальные границы с учетом DWM (отсекаем невидимые рамки Windows 10/11)
         rect = ctypes.wintypes.RECT()
         dwmapi = ctypes.windll.dwmapi
         dwmapi.DwmGetWindowAttribute(
@@ -179,7 +150,6 @@ def get_window_rect_under_cursor(exclude_hwnd=None):
             logger.log("ERROR", "SnapScan", f"Win32 error: {e}")
         except:
             pass
-#=======
         hwnd = user32.WindowFromPoint(pt)
         if not hwnd:
             return None, None
@@ -196,7 +166,6 @@ def get_window_rect_under_cursor(exclude_hwnd=None):
         user32.GetWindowRect(root, ctypes.byref(rect))
         return root, (rect.left, rect.top, rect.right, rect.bottom)
     except Exception:
-#>>>>>>> af108d012f0ab1e3539344f6b46ed043d96da75b
         return None, None
 
 
@@ -210,7 +179,6 @@ def get_hwnd_rect(hwnd):
         return None
 
 
-# --- Константы режима прикрепления ---
 SNAP_NONE         = 0
 SNAP_WIN_TOP      = 1
 SNAP_WIN_BOTTOM   = 2
@@ -223,7 +191,6 @@ SNAP_SCREEN_RIGHT = 8
 
 SNAP_DISTANCE     = 80  # пикселей — зона притяжения
 
-#>>>>>>> af108d012f0ab1e3539344f6b46ed043d96da75b
 
 
 class WindowTracker(QThread):
@@ -274,9 +241,6 @@ class WindowTracker(QThread):
         self.wait(500)
 
 
-# =============================================
-# --- ГЛОБАЛЬНЫЙ ЛОГГЕР ЮКИ ---
-# =============================================
 
 class YukiLogger:
     """
@@ -288,8 +252,6 @@ class YukiLogger:
     LOG_FILE = "yuki.log"
     MAX_ENTRIES = 500  # максимум записей в памяти
 
-    # Сигнал — чтобы LogWindow обновлялась в реальном времени
-    # (не QObject, поэтому используем callback)
     _listeners = []
 
     @classmethod
@@ -300,14 +262,12 @@ class YukiLogger:
 
     def __init__(self):
         self.entries = []  # список dict: {time, level, source, message}
-        # Перехватываем sys.excepthook — ловим все необработанные исключения
         sys._yuki_orig_excepthook = sys.excepthook
         sys.excepthook = self._excepthook
 
     def _excepthook(self, exc_type, exc_value, exc_tb):
         msg = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
         self.log("ERROR", "CRASH", msg.strip())
-        # Вызываем оригинальный обработчик
         sys._yuki_orig_excepthook(exc_type, exc_value, exc_tb)
 
     def log(self, level: str, source: str, message: str):
@@ -315,24 +275,19 @@ class YukiLogger:
         now = datetime.datetime.now().strftime("%H:%M:%S")
         entry = {"time": now, "level": level, "source": source, "message": message}
         
-        # Добавляем в память
         self.entries.append(entry)
         if len(self.entries) > self.MAX_ENTRIES:
             self.entries.pop(0)
 
-        # 1. Принудительно форматируем строку перед записью
         log_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_line = f"[{log_date}] [{level}] [{source}] {message}\n"
 
-        # 2. Пишем в файл с явным указанием UTF-8
         try:
             with open(self.LOG_FILE, "a", encoding="utf-8", errors="replace") as f:
                 f.write(log_line)
         except Exception as e:
-            # Если не удалось записать, хотя бы выведем в консоль
             print(f"Logger Error: {e}")
 
-        # Уведомляем слушателей
         for cb in self._listeners:
             try:
                 cb(entry)
@@ -354,19 +309,14 @@ class YukiLogger:
             pass
 
 
-# Глобальный экземпляр
 logger = YukiLogger.get()
 logger.log("INFO", "STARTUP", "Yuki started")
 
 
-# =============================================
-# --- ОКНО ЛОГОВ ---
-# =============================================
 
 class LogWindow(QWidget):
     """Красивое окно логов в стиле Юки."""
 
-    # Цвета уровней
     LEVEL_COLORS = {
         "INFO":    "#00ffff",
         "WARNING": "#ffdd57",
@@ -381,9 +331,7 @@ class LogWindow(QWidget):
         self.current_filter = "ALL"
         self._setup_ui()
         self._apply_theme()
-        # Подписываемся на новые записи
         logger.add_listener(self._on_new_entry)
-        # Загружаем существующие записи
         self._reload_all()
 
     def _setup_ui(self):
@@ -392,14 +340,12 @@ class LogWindow(QWidget):
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.resize(700, 450)
 
-        # Центрируем по экрану
         screen = QApplication.primaryScreen().geometry()
         self.move(
             screen.center().x() - 350,
             screen.center().y() - 225
         )
 
-        # --- Основной контейнер ---
         self.container = QWidget(self)
         self.container.setObjectName("container")
         self.container.resize(700, 450)
@@ -408,7 +354,6 @@ class LogWindow(QWidget):
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
 
-        # --- Заголовок ---
         header = QWidget()
         header.setObjectName("header")
         header.setFixedHeight(44)
@@ -420,7 +365,6 @@ class LogWindow(QWidget):
         h_lay.addWidget(title)
         h_lay.addStretch()
 
-        # Фильтр по уровню
         self.filter_box = QComboBox()
         self.filter_box.setObjectName("filterBox")
         self.filter_box.addItems(["ALL", "INFO", "WARNING", "ERROR", "COMMAND", "AI"])
@@ -428,21 +372,18 @@ class LogWindow(QWidget):
         self.filter_box.currentTextChanged.connect(self._on_filter_changed)
         h_lay.addWidget(self.filter_box)
 
-        # Кнопка копировать
         copy_btn = QPushButton("Copy")
         copy_btn.setObjectName("headerBtn")
         copy_btn.setFixedSize(60, 28)
         copy_btn.clicked.connect(self._copy_logs)
         h_lay.addWidget(copy_btn)
 
-        # Кнопка очистить
         clear_btn = QPushButton("Clear")
         clear_btn.setObjectName("headerBtn")
         clear_btn.setFixedSize(60, 28)
         clear_btn.clicked.connect(self._clear_logs)
         h_lay.addWidget(clear_btn)
 
-        # Кнопка закрыть
         close_btn = QPushButton("✕")
         close_btn.setObjectName("closeBtn")
         close_btn.setFixedSize(32, 32)
@@ -451,27 +392,23 @@ class LogWindow(QWidget):
 
         root.addWidget(header)
 
-        # --- Разделитель ---
         line = QFrame()
         line.setObjectName("divider")
         line.setFrameShape(QFrame.HLine)
         line.setFixedHeight(1)
         root.addWidget(line)
 
-        # --- Лог-текст ---
         self.log_text = QTextEdit()
         self.log_text.setObjectName("logText")
         self.log_text.setReadOnly(True)
         self.log_text.setLineWrapMode(QTextEdit.NoWrap)
         root.addWidget(self.log_text)
 
-        # --- Строка статуса ---
         self.status_bar = QLabel(" Ready")
         self.status_bar.setObjectName("statusBar")
         self.status_bar.setFixedHeight(24)
         root.addWidget(self.status_bar)
 
-        # Перетаскивание окна
         self._drag_pos = None
         header.mousePressEvent   = self._header_press
         header.mouseMoveEvent    = self._header_move
@@ -575,7 +512,6 @@ class LogWindow(QWidget):
             }}
         """)
 
-    # --- Перетаскивание ---
     def _header_press(self, e):
         if e.button() == Qt.LeftButton:
             self._drag_pos = e.globalPos() - self.frameGeometry().topLeft()
@@ -587,7 +523,6 @@ class LogWindow(QWidget):
     def _header_release(self, e):
         self._drag_pos = None
 
-    # --- Логика ---
     def _on_filter_changed(self, value):
         self.current_filter = value
         self._reload_all()
@@ -613,7 +548,6 @@ class LogWindow(QWidget):
 
     def _append_entry(self, entry):
         color = self.LEVEL_COLORS.get(entry["level"], "#cccccc")
-        # Форматируем строку с HTML-раскраской
         line = (
             f'<span style="color:#555555">[{entry["time"]}]</span> '
             f'<span style="color:{color};font-weight:bold">[{entry["level"]:7s}]</span> '
@@ -621,7 +555,6 @@ class LogWindow(QWidget):
             f'<span style="color:#dddddd">{entry["message"].replace(chr(10), "<br>&nbsp;&nbsp;")}</span>'
         )
         self.log_text.append(line)
-        # Прокрутка вниз
         self.log_text.moveCursor(QTextCursor.End)
 
     def _update_status(self):
@@ -661,16 +594,12 @@ class LogWindow(QWidget):
         super().hideEvent(event)
 
     def showEvent(self, event):
-        # При показе — переподписываемся и обновляем
         if self._on_new_entry not in logger._listeners:
             logger.add_listener(self._on_new_entry)
         self._reload_all()
         super().showEvent(event)
 
 
-# =============================================
-# --- СИСТЕМА КОМАНД ЮКИ ---
-# =============================================
 
 class YukiCommands:
     """
@@ -680,7 +609,6 @@ class YukiCommands:
 
     TRIGGERS = ["юки,", "юки"]
 
-    # --- Ключевые слова для каждой команды ---
     MUSIC_KEYS     = ["включи музыку", "включи песню", "поставь музыку",
                       "поставь песню", "включи трек", "сыграй"]
     YOUTUBE_KEYS   = ["открой ютуб", "зайди на ютуб", "включи ютуб"]
@@ -725,7 +653,6 @@ class YukiCommands:
                 return t[len(trigger):].strip()
         return t
 
-    # ---------- помощники ----------
     @staticmethod
     def _starts_with_any(text: str, keys: list) -> tuple:
         """Возвращает (True, suffix) если text начинается с одного из ключей."""
@@ -742,7 +669,6 @@ class YukiCommands:
                 return True, k
         return False, ""
 
-    # ---------- действия ----------
     @staticmethod
     def open_youtube_music(query: str):
         """Открывает YouTube-поиск через системный браузер (без selenium).
@@ -789,7 +715,6 @@ class YukiCommands:
             current = volume.GetMasterVolumeLevelScalar()
             volume.SetMasterVolumeLevelScalar(min(1.0, current + 0.1), None)
         except Exception:
-            # Fallback: нажать клавишу громкости через PowerShell
             subprocess.Popen(["powershell", "-c",
                 "(New-Object -comObject WScript.Shell).SendKeys([char]175)"])
 
@@ -828,13 +753,11 @@ class YukiCommands:
             pics = os.path.join(os.path.expanduser("~"), "Pictures")
             os.makedirs(pics, exist_ok=True)
             fname = os.path.join(pics, f"yuki_screenshot_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png")
-            # pyautogui
             import pyautogui
             img = pyautogui.screenshot()
             img.save(fname)
             return fname
         except ImportError:
-            # Fallback через PowerShell
             subprocess.Popen(["powershell", "-c",
                 "[System.Windows.Forms.SendKeys]::SendWait('%{PRTSC}')"])
             return None
@@ -843,7 +766,6 @@ class YukiCommands:
     def open_app(name: str, custom_apps: dict = None):
         """Пытается открыть программу по имени.
         custom_apps — словарь {имя: путь} из настроек пользователя."""
-        # Сначала проверяем пользовательские пути
         if custom_apps:
             for app_name, app_path in custom_apps.items():
                 if app_name.strip().lower() == name.strip().lower():
@@ -883,38 +805,30 @@ class YukiCommands:
                 subprocess.Popen([exe])
                 return True
             except FileNotFoundError:
-                # Пробуем через start
                 subprocess.Popen(["start", exe], shell=True)
                 return True
         else:
-            # Пробуем запустить напрямую
             try:
                 subprocess.Popen([name], shell=True)
                 return True
             except Exception:
                 return False
 
-    # ---------- главный обработчик ----------
     @classmethod
     def handle(cls, raw_text: str, custom_apps: dict = None, force_command: bool = False):
         """
         Главная точка входа.
         force_command=True позволяет выполнить команду даже если пользователь не сказал "Юки".
         """
-        # Если это фоновый шум (не принудительно) и нет имени Юки — игнорируем
         if not force_command and not cls.is_yuki_command(raw_text):
             return False, ""
 
         body = cls.extract_body(raw_text)
 
-        # --- Приветствие ---
-        # Проверяем, начинается ли фраза с приветствия
         ok, suffix = cls._starts_with_any(body, cls.HELLO_KEYS)
         if ok:
-            # Очищаем остаток фразы от пробелов и знаков препинания
             clean_suffix = suffix.strip(" ,.!?")
 
-            # Если после слова "привет" ничего нет, отвечаем стандартно
             if not clean_suffix:
                 import random
                 greets = [
@@ -925,17 +839,13 @@ class YukiCommands:
                 ]
                 return True, random.choice(greets)
 
-            # Если после "привет" есть текст (например "ты как?"),
-            # мы игнорируем этот блок — код пойдет дальше вниз и отдаст запрос Gemini
 
-        # --- Время ---
         ok, _ = cls._contains_any(body, cls.TIME_KEYS)
         if ok:
             import datetime
             now = datetime.datetime.now().strftime("%H:%M")
             return True, f"Сейчас {now} ⏰"
 
-        # --- Дата ---
         ok, _ = cls._contains_any(body, cls.DATE_KEYS)
         if ok:
             import datetime
@@ -944,7 +854,6 @@ class YukiCommands:
             d = datetime.datetime.now()
             return True, f"Сегодня {d.day} {MONTHS[d.month-1]} {d.year} года 📅"
 
-        # --- Музыка на YouTube ---
         ok, suffix = cls._starts_with_any(body, cls.MUSIC_KEYS)
         if ok:
             if suffix:
@@ -953,27 +862,23 @@ class YukiCommands:
             else:
                 return True, "Что включить? Скажи название песни! 🎶"
 
-        # --- Открыть YouTube ---
         ok, _ = cls._contains_any(body, cls.YOUTUBE_KEYS)
         if ok:
             Thread(target=cls.open_youtube, daemon=True).start()
             return True, "Открываю YouTube! 📺"
 
-        # --- Поиск в гугле ---
         ok, kw = cls._starts_with_any(body, cls.SEARCH_KEYS)
         if ok:
             if suffix := body[body.index(kw) + len(kw):].strip() if kw in body else "":
                 Thread(target=cls.search_google, args=(suffix,), daemon=True).start()
                 return True, f"Ищу «{suffix}» в Google! 🔍"
             else:
-                # Ещё раз через starts_with
                 ok2, q = cls._starts_with_any(body, cls.SEARCH_KEYS)
                 if q:
                     Thread(target=cls.search_google, args=(q,), daemon=True).start()
                     return True, f"Ищу «{q}» в Google! 🔍"
                 return True, "Что найти в Google? 🔍"
 
-        # --- Открыть сайт ---
         ok, suffix = cls._starts_with_any(body, cls.SITE_KEYS)
         if ok and suffix:
             Thread(target=cls.open_website, args=(suffix,), daemon=True).start()
@@ -981,7 +886,6 @@ class YukiCommands:
         elif ok:
             return True, "Какой сайт открыть? 🌐"
 
-        # --- Открыть приложение ---
         ok, suffix = cls._starts_with_any(body, cls.APP_KEYS)
         if ok:
             if suffix:
@@ -992,25 +896,21 @@ class YukiCommands:
                     return True, f"Не нашла программу «{suffix}» 😕"
             return True, "Какую программу открыть? 💻"
 
-        # --- Блокнот ---
         ok, _ = cls._contains_any(body, cls.NOTEPAD_KEYS)
         if ok:
             Thread(target=lambda: subprocess.Popen(["notepad.exe"]), daemon=True).start()
             return True, "Открываю Блокнот! 📝"
 
-        # --- Калькулятор ---
         ok, _ = cls._contains_any(body, cls.CALC_KEYS)
         if ok:
             Thread(target=lambda: subprocess.Popen(["calc.exe"]), daemon=True).start()
             return True, "Открываю Калькулятор! 🔢"
 
-        # --- Проводник ---
         ok, _ = cls._contains_any(body, cls.EXPLORER_KEYS)
         if ok:
             Thread(target=lambda: subprocess.Popen(["explorer.exe"]), daemon=True).start()
             return True, "Открываю Проводник! 📁"
 
-        # --- Скриншот ---
         ok, _ = cls._contains_any(body, cls.SCREENSHOT_KEYS)
         if ok:
             def do_screenshot():
@@ -1019,7 +919,6 @@ class YukiCommands:
             Thread(target=do_screenshot, daemon=True).start()
             return True, "Делаю скриншот! 📸"
 
-        # --- Громкость ---
         ok, _ = cls._contains_any(body, cls.VOLUME_UP_KEYS)
         if ok:
             Thread(target=cls.volume_up, daemon=True).start()
@@ -1035,7 +934,6 @@ class YukiCommands:
             Thread(target=cls.mute, daemon=True).start()
             return True, "Переключаю звук! 🔇"
 
-        # --- Выключить / перезагрузить / спящий режим ---
         ok, _ = cls._contains_any(body, cls.SHUTDOWN_KEYS)
         if ok:
             Thread(target=cls.shutdown_pc, daemon=True).start()
@@ -1051,8 +949,6 @@ class YukiCommands:
             Thread(target=cls.sleep_pc, daemon=True).start()
             return True, "Перехожу в спящий режим... 😴"
 
-        # Команда с 'юки', но неизвестная → передаём в ИИ
-        # НО сначала проверяем, не является ли тело команды именем приложения из custom_apps
         if custom_apps:
             body_stripped = body.strip()
             for app_name, app_path in custom_apps.items():
@@ -1064,18 +960,11 @@ class YukiCommands:
         return False, ""
 
 
-# =============================================
-# --- КОНЕЦ СИСТЕМЫ КОМАНД ---
-# =============================================
 
 
-# =============================================
-# --- ПЛЕЕР МУЗЫКИ ---
-# =============================================
 
 MUSIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "music")
 
-# Ensure pygame mixer available (imported at top)
 if not PYGAME_AVAILABLE:
     try:
         import pygame
@@ -1099,7 +988,6 @@ class MusicPlayerWindow(QWidget):
         self._track_len_ms = 0
         self._seeking      = False
 
-        # Таймер обновления позиции и авто-следующего трека
         self._tick = QTimer(self)
         self._tick.setInterval(500)
         self._tick.timeout.connect(self._on_tick)
@@ -1107,7 +995,6 @@ class MusicPlayerWindow(QWidget):
         self._setup_ui()
         self._apply_theme()
 
-    # ---------- UI ----------
     def _setup_ui(self):
         self.setWindowTitle("Yuki — Music")
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
@@ -1124,7 +1011,6 @@ class MusicPlayerWindow(QWidget):
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
 
-        # Заголовок
         header = QWidget()
         header.setObjectName("header")
         header.setFixedHeight(44)
@@ -1142,13 +1028,11 @@ class MusicPlayerWindow(QWidget):
         refresh_btn.clicked.connect(self._reload_list)
         h_lay.addWidget(refresh_btn)
 
-        # --- НОВАЯ КНОПКА СВОРАЧИВАНИЯ ---
         min_btn = QPushButton("—")
         min_btn.setObjectName("headerBtn")
         min_btn.setFixedSize(32, 28)
         min_btn.clicked.connect(self.showMinimized)
         h_lay.addWidget(min_btn)
-        # ---------------------------------
 
         close_btn = QPushButton("✕")
         close_btn.setObjectName("closeBtn")
@@ -1162,20 +1046,17 @@ class MusicPlayerWindow(QWidget):
         div.setFrameShape(QFrame.HLine); div.setFixedHeight(1)
         root.addWidget(div)
 
-        # Список треков
         self.track_list = QTextEdit()
         self.track_list.setObjectName("trackList")
         self.track_list.setReadOnly(True)
         root.addWidget(self.track_list)
 
-        # Текущий трек
         self.now_label = QLabel("Nothing playing")
         self.now_label.setObjectName("nowLabel")
         self.now_label.setAlignment(Qt.AlignCenter)
         self.now_label.setWordWrap(True)
         root.addWidget(self.now_label)
 
-        # Прогресс-бар
         from PyQt5.QtWidgets import QSlider
         self.seek_bar = QSlider(Qt.Horizontal)
         self.seek_bar.setObjectName("seekBar")
@@ -1191,7 +1072,6 @@ class MusicPlayerWindow(QWidget):
         seek_lay.addWidget(self.time_label)
         root.addWidget(seek_wrap)
 
-        # Кнопки управления
         ctrl = QWidget()
         c_lay = QHBoxLayout(ctrl)
         c_lay.setContentsMargins(10, 6, 10, 10)
@@ -1215,12 +1095,10 @@ class MusicPlayerWindow(QWidget):
             c_lay.addWidget(b)
         root.addWidget(ctrl)
 
-        # Перетаскивание
         header.mousePressEvent   = lambda e: self._drag_press(e)
         header.mouseMoveEvent    = lambda e: self._drag_move(e)
         header.mouseReleaseEvent = lambda e: setattr(self, '_drag_pos', None)
 
-        # Двойной клик по треку
         self.track_list.mouseDoubleClickEvent = self._on_track_dblclick
 
         self._reload_list()
@@ -1287,14 +1165,11 @@ class MusicPlayerWindow(QWidget):
             pygame.mixer.music.play()
             self.yuki.start_dancing()
 
-            # --- НОВОЕ: Запускаем поиск битов ---
             self.yuki.current_beats = []  # Очищаем старые биты
             self.beat_thread = BeatDetectorThread(path)
-            # Когда биты найдутся, передаем их Юки
             self.beat_thread.beats_ready.connect(lambda beats: setattr(self.yuki, 'current_beats', beats))
             self.beat_thread.start()
             self.yuki.start_dancing()
-            # Определяем длину трека через mutagen если есть
             self._track_len_ms = 0
             try:
                 from mutagen import File as MuFile
@@ -1377,16 +1252,12 @@ class MusicPlayerWindow(QWidget):
         if not PYGAME_AVAILABLE:
             return
 
-        # Если Юки "думает", что играет, с паузы снято, а pygame молчит — значит трек закончился
         if self._is_playing and not self._is_paused and not pygame.mixer.music.get_busy():
             if self.tracks:
-                # Берем следующий индекс. Оператор % (остаток от деления) делает так,
-                # что после последнего трека снова включится первый (нулевой).
                 next_index = (self.current_index + 1) % len(self.tracks)
                 self._play_index(next_index)
             return
 
-        # Обновляем ползунок времени, если трек еще играет
         if self._track_len_ms > 0 and not self._seeking:
             pos_ms = pygame.mixer.music.get_pos()
             if pos_ms >= 0:
@@ -1414,9 +1285,6 @@ class MusicPlayerWindow(QWidget):
         if self.tracks and self.current_index >= 0:
             self._highlight_track(self.current_index)
 
-# =============================================
-# --- ОКНО НАСТРОЕК ---
-# =============================================
 
 class SettingsWindow(QWidget):
     """Окно настроек Юки."""
@@ -1445,7 +1313,6 @@ class SettingsWindow(QWidget):
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
 
-        # Заголовок
         header = QWidget()
         header.setObjectName("header")
         header.setFixedHeight(44)
@@ -1466,7 +1333,6 @@ class SettingsWindow(QWidget):
         div.setFrameShape(QFrame.HLine); div.setFixedHeight(1)
         root.addWidget(div)
 
-        # Прокручиваемое содержимое
         from PyQt5.QtWidgets import QCheckBox, QScrollArea, QLineEdit as _QLineEdit
         scroll = QScrollArea()
         scroll.setObjectName("settingsScroll")
@@ -1480,7 +1346,6 @@ class SettingsWindow(QWidget):
         c_lay.setContentsMargins(20, 16, 20, 16)
         c_lay.setSpacing(14)
 
-        # --- Always-on mic ---
         self.always_mic_cb = QCheckBox("Always-on microphone (listen constantly)")
         self.always_mic_cb.setObjectName("settingCb")
         self.always_mic_cb.setChecked(self.yuki.always_listen)
@@ -1491,7 +1356,6 @@ class SettingsWindow(QWidget):
         mic_desc.setObjectName("descLabel")
         c_lay.addWidget(mic_desc)
 
-        # --- НОВЫЙ БЛОК: Галочка для парения ---
         self.hover_cb = QCheckBox("Enable floating animation (Анимация парения)")
         self.hover_cb.setObjectName("settingCb")
         self.hover_cb.setChecked(getattr(self.yuki, 'enable_hover', True))
@@ -1501,36 +1365,28 @@ class SettingsWindow(QWidget):
         hover_desc = QLabel("  Yuki will gently float up and down when sitting on your screen.")
         hover_desc.setObjectName("descLabel")
         c_lay.addWidget(hover_desc)
-        # ----------------------------------------
 
-        # --- Выбор движка TTS ---
         tts_title = QLabel("  🗣 Выбор озвучки (TTS)")
         tts_title.setObjectName("sectionTitle")
         c_lay.addWidget(tts_title)
 
         self.tts_combo = QComboBox()
         self.tts_combo.setObjectName("ttsCombo")
-        # Добавляем элементы. Второй аргумент — это внутреннее имя данных (data)
         self.tts_combo.addItem("Gemini TTS (Рекомендуется)", "gemini")
         self.tts_combo.addItem("Coqui TTS (Локальный)", "coqui")
         
-        # Устанавливаем текущий выбор из настроек
         idx = 0 if self.yuki.tts_engine == "gemini" else 1
         self.tts_combo.setCurrentIndex(idx)
         self.tts_combo.currentIndexChanged.connect(self._on_tts_changed)
         c_lay.addWidget(self.tts_combo)
 
-        # Метка для предупреждения
         self.tts_warning = QLabel()
         self.tts_warning.setObjectName("warningLabel")
         self.tts_warning.setWordWrap(True)
         c_lay.addWidget(self.tts_warning)
         
-        # Сразу обновляем текст предупреждения при открытии окна
         self._update_tts_warning(self.yuki.tts_engine)
-        # ----------------------------------------
 
-        # --- БЛОК APPLIO (RVC) ---
         self.rvc_container = QWidget()
         self.rvc_container.setObjectName("rvcContainer")
         rvc_lay = QVBoxLayout(self.rvc_container)
@@ -1573,11 +1429,8 @@ class SettingsWindow(QWidget):
 
         c_lay.addWidget(self.rvc_container)
         
-        # Скрываем блок, если выбран не Gemini
         self.rvc_container.setVisible(self.yuki.tts_engine == "gemini")
-        # -------------------------
 
-        # --- БЛОК: Выбор характера (Персоны) ---
         persona_title = QLabel("  🎭 Характер Юки")
         persona_title.setObjectName("sectionTitle")
         c_lay.addWidget(persona_title)
@@ -1593,13 +1446,11 @@ class SettingsWindow(QWidget):
         persona_desc.setObjectName("descLabel")
         c_lay.addWidget(persona_desc)
 
-        # Разделитель
         sep1 = QFrame(); sep1.setObjectName("sepLine")
         sep1.setFrameShape(QFrame.HLine); sep1.setFixedHeight(1)
         c_lay.addWidget(sep1)
 
 
-        # --- БЛОК: Зрение Юки ---
         vision_title = QLabel("  👁️ Зрение Юки")
         vision_title.setObjectName("sectionTitle")
         c_lay.addWidget(vision_title)
@@ -1620,7 +1471,6 @@ class SettingsWindow(QWidget):
         vision_desc.setObjectName("descLabel")
         c_lay.addWidget(vision_desc)
 
-        # --- Секция: Свои приложения ---
         apps_title = QLabel("  📂  Custom App Paths")
         apps_title.setObjectName("sectionTitle")
         c_lay.addWidget(apps_title)
@@ -1631,7 +1481,6 @@ class SettingsWindow(QWidget):
         c_lay.addWidget(apps_desc)
 
 
-        # Таблица: список существующих записей
         self.apps_list_widget = QWidget()
         self.apps_list_widget.setObjectName("appsListWidget")
         self.apps_list_layout = QVBoxLayout(self.apps_list_widget)
@@ -1639,7 +1488,6 @@ class SettingsWindow(QWidget):
         self.apps_list_layout.setSpacing(6)
         c_lay.addWidget(self.apps_list_widget)
 
-        # Строка добавления новой записи
         add_row = QWidget()
         add_row.setObjectName("addRow")
         add_lay = QHBoxLayout(add_row)
@@ -1662,12 +1510,10 @@ class SettingsWindow(QWidget):
         add_lay.addWidget(add_btn)
         c_lay.addWidget(add_row)
 
-        # Разделитель
         sep2 = QFrame(); sep2.setObjectName("sepLine")
         sep2.setFrameShape(QFrame.HLine); sep2.setFixedHeight(1)
         c_lay.addWidget(sep2)
 
-        # --- About ---
         about_btn = QPushButton("  ℹ  About / My Website")
         about_btn.setObjectName("aboutBtn")
         about_btn.setFixedHeight(38)
@@ -1678,12 +1524,10 @@ class SettingsWindow(QWidget):
         scroll.setWidget(content)
         root.addWidget(scroll)
 
-        # Перетаскивание
         header.mousePressEvent   = lambda e: self._drag_press(e)
         header.mouseMoveEvent    = lambda e: self._drag_move(e)
         header.mouseReleaseEvent = lambda e: setattr(self, '_drag_pos', None)
 
-        # Заполняем существующие записи
         self._refresh_apps_list()
 
 
@@ -1691,8 +1535,6 @@ class SettingsWindow(QWidget):
     def _on_persona_changed(self, text):
         self.yuki.persona_mode = text
         self.yuki.save_settings()
-        # По желанию: можно очищать память при смене личности, 
-        # чтобы она не путалась, почему секунду назад была милой, а теперь яндере:
         self.yuki.chat_history.clear()
 
     def _on_vision_req_changed(self, state):
@@ -1714,7 +1556,6 @@ class SettingsWindow(QWidget):
         from PyQt5.QtWidgets import QFileDialog
         folder = QFileDialog.getExistingDirectory(self, "Выберите папку с установленным Applio")
         if folder:
-            # При установке текста автоматически сработает сигнал textChanged
             self.applio_path_input.setText(folder)
 
 
@@ -1723,14 +1564,12 @@ class SettingsWindow(QWidget):
             voices_dir = "voices"
             os.makedirs(voices_dir, exist_ok=True)
             
-            # Ищем ТОЛЬКО .pth модели
             files = [f for f in os.listdir(voices_dir) if f.endswith('.pth')]
             if not files:
                 self.rvc_voice_combo.addItem("Нет .pth файлов в voices/")
             else:
                 self.rvc_voice_combo.addItems(files)
                 
-            # Восстанавливаем сохраненный выбор
             idx = self.rvc_voice_combo.findText(self.yuki.rvc_voice)
             if idx >= 0:
                 self.rvc_voice_combo.setCurrentIndex(idx)
@@ -1801,7 +1640,6 @@ class SettingsWindow(QWidget):
 
     def _refresh_apps_list(self):
         """Перестраивает список пользовательских приложений из yuki.custom_apps."""
-        # Очищаем предыдущие строки
         while self.apps_list_layout.count():
             item = self.apps_list_layout.takeAt(0)
             if item.widget():
@@ -1820,7 +1658,6 @@ class SettingsWindow(QWidget):
             del_btn = QPushButton("✕")
             del_btn.setObjectName("delBtn")
             del_btn.setFixedSize(26, 26)
-            # Захватываем имя для лямбды
             _name = app_name
             del_btn.clicked.connect(lambda _, n=_name: self._remove_app_entry(n))
             row_lay.addWidget(lbl, 1)
@@ -1880,9 +1717,6 @@ class SettingsWindow(QWidget):
         self._refresh_apps_list()
 
 
-# =============================================
-# --- ПОТОК ГОЛОСОВОГО ВВОДА ---
-# =============================================
 
 class SpeechThread(QThread):
     """
@@ -1917,7 +1751,6 @@ class SpeechThread(QThread):
                 audio = recognizer.listen(source, timeout=8, phrase_time_limit=15)
 
             logger.log("INFO", "Voice", "Recognizing...")
-            # Пробуем Google Speech Recognition (онлайн, бесплатно)
             text = recognizer.recognize_google(audio, language="ru-RU")
             logger.log("COMMAND", "Voice", f"Recognized: {text}")
             self.result_ready.emit(text)
@@ -1959,7 +1792,6 @@ def get_yuki_tools(yuki_instance):
 
     def open_app(app_name: str):
         """Открывает или запускает программу/приложение на ПК. Например: блокнот, калькулятор, проводник, discord, steam."""
-        # Передаем custom_apps из настроек самой Юки
         result = YukiCommands.open_app(app_name, custom_apps=yuki_instance.custom_apps)
         if result:
             return f"Запускаю {app_name}! 💻"
@@ -2001,14 +1833,9 @@ def get_yuki_tools(yuki_instance):
         Thread(target=YukiCommands.take_screenshot, daemon=True).start()
         return "Скриншот готов! 📸"
 
-    # Gemini получит доступ к этому списку
     return [open_website, search_google, open_app, play_youtube_music, control_volume, system_power, take_screenshot]
 
 
-# --- Класс мозга (работает в фоне) ---
-# =======================================================
-# --- АСИНХРОННЫЙ КОНВЕЙЕР ГЕНЕРАЦИИ И ОЗВУЧКИ ---
-# =======================================================
 
 class YukiBrain(QThread):
     text_chunk_ready = pyqtSignal(str)
@@ -2025,7 +1852,6 @@ class YukiBrain(QThread):
         self.history = history or []
         self.image = image
 
-        # --- БАЗЫ ХАРАКТЕРОВ ---
         personas = {
             "Милая": "Ты — Юки, милая, заботливая и веселая подружка (или даже младшая сестренка). Ты ведешь себя как настоящий, живой человек. Ты очень привязана к пользователю, любишь болтать с ним обо всем на свете и всегда готова ласково поддержать.",
             "Серьезная": "Ты — Юки, прагматичная и лаконичная помощница. Отвечай строго по делу, без лишних эмоций, как идеальный секретарь или дворецкий. Ты человек со строгим, деловым и сдержанным характером.",
@@ -2056,7 +1882,6 @@ class YukiBrain(QThread):
         try:
             logger.log("AI", "Gemini", "Начинаю запрос к нейросети...")
 
-            # Запускаем чат, ПЕРЕДАВАЯ ЕМУ ИСТОРИЮ
             chat = self.model.start_chat(history=self.history)
 
             if self.image:
@@ -2073,7 +1898,6 @@ class YukiBrain(QThread):
             chunk_count = 0
 
             for chunk in response:
-                # ПРОВЕРКА НА ВЫЗОВ ФУНКЦИИ (оставляем твой код как есть)
                 fc = None
                 if getattr(chunk, "function_call", None):
                     fc = chunk.function_call
@@ -2093,11 +1917,9 @@ class YukiBrain(QThread):
 
                     self.text_chunk_ready.emit(result_text)
                     self.sentence_ready.emit(result_text)
-                    # Если была функция, мы не сохраняем системный ответ в диалог
                     self.finished_generation.emit()
                     return 
 
-                # Обычный текст
                 if chunk.text:
                     chunk_count += 1
                     text = chunk.text
@@ -2118,7 +1940,6 @@ class YukiBrain(QThread):
             if buffer.strip():
                 self.sentence_ready.emit(buffer.strip())
 
-            # ОТПРАВЛЯЕМ ПОЛНЫЙ ОТВЕТ НА СОХРАНЕНИЕ
             self.full_response_ready.emit(self.prompt, full_response.strip())
             self.finished_generation.emit()
 
@@ -2129,7 +1950,6 @@ class YukiBrain(QThread):
 
 class GeminiRateLimiter:
     def __init__(self):
-        # Храним время запросов для RPM и счетчик для RPD
         self.limits = {
             'gemini-3.1-flash-tts-preview': {'rpm': deque(), 'rpd': 0},
             'gemini-2.5-flash-tts':         {'rpm': deque(), 'rpd': 0},
@@ -2141,11 +1961,9 @@ class GeminiRateLimiter:
     def get_best_model(self):
         now = time.time()
         for model_name, data in self.limits.items():
-            # Удаляем запросы, которые были сделаны больше 60 секунд назад
             while data['rpm'] and now - data['rpm'][0] > 60:
                 data['rpm'].popleft()
             
-            # Если лимиты позволяют, берем эту модель
             if len(data['rpm']) < self.MAX_RPM and data['rpd'] < self.MAX_RPD:
                 data['rpm'].append(now)
                 data['rpd'] += 1
@@ -2153,7 +1971,6 @@ class GeminiRateLimiter:
                 
         return None # Если вдруг вообще все лимиты исчерпаны
 
-# Создаем ОДИН глобальный инстанс лимитера на всю программу
 gemini_limiter = GeminiRateLimiter()
 
 
@@ -2191,10 +2008,8 @@ class TTSWorker(QThread):
 
         total_length = sum(len(s) for s in sentences)
 
-        # Определяем максимальное число потоков
         max_chunks = 4 if total_length <= 600 else 7
 
-        # Целевая длина куска (минимум 80 символов, чтобы не было кусков только из "Привет.")
         target_len = max(80, total_length // max_chunks)
 
         chunks = []
@@ -2205,13 +2020,11 @@ class TTSWorker(QThread):
             current_chunk.append(sentence)
             current_length += len(sentence)
 
-            # Закрываем кусок, если набрали нужный вес И есть куда разбивать дальше
             if current_length >= target_len and len(chunks) < max_chunks - 1:
                 chunks.append(" ".join(current_chunk))
                 current_chunk = []
                 current_length = 0
 
-        # Закидываем остатки текста в последний кусок
         if current_chunk:
             chunks.append(" ".join(current_chunk))
 
@@ -2224,11 +2037,9 @@ class TTSWorker(QThread):
             logger.log("ERROR", "TTSWorker", "Лимиты Gemini исчерпаны!")
             return index, None
 
-        # ЛОГ: Какой именно кусок и сколько символов
         logger.log("INFO", "TTSWorker", f"Кусок #{index} (символов: {len(text_chunk)}) начал генерацию.")
         wav_path = self.speak_gemini(text_chunk, model_name)
         
-        # ЛОГ: Успешно ли пришел файл
         if wav_path:
             file_size = os.path.getsize(wav_path)
             logger.log("INFO", "TTSWorker", f"Кусок #{index} готов! Путь: {os.path.basename(wav_path)}, Размер: {file_size} байт")
@@ -2261,13 +2072,11 @@ class TTSWorker(QThread):
                                 
                                 if path_to_play:
                                     if self.use_rvc and self.rvc_voice:
-                                        # ЛОГ: Время начала покраски
                                         start_time = time.time()
                                         logger.log("INFO", "Applio", f"--- НАЧАЛО покраски куска #{next_to_emit} ---")
                                         
                                         path_to_play = self.apply_voice_conversion(path_to_play)
                                         
-                                        # ЛОГ: Сколько секунд ушло на конкретный кусок
                                         elapsed = time.time() - start_time
                                         logger.log("INFO", "Applio", f"--- КУСОК #{next_to_emit} ГОТОВ за {elapsed:.2f} сек ---")
                                         
@@ -2291,18 +2100,14 @@ class TTSWorker(QThread):
                         self.audio_ready.emit(wav_path)
 
     def apply_voice_conversion(self, input_wav_path):
-        # Берем имя модели голоса
         pth_name = self.rvc_voice
         
-        # Формируем путь, который сервер сможет разрешить относительно своей папки.
-        # Если папка voices лежит в корне сервера на ПК, то "voices/имя_модели.pth" — идеальный вариант.
         pth_path = os.path.join("voices", pth_name)
 
         temp_dir = tempfile.gettempdir()
         import requests
 
         try:
-            # Если запускаете этот код на самом ПК, можно использовать "http://127.0.0.1:8000/convert"
             url = "http://100.117.206.40:8000/convert"
             
             with open(input_wav_path, "rb") as f:
@@ -2326,7 +2131,6 @@ class TTSWorker(QThread):
                 logger.log("INFO", "RVC", "Голос изменен успешно!")
                 return output_wav_path
             else:
-                # Читаем response.text, чтобы увидеть, какую именно ошибку выплюнул yuki_server.py
                 logger.log("ERROR", "RVC", f"Ошибка сервера Applio. Код: {response.status_code}. Ответ: {response.text}")
                 return input_wav_path
 
@@ -2395,7 +2199,6 @@ class TTSWorker(QThread):
     def speak_coqui(self, text, lang):
         with tts_lock:  # Блокирует одновременные вызовы
             try:
-                # url = "http://91.205.196.207:5002/api/tts"
                 url = "http://100.117.206.40:5002/api/tts"
                 voice_file = "voices/roxy.wav"
                 speed = 1.1
@@ -2461,7 +2264,6 @@ class AudioPipelinePlayer(QThread):
             logger.log("INFO", "AudioPlayer", f"Воспроизвожу: {filepath}")
 
             try:
-                # Попытка 1: Идеально для стандартных WAV (не прерывает музыку Юки)
                 sound = pygame.mixer.Sound(filepath)
                 length = sound.get_length()
                 sound.play()
@@ -2469,7 +2271,6 @@ class AudioPipelinePlayer(QThread):
             except Exception as e:
                 logger.log("WARNING", "AudioPlayer", f"Формат не для Sound, пробую Music... ({e})")
                 try:
-                    # Попытка 2: Спасает, если прилетел MP3 (но может поставить музыку на паузу)
                     pygame.mixer.music.load(filepath)
                     pygame.mixer.music.play()
                     while pygame.mixer.music.get_busy():
@@ -2477,7 +2278,6 @@ class AudioPipelinePlayer(QThread):
                 except Exception as e2:
                     logger.log("WARNING", "AudioPlayer", f"Music тоже не справился, пробую winsound... ({e2})")
                     try:
-                        # Попытка 3: Безотказный виндовый плеер
                         import winsound
                         winsound.PlaySound(filepath, winsound.SND_FILENAME | winsound.SND_NODEFAULT)
                     except Exception as e3:
@@ -2502,11 +2302,8 @@ class BeatDetectorThread(QThread):
         try:
             y, sr = librosa.load(self.filepath, sr=22050)
 
-            # Считаем силу (громкость) каждого всплеска звука
             onset_env = librosa.onset.onset_strength(y=y, sr=sr)
 
-            # НОВОЕ: параметр delta=1.5 отсеивает весь "мусор".
-            # Оставляет только самые сильные пики. Если всё еще много битов — сделай delta=2.0
             onset_frames = librosa.onset.onset_detect(
                 onset_envelope=onset_env,
                 sr=sr,
@@ -2530,13 +2327,10 @@ class AudioPlayerThread(QThread):
         self.filepath = filepath
 
     def run(self):
-        # Эта команда проигрывает WAV файл и ждет его окончания
         winsound.PlaySound(self.filepath, winsound.SND_FILENAME)
-        # Когда звук закончился, отправляем сигнал
         self.finished_playing.emit()
 
 
-# --- Класс красивого окна ввода ---
 class ChatInputDialog(QDialog):
     def __init__(self, skin):
         super().__init__()
@@ -2546,13 +2340,11 @@ class ChatInputDialog(QDialog):
         self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(10, 10, 10, 10)
 
-        # Поле ввода текста
         self.input_field = QLineEdit(self)
         self.input_field.setPlaceholderText("Что скажешь?")
         self.input_field.setMinimumHeight(40)
         self.input_field.returnPressed.connect(self.accept) 
 
-        # Кнопка отправки
         self.send_btn = QPushButton("➤", self)
         self.send_btn.setFixedSize(40, 40)
         self.send_btn.clicked.connect(self.accept)
@@ -2562,7 +2354,6 @@ class ChatInputDialog(QDialog):
 
         self.apply_style(skin)
         
-        # Автофокус: курсор сразу ставится в поле ввода при открытии
         self.input_field.setFocus()
 
     def apply_style(self, skin):
@@ -2607,7 +2398,6 @@ class ChatInputDialog(QDialog):
         return self.input_field.text()
 
 
-# --- Класс голографического экрана ---
 class HolographicScreen(QWidget):
     def __init__(self):
         super().__init__()
@@ -2639,7 +2429,6 @@ class HolographicScreen(QWidget):
 
         self.setFixedSize(340, 480)
 
-        # --- Переменные для Кибер-Анимации ---
         self.pending_text = ""  # Очередь текста от ИИ
         self.target_char = ""  # Буква, которую мы пытаемся "напечатать" сейчас
         self.cycles_left = 0  # Сколько кадров буква будет "глючить"
@@ -2648,7 +2437,6 @@ class HolographicScreen(QWidget):
         self.decode_timer = QTimer(self)
         self.decode_timer.timeout.connect(self._decode_step)
 
-        # Таймер для анимации "Думаю..."
         self.loading_timer = QTimer(self)
         self.loading_timer.timeout.connect(self.animate_loading)
         self.dot_count = 0
@@ -2661,7 +2449,6 @@ class HolographicScreen(QWidget):
         """Добавляет текст в скрытую очередь и запускает анимацию"""
         self.loading_timer.stop()
 
-        # Если на экране висит "Думаю...", чистим его
         current_text = self.text_edit.toPlainText()
         if "Думаю" in current_text and len(current_text) < 15:
             self.text_edit.clear()
@@ -2669,55 +2456,45 @@ class HolographicScreen(QWidget):
             self.target_char = ""
             self.has_flashing_char = False
 
-        # Добавляем новый кусок от Gemini в очередь
         self.pending_text += new_text
 
-        # Если таймер анимации спит — будим его! (15мс = очень быстрое мерцание)
         if not self.decode_timer.isActive():
             self.decode_timer.start(23)
 
     def _decode_step(self):
         """Сердце кибер-анимации. Вызывается каждые 15 миллисекунд."""
-        # Запоминаем, читал ли пользователь текст
         scrollbar = self.text_edit.verticalScrollBar()
         is_at_bottom = scrollbar.value() == scrollbar.maximum()
 
         cursor = self.text_edit.textCursor()
         cursor.movePosition(QTextCursor.End)
 
-        # 1. Стираем предыдущий "глючный" символ, если он был
         if self.has_flashing_char:
             cursor.deletePreviousChar()
             self.has_flashing_char = False
 
-        # 2. Если буква еще "в процессе взлома"
         if self.cycles_left > 0:
             glitch_chars = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ@#$%&*<>?01"
             cursor.insertText(random.choice(glitch_chars))
             self.has_flashing_char = True
             self.cycles_left -= 1
 
-        # 3. "Взлом" завершен, печатаем настоящую букву
         else:
             if self.target_char:
                 cursor.insertText(self.target_char)
                 self.target_char = ""
 
-            # Берем следующую букву из очереди
             if self.pending_text:
                 self.target_char = self.pending_text[0]
                 self.pending_text = self.pending_text[1:]
 
-                # Пробелы и переносы строк не глючат, печатаем их сразу
                 if self.target_char in " \n\t":
                     self.cycles_left = 0
                 else:
                     self.cycles_left = 3  # Каждая буква глючит 2 кадра (30мс)
             else:
-                # Очередь пуста, останавливаем анимацию
                 self.decode_timer.stop()
 
-        # Возвращаем скролл на место, если он был внизу
         if is_at_bottom:
             scrollbar.setValue(scrollbar.maximum())
 
@@ -2746,7 +2523,6 @@ class HolographicScreen(QWidget):
         self.target_char = ""
         self.has_flashing_char = False
 
-        # Короткие системные сообщения ("Делаю скриншот") просто печатаем целиком
         self.text_edit.setText(text)
 
         self.move(x, y)
@@ -2793,7 +2569,6 @@ class HolographicScreen(QWidget):
         """)
 
 
-# --- Класс кругового меню ---
 class RadialMenu(QWidget):
     def __init__(self, parent_yuki):
         super().__init__()
@@ -2801,9 +2576,7 @@ class RadialMenu(QWidget):
         self.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         
-        # --- ИЗМЕНЕНО: Расширяем холст меню для второго круга ---
         self.resize(400, 400) 
-        # --------------------------------------------------------
         
         self.animations = []
 
@@ -2830,30 +2603,25 @@ class RadialMenu(QWidget):
         return btn
 
     def show_around(self, x, y):
-        # 1. Вычисляем желаемую позицию (меню по центру Юки)
         target_x = x - self.width() // 2
         target_y = y - self.height() // 2
 
-        # 2. Получаем размеры именно того экрана, где сейчас находится Юки
         screen = QApplication.screenAt(QPoint(x, y))
         if not screen:
             screen = QApplication.primaryScreen()
         geom = screen.availableGeometry() # availableGeometry учитывает панель задач Windows
 
-        # 3. Корректируем координаты, чтобы не вылезать за края монитора
         target_x = max(geom.left(), min(target_x, geom.right() - self.width()))
         target_y = max(geom.top(), min(target_y, geom.bottom() - self.height()))
 
         self.move(target_x, target_y)
 
-        # 4. Дальнейший код отрисовки и анимации кнопок
         center_pos = QPoint(self.width() // 2 - 30, self.height() // 2 - 30)
 
         cx = self.width()  // 2 - 30
         cy = self.height() // 2 - 30
         r  = 100  # радиус
         
-        # Собираем все кнопки в список
         buttons = [
             self.chibi_btn, self.skin_btn, self.settings_btn, 
             self.logs_btn, self.chat_btn, self.music_btn, 
@@ -2861,7 +2629,6 @@ class RadialMenu(QWidget):
             self.close_btn
         ]
         
-        # Автоматически вычисляем угол для любого количества кнопок!
         angle_step = 360 / len(buttons)
         for i, btn in enumerate(buttons):
             rad = math.radians(i * angle_step - 90) # -90 чтобы первая кнопка была на 12 часов
@@ -2869,7 +2636,6 @@ class RadialMenu(QWidget):
             py  = int(cy + r * math.sin(rad))
             self.animate_btn(btn, center_pos, QPoint(px, py))
 
-        # Кнопка «Открепить» появляется сбоку
         if self.yuki.is_floating:
             rad_d = math.radians(292)
             px_d  = int(cx + (r + 25) * math.cos(rad_d))
@@ -2929,20 +2695,17 @@ class RadialMenu(QWidget):
         self.hide()
 
 
-# --- Основной класс Юки ---
 class YukiAssistant(QWidget):
     def __init__(self):
         super().__init__()
         self.settings_file = 'yuki_settings.json'
 
-        # --- Память и Характер ---
         self.chat_history = []  # Список для хранения последних сообщений
         self.persona_mode = "серезная помошница(человечная)" # Характер по умолчанию
 
         self.always_listen        = False
         self.always_listen_thread = None
 
-        # --- Snap-состояние ---
         self.snap_mode      = SNAP_NONE
         self.snapped_hwnd   = None
         self.window_tracker = None
@@ -2954,10 +2717,8 @@ class YukiAssistant(QWidget):
         self.menu         = RadialMenu(self)
         self.holo_screen  = HolographicScreen()
         self.log_window   = LogWindow(self.current_skin)
-        # Было: self.music_window = MusicPlayerWindow(self.current_skin)
         self.music_window = MusicPlayerWindow(self, self.current_skin)
 
-        # ДОБАВИТЬ ЭТО ДЛЯ ВИДЕО:
         self.video_timer = QTimer(self)
         self.video_timer.timeout.connect(self._process_video_frame)
         self.video_cap = None
@@ -2971,7 +2732,6 @@ class YukiAssistant(QWidget):
             QTimer.singleShot(2000, self._start_always_listen_loop)
         logger.log("INFO", "UI", "Yuki UI initialized")
 
-        # --- Настройки 3D режима (PNG Секвенция) ---
         self.is_3d_mode = False
         self.first_time_3d = True      # Флаг для первого запуска
         self.is_anim_oneshot = False   # Флаг для одноразовых анимаций (hello)
@@ -2986,7 +2746,6 @@ class YukiAssistant(QWidget):
         self.current_3d_frames = []
         self.current_frame_idx = 0
         
-        # Главный таймер контроля времени (стоим 5 сек -> idle 5 сек)
         self.cycle_timer = QTimer(self)
         self.cycle_timer.timeout.connect(self._advance_3d_state)
 
@@ -2995,9 +2754,7 @@ class YukiAssistant(QWidget):
         if getattr(self, 'screen_watch_continuous', False):
             self.screen_watch_timer.start(10000) # 10 секунд
         
-        # Загружаем картинки
         self._load_3d_assets()
-        # ------------------------------------------
 
     def _load_sequence(self, pattern, w, h):
         """Помощник для быстрой загрузки папок с кадрами"""
@@ -3019,7 +2776,6 @@ class YukiAssistant(QWidget):
         else:
             self.standing_pixmap = None
 
-        # Загружаем все три анимации одной строкой!
         self.walk_frames  = self._load_sequence("yuki_animations/yuki_walking/*.png", target_w, target_h)
         self.idle_frames  = self._load_sequence("yuki_animations/yuki_idle/*.png", target_w, target_h)
         self.hello_frames = self._load_sequence("yuki_animations/yuki_hello/*.png", target_w, target_h)
@@ -3033,13 +2789,11 @@ class YukiAssistant(QWidget):
             logger.log("INFO", "Vision", "Фоновое наблюдение выключено.")
 
     def _watch_screen_tick(self):
-        # Не отвлекаем Юки, если она уже думает или говорит
         if (hasattr(self, 'brain') and self.brain.isRunning()) or self.holo_screen.isVisible():
             return
         if hasattr(self, 'audio_player') and self.audio_player.isRunning():
             return
 
-        # Запускаем фоновый поток анализа
         self.watcher_thread = ScreenWatcherThread(self.chat_history, self.persona_mode)
         self.watcher_thread.reaction_ready.connect(self._play_autonomous_reaction)
         self.watcher_thread.start()
@@ -3050,12 +2804,10 @@ class YukiAssistant(QWidget):
         screen_y = self.y() + 20
         self.holo_screen.show_message("Ого...", self.current_skin, screen_x, screen_y)
         
-        # Сохраняем её мысль в историю
         self.chat_history.append({"role": "model", "parts": [text]})
         if len(self.chat_history) > 10:
             self.chat_history = self.chat_history[-10:]
 
-        # Запускаем конвейер озвучки и текста напрямую
         self.tts_worker = TTSWorker(
             language="ru", 
             engine=self.tts_engine,
@@ -3070,7 +2822,6 @@ class YukiAssistant(QWidget):
         self.tts_worker.finished_all_tts.connect(self.audio_player.set_tts_done)
         self.audio_player.finished_all.connect(self.holo_screen.hide)
 
-        # Передаем готовый текст в элементы
         self.holo_screen.append_text(text)
         self.tts_worker.add_sentence(text)
         self.tts_worker.set_generation_done()
@@ -3082,13 +2833,10 @@ class YukiAssistant(QWidget):
         """Сохраняет последние сообщения в формате, понятном Gemini API."""
         if not yuki_text: return
         
-        # Формат Gemini: список словарей с role и parts
         self.chat_history.append({"role": "user", "parts": [user_text]})
         self.chat_history.append({"role": "model", "parts": [yuki_text]})
         
-        # Ограничиваем память последними 5 диалогами (10 элементов: 5 user + 5 model)
         if len(self.chat_history) > 10:
-            # Отрезаем старые, оставляя только 10 последних
             self.chat_history = self.chat_history[-10:]
             
         logger.log("INFO", "Memory", f"Память обновлена. Всего записей: {len(self.chat_history)}")
@@ -3103,7 +2851,7 @@ class YukiAssistant(QWidget):
                 
             if self.first_time_3d:
                 self.first_time_3d = False
-                self.current_3d_state = "hello"  # <--- Добавили статус
+                self.current_3d_state = "hello"  # статус
                 self.set_3d_animation("hello") 
             else:
                 self._start_3d_cycle()
@@ -3125,7 +2873,7 @@ class YukiAssistant(QWidget):
         self.walk_anim.stop()
         self.cycle_timer.stop()
         
-        self.current_3d_state = "hello" # <--- Добавили статус
+        self.current_3d_state = "hello" # <---  статус
         self.set_3d_animation("hello")
 
     def _start_3d_cycle(self):
@@ -3165,11 +2913,9 @@ class YukiAssistant(QWidget):
         curr_x = self.x()
         yuki_w = self.width()
         
-        # ЖЕСТКИЕ ГРАНИЦЫ ЭКРАНА
         min_x = 0
         max_x = max(0, sw - yuki_w) 
         
-        # 1/3 и 3/4 экрана
         min_dist = sw / 3
         max_dist = sw * 0.75
         
@@ -3198,7 +2944,6 @@ class YukiAssistant(QWidget):
 
         self.set_3d_animation("walking")
         
-        # Считаем длительность (150 пикселей в секунду)
         distance = abs(target_x - curr_x)
         duration_ms = int((distance / 150.0) * 1000)
 
@@ -3232,7 +2977,7 @@ class YukiAssistant(QWidget):
             if anim_name == "walking": frames = self.walk_frames
             elif anim_name == "idle": 
                 frames = self.idle_frames
-                self.is_anim_oneshot = True # <--- Теперь idle проигрывается полностью!
+                self.is_anim_oneshot = True 
             elif anim_name == "hello": 
                 frames = self.hello_frames
                 self.is_anim_oneshot = True
@@ -3244,7 +2989,6 @@ class YukiAssistant(QWidget):
                 self.label.resize(first_frame.width(), first_frame.height())
                 self.resize(first_frame.width(), first_frame.height())
                 
-                # Задаем разную скорость в зависимости от анимации
                 if anim_name == "hello":
                     self.anim_3d_timer.start(18)  # 18 мс = очень быстро (~55 FPS)
                 else:
@@ -3255,19 +2999,15 @@ class YukiAssistant(QWidget):
             
         self.current_frame_idx += 1
         
-        # Если кадры закончились
         if self.current_frame_idx >= len(self.current_3d_frames):
             if getattr(self, 'is_anim_oneshot', False):
                 self.anim_3d_timer.stop()
                 
-                # Проверяем, какая именно анимация завершилась
                 if self.current_3d_state == "idle":
-                    # Если закончился idle -> ставим позу standing и ждем 2 секунды!
                     self.current_3d_state = "wait_before_walk"
                     self.set_3d_animation("standing")
                     self.cycle_timer.start(2000)
                 else:
-                    # Если закончился hello -> запускаем обычный цикл (стоит 5 сек)
                     self._start_3d_cycle()
                 return
             else:
@@ -3323,7 +3063,6 @@ class YukiAssistant(QWidget):
         if enabled:
             self._start_always_listen_loop()
         else:
-            # Поток остановится сам на следующей итерации
             self.always_listen_thread = None
 
     def _start_always_listen_loop(self):
@@ -3344,7 +3083,6 @@ class YukiAssistant(QWidget):
                     text = recognizer.recognize_google(audio, language="ru-RU")
                     if text.strip():
                         logger.log("COMMAND", "AlwaysListen", f"Heard: {text}")
-                        # Вызываем обработку в главном потоке через сигнал
                         self._always_listen_signal.emit(text)
                 except sr.WaitTimeoutError:
                     pass  # тишина — продолжаем
@@ -3371,7 +3109,6 @@ class YukiAssistant(QWidget):
             logger.log("WARNING", "Voice", "speech_recognition not installed")
             return
 
-        # Показываем «Говори...» пока ждём
         self.holo_screen.show_message(
             "🎤 Говори...",
             self.current_skin, screen_x, screen_y
@@ -3396,12 +3133,10 @@ class YukiAssistant(QWidget):
         """Получили распознанный текст — обрабатываем как обычный ввод."""
         screen_x = self.x() + self.width() + 10
         screen_y = self.y() + 20
-        # Показываем что услышала
         self.holo_screen.show_message(
             f"🎤 Услышала: {text}",
             self.current_skin, screen_x, screen_y, auto_hide_ms=2000
         )
-        # Через 2 сек обрабатываем
         QTimer.singleShot(500, lambda: self._process_input(text, is_explicit=True))
 
     def _on_voice_error(self, error_msg: str):
@@ -3412,11 +3147,9 @@ class YukiAssistant(QWidget):
             error_msg, self.current_skin, screen_x, screen_y, auto_hide_ms=4000
         )
 
-    # Сигнал для always-listen (вызов из фонового потока → главный поток Qt)
     _always_listen_signal = pyqtSignal(str)
 
     def _process_input(self, text: str, is_explicit: bool = True):
-        # ОСТАНОВКА СТАРЫХ ПОТОКОВ (чтобы не было конфликтов сигналов)
         if hasattr(self, 'brain') and self.brain.isRunning():
             self.brain.quit()
         if hasattr(self, 'tts_worker') and self.tts_worker.isRunning():
@@ -3447,7 +3180,6 @@ class YukiAssistant(QWidget):
 
             self.holo_screen.show_loading(self.current_skin, screen_x, screen_y)
 
-            # 1. СНАЧАЛА создаем объекты-работники
             self.brain = YukiBrain(
                 prompt=clean_text, 
                 language="ru", 
@@ -3467,7 +3199,6 @@ class YukiAssistant(QWidget):
             )
             self.audio_player = AudioPipelinePlayer()
 
-            # 2. ТЕПЕРЬ безопасно подключаем сигналы
             self.brain.full_response_ready.connect(self._save_to_history)
             self.brain.text_chunk_ready.connect(self.holo_screen.append_text)
             self.brain.sentence_ready.connect(self.tts_worker.add_sentence)
@@ -3478,7 +3209,6 @@ class YukiAssistant(QWidget):
             self.tts_worker.finished_all_tts.connect(self.audio_player.set_tts_done)
             self.audio_player.finished_all.connect(self.holo_screen.hide)
 
-            # 3. Запускаем
             logger.log("INFO", "Pipeline", "Конвейер ИИ запущен...")
             self.audio_player.start()
             self.tts_worker.start()
@@ -3501,13 +3231,11 @@ class YukiAssistant(QWidget):
         screen_y = self.y() + 20
 
         if audio_path:
-            # Если звук сгенерирован, показываем текст и ждем окончания озвучки
             self.holo_screen.show_message(text, self.current_skin, screen_x, screen_y)
             self.audio_thread = AudioPlayerThread(audio_path)
             self.audio_thread.finished_playing.connect(self.holo_screen.hide)
             self.audio_thread.start()
         else:
-            # Если звука нет (сервер отключен), просто показываем текст на 7 секунд
             self.holo_screen.show_message(text, self.current_skin, screen_x, screen_y, auto_hide_ms=7000)
 
     def on_audio_state_changed(self):
@@ -3525,7 +3253,6 @@ class YukiAssistant(QWidget):
                 self.always_listen = data.get('always_listen', False)
                 self.custom_apps   = data.get('custom_apps', {})
                 self.enable_hover  = data.get('enable_hover', True)
-                # --- НОВОЕ ---
                 self.tts_engine    = data.get('tts_engine', 'gemini') 
                 self.use_rvc       = data.get('use_rvc', False)
                 self.rvc_voice     = data.get('rvc_voice', 'roxy.pth')
@@ -3541,7 +3268,6 @@ class YukiAssistant(QWidget):
             self.always_listen = False
             self.custom_apps   = {}
             self.enable_hover  = True
-            # --- НОВОЕ ---
             self.tts_engine    = 'gemini'
             self.use_rvc       = False
             self.rvc_voice     = 'roxy.pth'
@@ -3590,14 +3316,11 @@ class YukiAssistant(QWidget):
 
         self.label = QLabel(self)
         
-        # --- НОВОЕ: Намертво приклеиваем картинку к низу окна ---
         self.label.setAlignment(Qt.AlignBottom | Qt.AlignHCenter)
-        # --------------------------------------------------------
 
         self.hover_anim = QPropertyAnimation(self.label, b"pos")
         self.hover_anim.setLoopCount(-1)  # Бесконечный цикл
         self.hover_anim.setEasingCurve(QEasingCurve.InOutSine)  # Плавное ускорение и замедление
-        # ------------------------------------
 
         self.update_image()
         self.move(self.start_x, self.start_y)
@@ -3607,7 +3330,6 @@ class YukiAssistant(QWidget):
         if getattr(self, 'is_3d_mode', False):
             return
         if self.is_floating:
-            # Floating-спрайт при прикреплении к окну/экрану
             if self.current_skin == 'default':
                 filename = 'floating_yuki.png'
             else:
@@ -3622,95 +3344,6 @@ class YukiAssistant(QWidget):
         if self.window_tracker is not None:
             self.window_tracker.update_yuki_size(self.width(), self.height())
 
-    # def load_image(self, filename):
-    #     if not os.path.exists(filename):
-    #         print(f"ВНИМАНИЕ: Файл {filename} не найден!")
-    #         return
-    #
-    #     try:
-    #         from PyQt5.QtGui import QTransform
-    #         from PyQt5.QtCore import QPoint
-    #
-    #         pixmap = QPixmap(filename)
-    #         base_scale = 3
-    #         new_width = max(1, pixmap.width() // base_scale)
-    #         new_height = max(1, pixmap.height() // base_scale)
-    #
-    #         if self.is_chibi:
-    #             chibi_scale = 2
-    #             new_width = max(1, new_width // chibi_scale)
-    #             new_height = max(1, new_height // chibi_scale)
-    #
-    #         # 1. ОБЯЗАТЕЛЬНО задаем начальные значения ДО всех проверок!
-    #         self.snap_shift = QPoint(0, 0)
-    #         transform = QTransform()
-    #
-    #         if self.is_floating:
-    #             snap_scale = 3  # Сделать в 3 раза меньше
-    #             new_width = max(1, new_width // snap_scale)
-    #             new_height = max(1, new_height // snap_scale)
-    #
-    #             # Задаем вращение
-    #             if self.snap_mode in (1, 5):  # ВЕРХ (потолок)
-    #                 transform.rotate(180)
-    #             elif self.snap_mode in (3, 7):  # ЛЕВЫЙ край
-    #                 transform.rotate(-90)
-    #             elif self.snap_mode in (4, 8):  # ПРАВЫЙ край
-    #                 transform.rotate(90)
-    #
-    #             # Если мы повернули Юки боком, ее ширина и высота физически меняются местами
-    #             if self.snap_mode in (3, 7, 4, 8):
-    #                 shift_w, shift_h = new_height, new_width
-    #             else:
-    #                 shift_w, shift_h = new_width, new_height
-    #
-    #             # Задаем сдвиг внутрь окна на её собственный размер
-    #             if self.snap_mode in (1, 5):  # ВЕРХ: сдвиг вниз
-    #                 self.snap_shift = QPoint(0, shift_h)
-    #             elif self.snap_mode in (2, 6):  # НИЗ: сдвиг вверх
-    #                 self.snap_shift = QPoint(0, -shift_h)
-    #             elif self.snap_mode in (3, 7):  # ЛЕВЫЙ: сдвиг вправо
-    #                 self.snap_shift = QPoint(shift_w, 0)
-    #             elif self.snap_mode in (4, 8):  # ПРАВЫЙ: сдвиг влево
-    #                 self.snap_shift = QPoint(-shift_w, 0)
-    #
-    #         # 2. Масштабируем
-    #         pixmap = pixmap.scaled(new_width, new_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-    #
-    #         # 3. Вращаем картинку (если нужно)
-    #         if not transform.isIdentity():
-    #             pixmap = pixmap.transformed(transform, Qt.SmoothTransformation)
-    #
-    #         self.label.setPixmap(pixmap)
-    #         self.label.resize(pixmap.width(), pixmap.height())
-    #
-    #         # 4. Вычисляем размеры главного невидимого окна и базовую позицию картинки
-    #         # Если сдвиг положительный, отступаем от края. Если отрицательный, базовая точка остается 0.
-    #         base_x = self.snap_shift.x() if self.snap_shift.x() > 0 else 0
-    #         base_y = self.snap_shift.y() if self.snap_shift.y() > 0 else 0
-    #
-    #         hover_offset = 15
-    #
-    #         # Окно должно вмещать саму Юки + величину отступа + место для парения
-    #         window_width = pixmap.width() + abs(self.snap_shift.x())
-    #         window_height = pixmap.height() + abs(self.snap_shift.y()) + hover_offset
-    #         self.resize(window_width, window_height)
-    #
-    #         # 5. Анимация напрямую меняет координаты (pos) картинки внутри окна
-    #         self.hover_anim.stop()
-    #         self.hover_anim.setDuration(3000)
-    #
-    #         # Анимируем от нижней точки (base_y + hover) к верхней (base_y) и обратно
-    #         self.hover_anim.setStartValue(QPoint(base_x, base_y + hover_offset))
-    #         self.hover_anim.setKeyValueAt(0.5, QPoint(base_x, base_y))
-    #         self.hover_anim.setEndValue(QPoint(base_x, base_y + hover_offset))
-    #
-    #         self.hover_anim.start()
-    #
-    #     except Exception as e:
-    #         print(f"Ошибка загрузки {filename}: {e}")
-    #         import traceback
-    #         traceback.print_exc()
 
     def load_image(self, filename):
         if not os.path.exists(filename):
@@ -3734,18 +3367,12 @@ class YukiAssistant(QWidget):
             transform = QTransform()
 
             if self.is_floating:
-                # Если Юки уже чиби, сжимаем ее всего в 1.5 раза (или поставь 1, чтобы вообще не сжимать)
-                # Если обычная Юки — сжимаем в 3 раза
                 snap_scale = 1.5 if self.is_chibi else 3.0
 
-                # Используем int( ... / snap_scale), так как 1.5 — это дробное число
                 new_width = max(1, int(new_width / snap_scale))
                 new_height = max(1, int(new_height / snap_scale))
 
-                # Поворачиваем так, чтобы она стояла снаружи окна
-                # ...
 
-                # Поворачиваем так, чтобы она стояла снаружи окна
                 if self.snap_mode in (2, 5): # Низ окна
                     transform.rotate(180)
                 elif self.snap_mode in (4, 7): # Правый край
@@ -3753,7 +3380,6 @@ class YukiAssistant(QWidget):
                 elif self.snap_mode in (3, 8): # Левый край
                     transform.rotate(-90)
 
-                # Меняем местами ширину и высоту при повороте на бок
                 if self.snap_mode in (3, 4, 7, 8):
                     new_width, new_height = new_height, new_width
 
@@ -3766,13 +3392,10 @@ class YukiAssistant(QWidget):
             self.setContentsMargins(0, 0, 0, 0)
             self.label.resize(pixmap.width(), pixmap.height())
 
-            # Парение работает только если не прилипли
             hover_offset = 15 if not self.is_floating else 0
             self.resize(pixmap.width(), pixmap.height() + hover_offset)
 
-            # 5. Управление анимацией
             self.hover_anim.stop()
-            # Парит, только если не прилипла И настройка включена
             if not self.is_floating and getattr(self, 'enable_hover', True):
                 self.hover_anim.setDuration(3000)
                 self.hover_anim.setStartValue(QPoint(0, hover_offset))
@@ -3780,8 +3403,6 @@ class YukiAssistant(QWidget):
                 self.hover_anim.setEndValue(QPoint(0, hover_offset))
                 self.hover_anim.start()
             else:
-                # Если прилипла ИЛИ парение отключено — жестко фиксируем.
-                # Смещаем вниз на hover_offset, чтобы она стояла на "земле", а не висела.
                 self.label.move(0, hover_offset)
 
         except Exception as e:
@@ -3789,9 +3410,6 @@ class YukiAssistant(QWidget):
             import traceback
             traceback.print_exc()
 
-    # -----------------------------------------------------------------------
-    # --- Snap методы -------------------------------------------------------
-    # -----------------------------------------------------------------------
 
     def _try_snap(self):
         yuki_cx = self.x() + self.width()  // 2
@@ -3882,11 +3500,7 @@ class YukiAssistant(QWidget):
             self.window_tracker.stop()
             self.window_tracker = None
 
-    # -----------------------------------------------------------------------
 
-    # -----------------------------------------------------------------------
-    # --- Snap методы -------------------------------------------------------
-    # -----------------------------------------------------------------------
 
     def _try_snap(self):
         yuki_cx = self.x() + self.width()  // 2
@@ -3980,10 +3594,8 @@ class YukiAssistant(QWidget):
     def start_dancing(self):
         """Запускает видео анимацию."""
         if getattr(self, 'video_cap', None) is None:
-            # Открываем видеофайл
             self.video_cap = cv2.VideoCapture("Shiro_dance.mp4")
 
-            # --- НОВОЕ: Вычисляем кадр, на котором нужно зациклить видео ---
             if self.video_cap.isOpened():
                 fps = self.video_cap.get(cv2.CAP_PROP_FPS)
                 if fps <= 0:
@@ -3991,13 +3603,10 @@ class YukiAssistant(QWidget):
 
                 total_frames = int(self.video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-                # Вычисляем сколько кадров в 0.5 секундах
                 frames_to_cut = int(fps * 0.7)
 
-                # Запоминаем кадр, на котором будем делать сброс (loop)
                 self.loop_end_frame = max(1, total_frames - frames_to_cut)
 
-        # Если файл не найден
         if not self.video_cap.isOpened():
             logger.log("ERROR", "Video", "Не удалось открыть Shuro_dance.mov")
             return
@@ -4013,7 +3622,6 @@ class YukiAssistant(QWidget):
             self.video_cap = None
         self.update_image()  # Возвращаем обычную Юки
 
-        # Возвращаем парение, если оно включено
         if not self.is_floating and getattr(self, 'enable_hover', True):
             self.hover_anim.start()
 
@@ -4031,11 +3639,9 @@ class YukiAssistant(QWidget):
             ret, frame = self.video_cap.read()
             if not ret: return
 
-        # 1. СНАЧАЛА создаем маску (до того, как черный цвет испортится эффектами)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         _, mask = cv2.threshold(gray, 20, 255, cv2.THRESH_BINARY)
 
-        # 2. Считаем пульс бита
         self.beat_pulse = getattr(self, 'beat_pulse', 0.0) * 0.85
         if self.beat_pulse < 0.01:
             self.beat_pulse = 0.0
@@ -4050,14 +3656,11 @@ class YukiAssistant(QWidget):
                 elif diff < 0:
                     break
 
-        # 3. Применяем вспышку света ТОЛЬКО к самому кадру
         if self.beat_pulse > 0:
-            # Увеличил beta до 50 для более яркого свечения Юки
             alpha_boost = 1.0 + (0.3 * self.beat_pulse)
             beta_boost = int(50 * self.beat_pulse)
             frame = cv2.convertScaleAbs(frame, alpha=alpha_boost, beta=beta_boost)
 
-        # 4. Собираем всё: на осветленный кадр накладываем идеальную маску
         frame_bgra = cv2.cvtColor(frame, cv2.COLOR_BGR2BGRA)
         frame_bgra[:, :, 3] = mask
 
@@ -4066,7 +3669,6 @@ class YukiAssistant(QWidget):
         qimg = QImage(frame_bgra.data, w, h, bytes_per_line, QImage.Format_ARGB32).copy()
         pixmap = QPixmap.fromImage(qimg)
 
-        # 5. Масштабируем без прыжков размера!
         base_scale = 3
         new_width = max(1, pixmap.width() // base_scale)
         new_height = max(1, pixmap.height() // base_scale)
@@ -4083,14 +3685,12 @@ class YukiAssistant(QWidget):
         hover_offset = 15 if not getattr(self, 'is_floating', False) else 0
         self.resize(pixmap.width(), pixmap.height() + hover_offset)
 
-    # -----------------------------------------------------------------------
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.oldPos = event.globalPos()
             self.menu.hide()
             
-            # НОВОЕ: Если схватили Юки во время 3D-ходьбы, останавливаем её
             if getattr(self, 'is_3d_mode', False):
                 if self.walk_anim.state() == QPropertyAnimation.Running:
                     self.walk_anim.stop()
@@ -4101,7 +3701,6 @@ class YukiAssistant(QWidget):
         if event.buttons() == Qt.LeftButton:
             delta = event.globalPos() - self.oldPos
             if delta.manhattanLength() > 3:
-                # В 2D-режиме открепляем от окон при перетаскивании
                 if not getattr(self, 'is_3d_mode', False):
                     if self.snap_mode not in (SNAP_NONE,
                                               SNAP_SCREEN_TOP, SNAP_SCREEN_BOT,
@@ -4121,7 +3720,6 @@ class YukiAssistant(QWidget):
         elif event.button() == Qt.LeftButton:
             self.save_settings()
             
-            # НОВОЕ: В 3D-режиме она не должна прилипать. Просто возобновляем цикл.
             if getattr(self, 'is_3d_mode', False):
                 self._start_3d_cycle()
             else:
@@ -4134,9 +3732,6 @@ class YukiAssistant(QWidget):
             self._detach()
 
 
-# =======================================================
-# --- ПОТОК САМОСТОЯТЕЛЬНОГО НАБЛЮДЕНИЯ ЗА ЭКРАНОМ ---
-# =======================================================
 class ScreenWatcherThread(QThread):
     reaction_ready = pyqtSignal(str)
 
@@ -4144,18 +3739,16 @@ class ScreenWatcherThread(QThread):
         super().__init__()
         self.history = history
         self.persona = persona
-        self._running = True  # <--- НЕ ЗАБУДЬ ЭТУ СТРОКУ В ИНИЦИАЛИЗАЦИИ
+        self._running = True 
 
     def run(self):
         last_img_hash = None
         
         while self._running:
             try:
-                # 1. Делаем скриншот
                 img = ImageGrab.grab()
                 img.thumbnail((1024, 1024))
                 
-                # 2. Оптимизация через хеш
                 img_array = np.array(img)
                 current_hash = hash(img_array.tobytes())
                 
@@ -4165,7 +3758,6 @@ class ScreenWatcherThread(QThread):
                 
                 last_img_hash = current_hash
 
-                # 3. Вся логика запроса ДОЛЖНА БЫТЬ ВНУТРИ TRY (сдвинута вправо)
                 context = "Последний диалог:\n"
                 for msg in self.history[-2:]:
                     context += f"{msg['role']}: {msg['parts'][0]}\n"
@@ -4196,10 +3788,8 @@ class ScreenWatcherThread(QThread):
                     self.reaction_ready.emit(text)
 
             except Exception as e:
-                # Если где-то внутри try произошла ошибка, она поймается здесь
                 logger.log("ERROR", "Watcher", f"Ошибка анализа экрана: {e}")
 
-            # 4. Пауза 15 секунд в конце цикла
             self.msleep(30000)
 
 if __name__ == '__main__':

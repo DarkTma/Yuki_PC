@@ -4935,3 +4935,8 @@ AttributeError: 'YukiAssistant' object has no attribute 'tts_worker'
 [2026-06-25 00:42:53] [INFO] [TTSWorker] Вся озвучка завершена.
 [2026-06-25 00:42:55] [INFO] [AudioPlayer] Воспроизвожу: C:\Users\Dark\AppData\Local\Temp\yuki_chunk_346d91a0.wav
 [2026-06-25 00:42:57] [INFO] [AudioPlayer] Вся озвучка завершена.
+[2026-06-25 12:01:59] [INFO] [STARTUP] Yuki started
+[2026-06-25 12:02:01] [INFO] [UI] Yuki UI initialized
+[2026-06-25 19:52:30] [INFO] [STARTUP] Yuki started
+[2026-06-25 19:52:31] [INFO] [UI] Yuki UI initialized
+[2026-06-25 19:52:55] [INFO] [Snap] Snapped to screen edge, mode=6
